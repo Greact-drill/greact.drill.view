@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import drillSvg from "../assets/drill.svg";
 import { useAllEdgesWithAttributes, useEdgeWithAttributes } from "../hooks/useEdges";
 import EdgeStatusPanel from "../components/EdgeStatusPanel";
-import type { Edge, EdgeWithAttributes, EdgeAttribute } from "../types/edge";
+import type { Edge, EdgeWithAttributes, EdgeAttribute, RawEdgeAttributes } from "../types/edge";
+import { transformRawAttributes } from "../utils/edgeUtils";
 
-// Временный тип для совместимости со старой структурой Rig
 interface RigCompatible extends Edge {
-  id: string; // d_14820 -> 14820
+  id: string; // 14820 -> 14820
   ok: boolean;
 }
 
@@ -19,28 +19,31 @@ export default function RigsListPage() {
   const { edgesWithAttributes, loading: edgesLoading } = useAllEdgesWithAttributes();
   
   // Получаем данные для наведенной буровой
-  const hoveredEdgeKey = hoveredRigId ? `d_${hoveredRigId}` : null;
+  const hoveredEdgeKey = hoveredRigId ? `${hoveredRigId}` : null;
   const { edgeData: hoveredEdgeData, loading: hoveredLoading } = useEdgeWithAttributes(hoveredEdgeKey);
 
   // Функция для проверки ошибок в атрибутах
-  const hasErrorsInAttributes = (attributes: EdgeAttribute | null | undefined) => {
-    if (!attributes) return false;
+  const hasErrorsInAttributes = (rawAttributes: RawEdgeAttributes  | null | undefined, edgeId: string) => {
+    if (!rawAttributes) return false;
     
-    // Проверяем состояние оборудования
+    // 1. Трансформируем сырые теги в структурированный объект
+    const transformed: EdgeAttribute = transformRawAttributes(rawAttributes as Record<string, any>, edgeId);
+
+    // 2. Проверяем состояние оборудования (используя старые поля)
     const equipmentErrors = [
-      attributes.bypass_state !== 'closed',
-      attributes.drive_state !== 'normal'
+      transformed.bypass_state !== 'closed',
+      transformed.drive_state !== 'normal'
     ];
     
-    // Проверяем техническое обслуживание
+    // 3. Проверяем техническое обслуживание (используя старые поля)
     const maintenanceErrors = [
-      attributes.daily_maintenance === false,
-      attributes.weekly_maintenance === false,
-      attributes.monthly_maintenance === false,
-      attributes.semiannual_maintenance === false,
-      attributes.annual_maintenance === false
+      transformed.daily_maintenance === false,
+      transformed.weekly_maintenance === false,
+      transformed.monthly_maintenance === false,
+      transformed.semiannual_maintenance === false,
+      transformed.annual_maintenance === false
     ];
-    
+    // Возвращаем true, если хотя бы одно условие ошибки истинно
     return equipmentErrors.some(error => error) || maintenanceErrors.some(error => error);
   };
 
@@ -48,8 +51,8 @@ export default function RigsListPage() {
   const rigs: RigCompatible[] = useMemo(() => {
     return edgesWithAttributes.map((edge: EdgeWithAttributes): RigCompatible => ({
       ...edge,
-      id: edge.key.replace('d_', ''), // d_14820 -> 14820
-      ok: !hasErrorsInAttributes(edge.attributes) // Красный если есть ошибки
+      id: edge.id,
+      ok: !hasErrorsInAttributes(edge.attributes, edge.id) // Красный если есть ошибки
     }));
   }, [edgesWithAttributes]);
 
@@ -58,7 +61,10 @@ export default function RigsListPage() {
     [rigs, hoveredRigId]
   );
 
-
+  const transformedHoveredAttributes = useMemo(() => {
+      if (!hoveredEdgeData?.attributes || !hoveredRigId) return null;
+      return transformRawAttributes(hoveredEdgeData.attributes as RawEdgeAttributes, hoveredRigId); 
+  }, [hoveredEdgeData, hoveredRigId]);
 
   return (
     <div className="rigs-list">
@@ -100,7 +106,7 @@ export default function RigsListPage() {
             
             <div className="edge-status-container">
               <EdgeStatusPanel 
-                attributes={hoveredEdgeData?.attributes || null} 
+                attributes={transformedHoveredAttributes} 
                 loading={hoveredLoading}
               />
             </div>

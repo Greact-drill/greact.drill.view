@@ -6,6 +6,7 @@ import { useEdgeWithAttributes } from "../hooks/useEdges";
 import { useEdgeBlocks } from "../hooks/useBlocks";
 import EdgeStatusPanel from "../components/EdgeStatusPanel";
 import type { Rig } from "../types/rig";
+import { transformRawAttributes } from "../utils/edgeUtils";
 
 
 // Сегменты заданы в процентах относительно размера изображения (viewBox 1010x1024)
@@ -43,9 +44,15 @@ export default function MainPage() {
 	const [hovered, setHovered] = useState<string | null>(null);
 
 	// Используем rigId как edge_key для получения данных
-	const edgeKey = `d_${rigId}`;
+	const edgeKey = `${rigId}`;
 	const { edgeData, loading: edgeLoading, error: edgeError } = useEdgeWithAttributes(edgeKey);
 	const { blocks, loading: blocksLoading } = useEdgeBlocks(edgeKey);
+
+    const transformedAttributes = useMemo(() => {
+        if (!edgeData?.attributes) return null;
+        
+        return transformRawAttributes(edgeData.attributes, rigId);
+    }, [edgeData, rigId]);
 
 	useEffect(() => {
 		getRigById(rigId).then((r) => setRig(r ?? null));
@@ -172,7 +179,7 @@ export default function MainPage() {
 					</div>
 				)}
 				<EdgeStatusPanel 
-					attributes={edgeData?.attributes || null} 
+					attributes={transformedAttributes} 
 					loading={edgeLoading} 
 				/>
 			</div>

@@ -13,7 +13,7 @@ export default function ChartsPage() {
   // Получаем параметры из URL
   const rigParam = params.get("rig");
   const blockParam = params.get("block");
-  const selectedEdgeKey = rigParam ? `d_${rigParam}` : null;
+  const selectedEdgeKey = rigParam ? `${rigParam}` : null;
 
   // Состояние для тегов, времени и интервала
   const [selectedTags, setSelectedTags] = useState<string[]>([]);

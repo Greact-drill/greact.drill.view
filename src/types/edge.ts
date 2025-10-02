@@ -1,7 +1,9 @@
 export interface Edge {
-  key: string; // Уникальный ключ edge (например, "d_123456")
+  id: string; // Уникальный ключ edge (например, "123456")
   name: string | null; // Название edge (например, "Буровая 123")
 }
+
+export type RawEdgeAttributes = Record<string, number | string | boolean>;
 
 export interface EdgeAttribute {
   id: number; // Уникальный идентификатор записи
@@ -16,5 +18,5 @@ export interface EdgeAttribute {
 }
 
 export interface EdgeWithAttributes extends Edge {
-  attributes?: EdgeAttribute;
+  attributes: RawEdgeAttributes | undefined;
 }

@@ -8,7 +8,7 @@ class ApiClient {
 
   constructor() {
     this.primaryUrl = import.meta.env.VITE_API_URL || 'http://pirates0k.vps-server.ru/cloud'
-    this.fallbackUrl = 'http://localhost:3000/cloud'
+    this.fallbackUrl = 'http://localhost:3000'
     
     // Создаем instance для основного URL
     this.currentInstance = this.createAxiosInstance(this.primaryUrl)

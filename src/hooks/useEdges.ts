@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getEdges, getEdgeAttributes } from '../api/edges';
-import type { Edge, EdgeWithAttributes } from '../types/edge';
+import type { Edge, EdgeWithAttributes, RawEdgeAttributes } from '../types/edge';
 
 export function useEdges() {
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -44,26 +44,23 @@ export function useEdgeWithAttributes(edgeKey: string | null) {
       try {
         setLoading(true);
         setError(null);
-        
-        // Получаем данные edge и его атрибуты последовательно для корректного fallback
-        const edgesData = await getEdges({ key: edgeKey });
-        const attributesData = await getEdgeAttributes({ edge_key: edgeKey });
 
-        
+        const edgesData = await getEdges({ key: edgeKey });
+        const attributesData: RawEdgeAttributes | null | undefined = await getEdgeAttributes({ edge: edgeKey }); 
 
         if (edgesData.length > 0) {
           const edge = edgesData[0];
-          const attributes = attributesData.length > 0 ? attributesData[0] : undefined;
           
-          const result = {
+          const hasAttributes = attributesData && Object.keys(attributesData).length > 0;
+          const attributes = hasAttributes ? attributesData : undefined;
+          
+          const result: EdgeWithAttributes = {
             ...edge,
             attributes
           };
           
-          
           setEdgeData(result);
         } else {
-          
           setEdgeData(null);
         }
       } catch (err) {
@@ -93,23 +90,25 @@ export function useAllEdgesWithAttributes() {
         
         // Получаем все edges
         const edgesData = await getEdges();
-        
-        
-        // Получаем атрибуты для всех edges
-        const allAttributesData = await getEdgeAttributes();
-        
-        
-        // Сопоставляем edges с их атрибутами
-        const result = edgesData.map(edge => {
-          const attributes = allAttributesData.find(attr => attr.edge_key === edge.key);
-          return {
+
+        if (edgesData.length === 0) {
+          setEdgesWithAttributes([]);
+          return;
+        }
+
+        const attributesPromises = edgesData.map(async (edge) => {
+        const attributes = await getEdgeAttributes({ edge: edge.id });
+
+        return {
             ...edge,
-            attributes
-          };
+            attributes: attributes
+          } as EdgeWithAttributes;
         });
-        
+
+        const result = await Promise.all(attributesPromises);
         
         setEdgesWithAttributes(result);
+
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Ошибка при загрузке всех edges с атрибутами');
         

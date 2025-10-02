@@ -4,6 +4,11 @@ import RigsListPage from "./pages/RigsListPage";
 import TopBar from "./components/TopBar";
 import ChartsPage from "./pages/ChartsPage.tsx";
 import TagsPage from "./pages/TagsPage";
+import AdminPage from "./pages/AdminPage.tsx";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PrimeReactProvider } from 'primereact/api';
+
+const queryClient = new QueryClient();
 
 const Nav = () => (
   <TopBar />
@@ -15,32 +20,30 @@ const Layout = () => (
     <Outlet />
   </>
 );
-
 export default function AppRouter() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Главная страница со списком буровых */}
-        <Route path="/" element={<RigsListPage />} />
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <PrimeReactProvider>
+            <Routes>
+              {/* Главная страница со списком буровых */}
+              <Route path="/" element={<RigsListPage />} />
 
-        {/* Детальная страница буровой */}
-        <Route element={<Layout />}>
-          <Route path="/rigs/:rigId" element={<MainPage />} />
-        </Route>
+              {/* Детальная страница буровой - USES LAYOUT */}
+              <Route element={<Layout />}>
+                <Route path="/rigs/:rigId" element={<MainPage />} />
+                <Route path="/charts" element={<ChartsPage />} />
+                <Route path="/tags" element={<TagsPage />} />
+              </Route>
 
-        {/* Пространство charts */}
-        <Route element={<Layout />}>
-          <Route path="/charts" element={<ChartsPage />} />
-        </Route>
+              {/* Админ-панель - NO LAYOUT, self-contained */}
+              <Route path="/admin/*" element={<AdminPage />} /> 
 
-        {/* Страница тегов */}
-        <Route element={<Layout />}>
-          <Route path="/tags" element={<TagsPage />} />
-        </Route>
-
-        {/* 404 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+              {/* 404 */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </PrimeReactProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
   );
 }
