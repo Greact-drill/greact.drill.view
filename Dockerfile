@@ -2,7 +2,7 @@
 FROM node:22-alpine AS build
 
 # Директория внутри контейнера
-WORKDIR /usr/src/cloud-frontend
+WORKDIR /app/view
 
 # Копируем package.json и package-lock.json для кэширования зависимостей
 COPY package*.json ./
@@ -15,11 +15,20 @@ COPY . .
 
 ARG VITE_API_URL
 
-# Генерация клиента prisma и инициализация базы данных
+# Собираем приложение для продакшена
 RUN npm run build
 
-# Открываем 4000 порт
+# Stage 2: Production stage с nginx
+FROM nginx:alpine
+
+# Копируем собранное приложение из build stage
+COPY --from=build /app/view/dist /usr/share/nginx/html
+
+# Копируем конфигурацию nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Открываем порт 80
 EXPOSE 80
 
-# Запуск приложения при запуске контейнера
-CMD ["sh", "/usr/src/cloud-frontend/scripts/start.sh"]
+# Запускаем nginx
+CMD ["nginx", "-g", "daemon off;"]
