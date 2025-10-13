@@ -2,7 +2,7 @@
 FROM node:22-alpine AS build
 
 # Директория внутри контейнера
-WORKDIR /app/view
+WORKDIR /app
 
 # Копируем package.json и package-lock.json для кэширования зависимостей
 COPY package*.json ./
@@ -22,7 +22,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Копируем собранное приложение из build stage
-COPY --from=build /app/view/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Копируем конфигурацию nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
