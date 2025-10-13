@@ -1,0 +1,97 @@
+/* src/components/EdgeStatusPanel.css (Обновленный файл: Акцентные элементы) */
+
+:root {
+    --status-ok-base-bright: #34D399;   
+    --status-error-base-bright: #F87171; 
+    --status-ok-dark: #064E3B;   
+    --status-error-dark: #7F1D1D; 
+}
+
+.edge-status-panel {
+    /* Убираем лишний padding, т.к. он уже на контейнере .rig-status-panel.open */
+    padding: 0; 
+}
+
+.status-group {
+    margin-bottom: 30px; /* Увеличим отступ между группами для лучшей визуальной сепарации */
+    padding-bottom: 15px; /* Увеличим отступ под разделителем */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+.status-group-title {
+    
+    font-size: 1.4rem; /* УВЕЛИЧИВАЕМ РАЗМЕР ШРИФТА (Было 1rem) */
+    font-weight: 600; /* Используем 600, чтобы не было слишком "жирно" */
+    color: #ffffff !important; 
+    margin-bottom: 10px; /* Немного уменьшим отступ от заголовка до элементов */
+    text-transform: none; /* Убираем uppercase, если он не нужен для читаемости */
+    letter-spacing: normal;
+}
+
+
+.status-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Уменьшим gap для более плотного списка */
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    cursor: pointer; 
+    font-size: 1rem; /* Увеличим размер текста */
+    color: #e2e8f0; /* Основной текст светлее */
+}
+
+.status-item:hover {
+    background-color: rgba(255, 255, 255, 0.05); /* Легкий hover-эффект */
+}
+
+/* *** УСИЛЕННЫЙ ЭФФЕКТ СВЕЧЕНИЯ ДЛЯ ИНДИКАТОРОВ *** */
+.status-indicator {
+    width: 12px; /* Увеличим размер индикатора */
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 15px; /* Увеличим отступ */
+    transition: all 0.3s;
+    background-color: #64748b !important; /* Серый по умолчанию */
+}
+
+/* Градиент и СВЕЧЕНИЕ для ОК */
+.status-indicator.status-ok {
+    background: linear-gradient(
+        45deg, 
+        var(--status-ok-base-bright) 0%, 
+        var(--status-ok-dark) 80%
+    ) !important;
+    box-shadow: 0 0 10px var(--status-ok-base-bright) !important; /* Усиливаем свечение */
+}
+
+/* Градиент и СВЕЧЕНИЕ для ОШИБКА */
+.status-indicator.status-error {
+    background: linear-gradient(
+        45deg, 
+        var(--status-error-base-bright) 0%, 
+        var(--status-error-dark) 80%
+    ) !important;
+    box-shadow: 0 0 10px var(--status-error-base-bright) !important; /* Усиливаем свечение */
+}
+
+.status-label.status-link {
+    color: var(--primary-color, #93C5FD) !important; 
+    font-weight: 500;
+}
+
+/* Отключенные/неизвестные статусы */
+.status-item.status-disabled .status-indicator,
+.status-indicator.status-unknown {
+    background-color: #64748b !important;
+    box-shadow: none !important;
+}
+
+.status-item.status-disabled .status-label {
+    color: #64748b; 
+}

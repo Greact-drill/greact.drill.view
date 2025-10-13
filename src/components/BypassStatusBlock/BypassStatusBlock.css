@@ -1,0 +1,201 @@
+/* src/components/BypassStatusBlock.css */
+
+:root {
+    /* НОВЫЕ БОЛЕЕ ЯРКИЕ БАЗОВЫЕ ЦВЕТА (начало градиента) */
+    --status-ok-base-bright: #34D399;   /* Ярко-зеленый (Emerald 400) */
+    --status-error-base-bright: #F87171; /* Ярко-красный (Red 400) */
+    
+    /* НОВЫЕ ТЕМНЫЕ КОНЕЧНЫЕ ЦВЕТА (конец градиента, для глубины) */
+    --status-ok-dark: #064E3B;   /* Глубокий зеленый (Emerald 900) */
+    --status-error-dark: #7F1D1D; /* Глубокий красный (Red 900) */
+}
+
+.bypass-status-block {
+    height: 111px; 
+    position: relative;
+    overflow: hidden; 
+    cursor: default;
+    transition: box-shadow 0.2s;
+    border: none;
+}
+
+.bypass-status-block:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Переопределение фона для PrimeReact Card */
+.bypass-status-block .p-card-body {
+    padding: 1rem 1.5rem !important;
+}
+
+/* Контент внутри блока располагаем по горизонтали, чтобы обтекал индикатор */
+.bypass-status-block .p-card-content {
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+}
+
+/* Боковой индикатор (6px полоса) */
+.status-indicator-side {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px; 
+    height: 100%;
+    transition: background-color 0.3s;
+}
+
+/* Цвета индикатора */
+.status-indicator-side.status-ok {
+    background-color: var(--green-500, #4BB543); /* Зеленый */
+}
+
+.status-indicator-side.status-error {
+    background-color: var(--red-500, #EF4444); /* Красный */
+}
+
+/* Контент (метка и значение) */
+.status-content {
+    margin-left: 14px; /* Отступ от цветной полосы */
+    text-align: left;
+    flex-grow: 1;
+}
+
+.block-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-top: 0;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.block-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary, #f1f5f9);
+}
+
+/* Статус ОК (Зеленый фон) */
+.bypass-status-block.status-ok,
+.bypass-status-block.status-ok .p-card-body {
+    background-image: linear-gradient(
+        135deg, /* Угол градиента */
+        /* Начинаем с более светлого оттенка (больше контраст) */
+        var(--status-ok-base-bright) 0%, 
+        /* Заканчиваем глубоким темным оттенком */
+        var(--status-ok-dark) 80% 
+    ) !important;
+    
+    background-color: transparent !important; 
+    border: 1px solid var(--status-ok-dark); /* Граница для очертания */
+}
+
+/*
+ * 2. ВЫРАЗИТЕЛЬНЫЙ ГРАДИЕНТ для Статуса ОШИБКА (Красный)
+ */
+.bypass-status-block.status-error,
+.bypass-status-block.status-error .p-card-body {
+    background-image: linear-gradient(
+        135deg, /* Угол градиента */
+        /* Начинаем с более светлого оттенка (больше контраст) */
+        var(--status-error-base-bright) 0%, 
+        /* Заканчиваем глубоким темным оттенком */
+        var(--status-error-dark) 80% 
+    ) !important;
+    
+    background-color: transparent !important;
+    border: 1px solid var(--status-error-dark); /* Граница для очертания */
+}
+
+
+/* Боковой индикатор (теперь опционален) */
+.status-indicator-side {
+    /* ... (можете закомментировать или удалить, если фон достаточен) ... */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px; 
+    height: 100%;
+    /* ... */
+}
+
+/* Контент (метка и значение) */
+.status-content {
+    margin-left: 0; /* Убираем отступ, если нет бокового индикатора */
+    text-align: left;
+    flex-grow: 1;
+}
+/*
+ * 3. КОНТРАСТНЫЙ ТЕКСТ
+ * Убедимся, что текст виден на ярком начале градиента.
+ */
+.block-label {
+    /* Светлый серый для метки */
+    color: #cbd5e1; 
+}
+
+.block-value {
+    /* Увеличиваем размер шрифта, чтобы соответствовать большему блоку */
+    font-size: 1.5rem; /* Было 1.2rem */
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* src/components/BypassStatusBlock.css */
+
+.status-content .block-value, 
+.status-content .block-label {
+    /* Добавляем плавный переход для цвета текста */
+    transition: color 0.3s ease-in-out;
+}
+
+.bypass-status-block {
+    /* Добавляем плавный переход для тени и фона */
+    position: relative;
+    overflow: hidden; 
+    cursor: default;
+    transition: box-shadow 0.2s, background-image 0.5s ease-in-out; /* Плавный переход для фона */
+    border: none;
+}
+
+/* Определение анимации (движение градиента слева направо) */
+@keyframes shimmering {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Применение эффекта к блоку при обновлении */
+.bypass-status-block.shimmer-effect {
+    /* Добавляем эффект пульсации тени, чтобы привлечь внимание */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 0.4); 
+    
+    position: relative; 
+    overflow: hidden; 
+}
+
+/* Создание псевдоэлемента с градиентом для "перелива" */
+.bypass-status-block.shimmer-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    /* Градиент: прозрачный -> белый (или светло-серый) -> прозрачный */
+    background: linear-gradient(
+        90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.3) 50%, /* Небольшая прозрачная белая полоса */
+        rgba(255, 255, 255, 0) 100%
+    );
+    /* Растягиваем его, чтобы он мог двигаться от -100% до +100% */
+    transform: translateX(-100%); 
+    
+    /* Применяем анимацию */
+    animation: shimmering 1.5s ease-in-out forwards; /* 1.5s - должно соответствовать setTimeout */
+    pointer-events: none; /* Гарантируем, что он не мешает кликам */
+}

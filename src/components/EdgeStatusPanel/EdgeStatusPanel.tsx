@@ -1,4 +1,7 @@
-import type { EdgeAttribute } from '../types/edge';
+import type { EdgeAttribute } from '../../types/edge';
+import { Link } from 'react-router-dom';
+import './EdgeStatusPanel.css'; // <--- НОВЫЙ ИМПОРТ СТИЛЕЙ
+
 
 interface EdgeStatusPanelProps {
   attributes: EdgeAttribute | null;
@@ -17,7 +20,7 @@ interface StatusGroup {
   items: StatusItem[];
 }
 
-export default function EdgeStatusPanel({ attributes, loading, onStatusChange }: EdgeStatusPanelProps) {
+export default function EdgeStatusPanel({ attributes, loading, onStatusChange, rigId }: EdgeStatusPanelProps & { rigId: string | null }) {
   
 
   if (loading) {
@@ -76,7 +79,9 @@ export default function EdgeStatusPanel({ attributes, loading, onStatusChange }:
     "Видеонаблюдение"
   ];
 
-  return (
+  const statusLinkKeys = ['bypass_state', 'drive_state', 'daily_maintenance', 'weekly_maintenance', 'monthly_maintenance', 'semiannual_maintenance', 'annual_maintenance'];
+
+   return (
     <div className="edge-status-panel">
       {statusGroups.map((group) => (
         <div key={group.title} className="status-group">
@@ -91,7 +96,25 @@ export default function EdgeStatusPanel({ attributes, loading, onStatusChange }:
                     'status-unknown'
                   }`}
                 />
-                <span className="status-label">{item.label}</span>
+                
+                {/* *** ОБНОВЛЕННАЯ ЛОГИКА ССЫЛОК *** */}
+                {statusLinkKeys.includes(item.key) && rigId ? (
+                  <Link 
+                    to={
+                      item.key === 'bypass_state' 
+                        ? `/rigs/${rigId}/bypass-status` 
+                        : item.key === 'drive_state'
+                        ? `/rigs/${rigId}/accident-status`
+                        // НОВЫЕ ССЫЛКИ ДЛЯ ТО
+                        : `/rigs/${rigId}/maintenance-status/${item.key}`
+                    } 
+                    className="status-label status-link"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span className="status-label">{item.label}</span>
+                )}
               </div>
             ))}
           </div>

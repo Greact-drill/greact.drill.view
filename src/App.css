@@ -10,8 +10,8 @@
   flex-direction: column;
   background-color: #ffffff;
   color: #212529;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* max-width: 1200px;
+  margin: 0 auto; */
   width: 100%;
   min-height: 100dvh;
   overflow: hidden;
@@ -41,7 +41,7 @@
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   transition: box-shadow .2s, background-color .2s;
-  min-height: 240px; /* фиксированная высота карты */
+  min-height: 240px; 
   outline: none;
 }
 
@@ -714,68 +714,6 @@ input[type="datetime-local"]::-ms-expand:hover {
   filter: saturate(1.1) contrast(1.1) brightness(1.05); 
 }
 
-/* Бейдж с номером сегмента */
-.seg-badge {
-	position: absolute;
-	right: 8px;
-	bottom: 8px;
-	background: #2196f3;
-	color: #fff;
-	border-radius: 999px;
-	padding: 4px 10px;
-	font-weight: 700;
-	font-size: 14px;
-	box-shadow: 0 2px 6px rgba(0,0,0,.15);
-}
-
-.seg-legend {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-	justify-content: center;
-	padding: 8px 16px 12px 16px;
-	max-width: min(90vw, calc((100vh - var(--topbar-height, 50px) - 120px) * 1010 / 1024));
-	margin: 0 auto;
-	flex-shrink: 0;
-}
-
-.seg-item {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 10px;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-	background: #fff;
-	color: #0d6efd;
-	text-decoration: none;
-	transition: background .15s ease, box-shadow .15s ease;
-	font-size: clamp(12px, 1.8vw, 14px);
-}
-
-.seg-item:hover { background: #f8f9fa; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
-
-.seg-dot {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 24px;
-	border-radius: 999px;
-	background: #2196f3;
-	color: #fff;
-	font-weight: 700;
-	font-size: 12px;
-}
-
-.seg-border {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-}
-
 .seg-border polygon {
 	fill: transparent;
 	stroke: transparent;
@@ -809,17 +747,7 @@ input[type="datetime-local"]::-ms-expand:hover {
 		padding: 4px 16px 8px 16px;
 	}
 	
-	.seg-item {
-		padding: 4px 8px;
-		gap: 4px;
-		font-size: clamp(11px, 1.5vw, 13px);
-	}
 	
-	.seg-dot {
-		width: 20px;
-		height: 20px;
-		font-size: 11px;
-	}
 }
 
 @media (max-width: 768px) {
@@ -842,17 +770,6 @@ input[type="datetime-local"]::-ms-expand:hover {
 		gap: 4px;
 	}
 	
-	.seg-item {
-		padding: 3px 6px;
-		gap: 3px;
-		font-size: clamp(10px, 1.2vw, 12px);
-	}
-	
-	.seg-dot {
-		width: 18px;
-		height: 18px;
-		font-size: 10px;
-	}
 }
 
 /* Панель статусов edge */
@@ -1027,4 +944,85 @@ input[type="datetime-local"]::-ms-expand:hover {
   to {
     opacity: 1;
   }
+}
+.rig-status-panel {
+  /* 1. Устанавливаем ширину и положение */
+  width: 660px; /* Совпадает с шириной колонки в .rigs-list */
+  height: 100%;
+  padding: 24px;
+  background-color: #fff;
+  border-left: 1px solid #e9ecef;
+
+  /* 2. Делаем панель выезжающей */
+  position: fixed; /* Используем fixed, чтобы она была над контентом */
+  top: 0; 
+  right: 0; /* Прижимаем к правому краю */
+  z-index: 1000; /* Убедимся, что она поверх остального контента */
+
+  /* 3. СКРЫВАЕМ: Сдвигаем панель за правый край на всю ее ширину */
+  transform: translateX(100%); 
+  
+  /* 4. ДОБАВЛЯЕМ ПЕРЕХОД: Анимируем только transform */
+  transition: transform 0.3s ease-out; /* Плавное выезжание */
+  
+  /* Добавляем box-shadow, чтобы выделить ее */
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+
+  /* Новые стили для компоновки содержимого */
+  display: flex;
+  flex-direction: column;
+
+  position: relative; 
+}
+
+/* Класс, который добавляется при открытии панели */
+.rig-status-panel.open {
+  /* ПОКАЗЫВАЕМ: Возвращаем панель на место */
+  transform: translateX(0);
+}
+
+/* Позиционирование кнопки закрытия на выезжающей панели */
+.rig-status-panel .close-panel-btn {
+  /* 1. Делаем кнопку абсолютно позиционированной относительно панели */
+  position: absolute; 
+  
+  /* 2. Размещаем в верхнем правом углу с небольшим отступом */
+  top: 15px; 
+  right: 15px; 
+  z-index: 1001; /* Выше, чем z-index самой панели, если это потребуется */
+  
+  /* 3. Улучшаем внешний вид, так как используется p-button-text */
+  color: #6c757d; /* Темный цвет для видимости на светлом фоне */
+}
+
+.rig-status-panel .close-panel-btn:hover {
+  color: #dc3545; /* Красный при наведении */
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Базовые стили скроллбара для всего приложения (App.css или index.css) */
+/* 1. Определяем ширину скроллбара */
+::-webkit-scrollbar {
+    width: 8px; /* Узкий скроллбар */
+    height: 8px;
+}
+
+/* 2. Стилизуем дорожку (фон) */
+::-webkit-scrollbar-track {
+    /* Очень темный, почти черный фон, чтобы сливаться с body */
+    background: #1e293b; 
+    border-radius: 10px;
+}
+
+/* 3. Стилизуем ползунок (сам скролл) */
+::-webkit-scrollbar-thumb {
+    /* Темно-серый цвет, который виден на черном фоне */
+    background: #475569; 
+    border-radius: 10px;
+}
+
+/* 4. Стилизуем ползунок при наведении */
+::-webkit-scrollbar-thumb:hover {
+    /* Чуть светлее при наведении для обратной связи */
+    background: #64748b; 
 }

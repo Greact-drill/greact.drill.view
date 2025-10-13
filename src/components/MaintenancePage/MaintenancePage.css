@@ -1,0 +1,34 @@
+
+/* Стиль контейнера таблицы */
+.maintenance-table-container {
+    padding: 10px 0; /* Небольшой вертикальный отступ */
+}
+
+/* Общий стиль для таблицы (перезаписывает стили PrimeReact для темной темы) */
+.maintenance-table-custom .p-datatable-thead > tr > th {
+    color: var(--text-color, #f1f5f9) !important; 
+    font-weight: 700; /* Более жирный шрифт */
+    font-size: 11px; /* Чуть меньший размер, как часто бывает в таблицах */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--surface-600); /* Жирный нижний разделитель */
+}
+
+/* Стиль для тела таблицы (ячейки) */
+.maintenance-table-custom .p-datatable-tbody > tr > td {
+    /* Цвет текста в теле таблицы */
+    color: var(--text-color-secondary, #cbd5e1); 
+    padding: 10px 15px;
+    vertical-align: middle;
+}
+
+/* Стиль для активной (наведенной) строки */
+.maintenance-table-custom .p-datatable-tbody > tr:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important; /* Едва заметное выделение */
+}
+
+/* Улучшаем внешний вид Tag внутри таблицы */
+.p-datatable-sm .p-tag-sm {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+}

@@ -1,0 +1,80 @@
+/* src/pages/KtuPage.css */
+
+/* --- Стили всей страницы (включая фон и заголовок) --- */
+.ktu-page-container {
+    /* 💜 ФИОЛЕТОВЫЙ ГРАДИЕНТНЫЙ ФОН */
+    background: linear-gradient(
+        180deg, /* Сверху вниз */
+        #1f003a 0%,    /* Темный фиолетовый (Purple 900) */
+        #000000 80%    /* Черный */
+    );
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+.ktu-blocks-title {
+    color: #ffffff; /* Белый цвет текста */
+    font-weight: 600;
+    font-size: 2.2em;
+    margin-bottom: 30px;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); 
+}
+
+.ktu-blocks-grid {
+    display: grid;
+    /* Адаптивная сетка: виджеты по 250px, заполнение 1fr, отступы 30px */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 30px; 
+    padding: 20px;
+    /* max-width: 1400px;
+    margin: 0 auto;  */
+}
+
+/* Стили для кнопки "Назад" (для контраста) */
+.back-button-custom .p-button {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.back-button-custom .p-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.ktu-page-inner {
+    max-width: 1400px; /* Ограничиваем максимальную ширину контента */
+    margin: 0 auto;    /* Центрируем контент по горизонтали */
+    padding: 20px;
+}
+
+/* Класс для компактных виджетов (NumberDisplay, Status Block) - занимает 1/4 ширины */
+.widget-col-1 {
+    grid-column: span 1; 
+}
+
+/* Класс для широких виджетов (Gauge, VerticalBar) - занимает 2/4 или 1/2 ширины */
+.widget-col-2 {
+    grid-column: span 2;
+}
+
+/* Адаптация для экранов среднего размера */
+@media (max-width: 1200px) {
+    .ktu-blocks-grid {
+        /* На средних экранах переходим на 3 колонки */
+        grid-template-columns: repeat(3, 1fr); 
+    }
+}
+
+/* Адаптация для маленьких экранов */
+@media (max-width: 768px) {
+    .ktu-blocks-grid {
+        /* На маленьких экранах переходим на 2 колонки */
+        grid-template-columns: repeat(2, 1fr); 
+    }
+
+    /* Все виджеты на маленьких экранах занимают 1 колонку */
+    .widget-col-1, .widget-col-2 {
+        grid-column: span 1;
+    }
+}

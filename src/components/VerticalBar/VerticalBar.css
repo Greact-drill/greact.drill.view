@@ -1,0 +1,58 @@
+.vertical-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around; /* Изменено на space-around для равномерного распределения */
+  
+  /* Фиксируем размер карточки для сетки */
+  width: 250px; 
+  height: 500px; 
+  padding: 20px; 
+  
+  /* 🎨 Стили КАРТОЧКИ: Прозрачный фиолетовый фон */
+  background-color: rgba(31, 0, 58, 0.5); 
+  border: 1px solid rgba(175, 82, 237, 0.3); 
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(175, 82, 237, 0.3); 
+    
+  transition: transform 0.3s ease-in-out;
+  text-align: center;
+}
+
+.bar-label {
+  font-size: 1.1em; 
+  text-align: center;
+  margin-bottom: 10px;
+  color: #FFFFFF; /* Белый текст */
+  font-weight: bold;
+}
+
+.vertical-bar-container:hover {
+  transform: translateY(-5px);
+}
+
+
+.bar-wrapper {
+  width: 60px;
+  height: 100%;
+  position: relative;
+  overflow: hidden; 
+  background: linear-gradient(to top, #34D399, #F5CD19, #F87171);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bar-cover {
+  width: 100%;
+  background-color: rgba(31, 0, 58);
+  position: absolute; 
+  top: 0;
+  left: 0;
+  transition: height 0.5s ease-in-out;
+}
+
+.bar-value {
+    font-weight: bold;
+    font-size: 1.6em; 
+    color: #34D399; /* Яркий зеленый для значения */
+    margin-top: 10px;
+}

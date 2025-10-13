@@ -1,0 +1,365 @@
+/* --- Глобальные переменные для фиолетовой темы --- */
+:root {
+    --color-background-dark: #121212; 
+    --color-card-dark: #2A1A3A; /* Темно-фиолетовый фон для карточек */
+    --color-text-light: #e0e0e0;
+    --color-accent-purple: #9333ea; /* Главный фиолетовый акцент */
+    --color-accent-blue: #a78bfa; /* Лавандовый акцент для контраста */
+    --color-status-ok: #34D399; /* Emerald 400 */
+    --color-status-error: #F87171; /* Red 400 */
+}
+
+/* --- Контейнер страницы (Фиолетовый градиент) --- */
+.main-page-container {
+    /* 💡 ИСПРАВЛЕНИЕ 1: ФИОЛЕТОВЫЙ ГРАДИЕНТНЫЙ ФОН */
+    background: linear-gradient(135deg, #1C0F28 0%, #381A54 100%);
+    min-height: 100vh;
+    padding: 30px; 
+    color: var(--color-text-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- Основная сетка контента (List | Map | Status) --- */
+.main-content-grid {
+    /* 💡 ИСПРАВЛЕНИЕ 2: СЕТКА 3 КОЛОНКИ: List (1fr) | Map (3fr) | Status (1fr) */
+    display: grid;
+    grid-template-columns: 300px 1fr 300px; 
+    gap: 25px;
+    max-width: 1600px;
+    margin: 0 auto;
+        max-width: 1600px; /* Ограничим максимальную ширину всей сетки */
+
+}
+
+/* --- Заголовок --- */
+.page-title {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--color-accent-blue);
+    text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+}
+
+/* --- Блок с картой (Центральная колонка) --- */
+.map-container {
+    grid-column: 2 / 3; /* Карта теперь во второй колонке */
+    background-color: var(--color-card-dark);
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7); 
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(147, 51, 234, 0.4); 
+}
+
+.map-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+}
+
+/* --- Сегменты (Polygon) на карте --- */
+.seg-polygon {
+    fill: #333; 
+    fill-opacity: 0.2;
+    stroke: var(--color-card-dark);
+    stroke-width: 2;
+    transition: fill-opacity 0.3s, stroke 0.3s, stroke-width 0.3s;
+    cursor: pointer;
+}
+.seg-polygon:hover,
+.seg-polygon.hovered {
+    fill: var(--color-accent-purple);
+    fill-opacity: 0.4;
+    stroke: var(--color-accent-purple);
+    stroke-width: 7;
+}
+/* Цвета статусов */
+.seg-polygon.status-ok {
+    fill: var(--color-status-ok);
+    fill-opacity: 0.2;
+    stroke: var(--color-status-ok);
+}
+.seg-polygon.status-warning {
+    fill: #F5CD19; 
+    fill-opacity: 0.25;
+    stroke: #F5CD19;
+}
+.seg-polygon.status-error {
+    fill: var(--color-status-error);
+    fill-opacity: 0.2;
+    stroke: var(--color-status-error);
+}
+
+/* --- Легенда / Панель сегментов (ЛЕВАЯ КОЛОНКА) --- */
+.segments-list-wrapper {
+    /* 💡 КОНТЕЙНЕР ДЛЯ ЛЕВОЙ КОЛОНКИ */
+    grid-column: 1 / 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.segments-list {
+    /* Сбрасываем фон и отступы, так как это теперь отдельный блок */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0; 
+    background-color: transparent; 
+    box-shadow: none;
+    margin-top: 0;
+}
+.seg-item {
+    padding: 12px 15px; 
+    border-radius: 8px; 
+    text-align: left;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: var(--color-text-light);
+    /* 💡 ФИОЛЕТОВЫЙ ГРАДИЕНТ ДЛЯ КНОПОК */
+    background: linear-gradient(90deg, #4A2768 0%, #301746 100%); 
+    border: 1px solid rgba(147, 51, 234, 0.2); 
+
+    display: flex;
+    align-items: center; /* Выравнивает содержимое (точку и текст) по вертикали */
+    justify-content: flex-start; /* Начинаем элементы слева */
+}
+.seg-item:hover,
+.seg-item.hovered {
+    transform: translateX(5px); /* Сдвиг вправо при наведении */
+    box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4); 
+    background: linear-gradient(90deg, #5C3A7A 0%, #402058 100%);
+    border-color: var(--color-accent-purple);
+}
+.seg-dot {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    border-radius: 50%;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #fff;
+    /* 💡 ГРАДИЕНТ ДЛЯ ТОЧЕК */
+    background: linear-gradient(45deg, var(--color-accent-purple), var(--color-accent-blue));
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.5);
+    transition: all 0.3s;
+}
+
+/* --- Правая панель статусов --- */
+.edge-status-section {
+    grid-column: 3 / 4; /* Статус теперь в третьей колонке */
+    padding: 20px;
+    background-color: var(--color-card-dark);
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(147, 51, 234, 0.4);
+}
+
+/* --- Адаптация для небольших экранов --- */
+@media (max-width: 1200px) {
+    .main-content-grid {
+        grid-template-columns: 1fr; /* На маленьких экранах: все в столбец */
+    }
+    .map-container,
+    .segments-list-wrapper,
+    .edge-status-section {
+        grid-column: 1 / -1; 
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .segments-list-wrapper {
+        order: 2; /* Список под картой */
+    }
+    .edge-status-section {
+        order: 3; /* Статус внизу */
+    }
+    .map-container {
+        order: 1; /* Карта сверху */
+    }
+}
+
+.segment-list .back-button {
+    /* Добавляем отступ после кнопки "Назад" */
+    margin-bottom: 15px; 
+    /* Вы можете также сделать ее менее яркой, 
+       если seg-item имеет слишком сильный акцент */
+    /* opacity: 0.8; */
+}
+
+/* Пример стилей, если их нет в BypassStatusPage.css или общем файле */
+/* MainPage.css или отдельный файл для компонентов */
+
+.tag-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 2-3 колонки */
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.tag-card {
+    background-color: var(--color-background-darker); /* Более темный фон */
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 80px; /* Фиксированная или минимальная высота */
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tag-card.status-ok { border-left: 4px solid var(--color-status-ok); }
+.tag-card.status-warning { border-left: 4px solid var(--color-status-warning); }
+.tag-card.status-error { border-left: 4px solid var(--color-status-error); }
+.tag-card.status-unknown { border-left: 4px solid var(--color-status-unknown); } /* Для тегов без явного статуса */
+
+
+.tag-card-title {
+    font-size: 0.9em;
+    color: var(--color-text-light);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.tag-card-value {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--color-text-primary);
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tag-card-unit {
+    font-size: 0.8em;
+    color: var(--color-text-light);
+    margin-left: 5px;
+}
+
+/* Стили для индикатора статуса, если нужно */
+.status-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.status-indicator.ok { background-color: var(--color-status-ok); }
+.status-indicator.warning { background-color: var(--color-status-warning); }
+.status-indicator.error { background-color: var(--color-status-error); }
+.status-indicator.unknown { background-color: var(--color-status-unknown); }
+
+/* Scrollbar styling for better UX */
+.tag-data-grid-container {
+    /* Удаляем ограничение maxHeight, чтобы не было скроллбара, если теги помещаются */
+    max-height: none; 
+    overflow-y: hidden; /* Скрываем скроллбар, если он всё же может появиться */
+    padding-right: 0;
+    margin-top: 15px;
+}
+
+/* Custom scrollbar styles */
+.tag-data-grid-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tag-data-grid-container::-webkit-scrollbar-track {
+    background: var(--color-background-darker);
+    border-radius: 10px;
+}
+
+.tag-data-grid-container::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 10px;
+}
+
+.tag-data-grid-container::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-blue);
+}
+
+.tag-card-grid-small {
+    /* Настраиваем сетку для максимальной компактности и умещения в блок */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+    gap: 8px; 
+}
+
+.tag-card-small {
+    /* Компактный размер */
+    min-height: 50px; 
+    padding: 8px;
+    border-radius: 8px; 
+    
+    /* 💡 КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Добавляем transition для box-shadow */
+    transition: all 0.3s, box-shadow 0.3s;
+    
+    /* Убедимся, что текст темный для контраста */
+    color: var(--color-background-dark, #121212); 
+    
+    /* Убираем обычную тень, чтобы не конфликтовала со свечением */
+    box-shadow: none; 
+}
+/* 💡 ГРАДИЕНТ И СВЕЧЕНИЕ ДЛЯ OK СТАТУСА */
+.tag-card-small.status-ok {
+    /* Используем градиент от основного цвета к более темному варианту */
+    /* Предполагая, что #10B981 — это более темный зеленый (Emerald 600) */
+    background: linear-gradient(111deg, var(--color-status-ok), #05432e);
+    
+    /* СВЕЧЕНИЕ (Glow) */
+    /* rgba(52, 211, 153, 0.6) — это цвет var(--color-status-ok) с прозрачностью */
+    box-shadow: 
+        0 0 15px rgba(52, 211, 153, 0.6), /* Эффект сияния */
+        0 4px 6px rgba(0, 0, 0, 0.1);    /* Обычная тень для глубины */
+}
+
+/* 💡 ГРАДИЕНТ И СВЕЧЕНИЕ ДЛЯ ERROR СТАТУСА */
+.tag-card-small.status-error {
+    /* Используем градиент от основного цвета к более темному варианту */
+    /* Предполагая, что #DC2626 — это более темный красный (Red 600) */
+    background: linear-gradient(111deg, var(--color-status-error), #870b0b);
+    
+    /* СВЕЧЕНИЕ (Glow) */
+    /* rgba(248, 113, 113, 0.6) — это цвет var(--color-status-error) с прозрачностью */
+    box-shadow: 
+        0 0 15px rgba(248, 113, 113, 0.6), /* Эффект сияния */
+        0 4px 6px rgba(0, 0, 0, 0.1);     /* Обычная тень для глубины */
+}
+
+/* Стили текста внутри компактных карточек */
+/* Убедимся, что текст остается темным для контраста с ярким фоном */
+.tag-card-title-small {
+    font-size: 0.8em; 
+    color: var(--color-background-dark, #121212); /* Явный темный цвет */
+    opacity: 0.8;
+    margin-bottom: 2px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tag-card-value-small {
+    font-size: 1.1em; 
+    font-weight: bold;
+    color: var(--color-background-dark, #121212); /* Явный темный цвет */
+    line-height: 1.1;
+}
+
+.tag-card-unit-small {
+    font-size: 0.7em; 
+    color: var(--color-background-dark, #121212); /* Явный темный цвет */
+    opacity: 0.7;
+    margin-left: 3px;
+    font-weight: normal;
+}

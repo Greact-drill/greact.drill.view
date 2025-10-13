@@ -37,6 +37,9 @@
   -webkit-text-size-adjust: 100%;
   
   --topbar-height: 50px;
+
+  overflow-x: hidden; /* Добавляем и сюда для надежности */
+
 }
 
 a {
@@ -51,6 +54,7 @@ a:hover {
 body {
   margin: 0;
   min-width: 320px;
+  overflow-x: hidden;
 }
 
 body:has(.main-page) {

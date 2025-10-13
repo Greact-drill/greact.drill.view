@@ -7,7 +7,7 @@ class ApiClient {
   private isUsingFallback: boolean = false
 
   constructor() {
-    this.primaryUrl = import.meta.env.VITE_API_URL || 'http://pirates0k.vps-server.ru/cloud'
+    this.primaryUrl = import.meta.env.VITE_API_URL
     this.fallbackUrl = 'http://localhost:3000'
     
     // Создаем instance для основного URL

@@ -1,0 +1,68 @@
+/* src/components/ActionLogTable/ActionLogTable.css */
+
+/*
+ * --- Глобальные стили для контейнера таблицы ---
+ * Эти стили отвечают за внешний вид всей карточки с таблицей
+ */
+.action-log-table-custom {
+    /* Общий фон карточки */
+    background: var(--color-card-dark); 
+    border-radius: 16px;
+    /* Тень свечения, как у графика */
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.2); 
+    overflow: hidden; 
+}
+
+/*
+ * --- Стили для шапки таблицы (Thead) ---
+ */
+
+/* Фон и граница под шапкой */
+.action-log-table-custom .p-datatable-thead > tr {
+    background: rgba(147, 51, 234, 0.2); /* Темный фиолетовый фон */
+    border-bottom: 1px solid var(--color-accent-purple);
+}
+
+/* Фон ячеек заголовка */
+.action-log-table-custom .p-column-header {
+    background: rgba(147, 51, 234, 0.1); 
+    /* Лавандовый текст */
+    color: var(--color-accent-blue); 
+    font-weight: 600;
+    border: none;
+}
+
+
+/*
+ * --- Стили для тела таблицы (Tbody) ---
+ */
+
+/* Стиль ячеек тела */
+.action-log-table-custom .p-datatable-tbody > tr > td {
+    color: var(--color-text-light);
+    border-top: none; 
+    /* Тонкий разделитель между строками */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+    /* Важно: сброс фона, чтобы row: pt-style мог работать с полосами */
+    background-color: transparent !important; 
+}
+
+/* Стиль текста в шапке, где "Журнал действий персонала" */
+.action-log-table-custom .p-datatable-header {
+    background: transparent;
+    border: none;
+}
+
+/* Убираем рамку с внутреннего контейнера DataTable */
+.action-log-table-custom .p-datatable-wrapper {
+    border-radius: 16px;
+}
+
+/* 💡 НОВЫЕ/ПРОВЕРЕННЫЕ СТИЛИ ДЛЯ ПОЛОСАТЫХ СТРОК */
+.action-log-table-custom .row-even {
+    background-color: var(--color-card-dark) !important; /* Основной фон (четная) */
+}
+
+.action-log-table-custom .row-odd {
+    background-color: rgba(42, 26, 58, 0.5) !important; /* Более темный фон (нечетная) */
+}

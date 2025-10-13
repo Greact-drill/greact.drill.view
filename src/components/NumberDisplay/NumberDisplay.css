@@ -1,0 +1,36 @@
+.number-display-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  /* Фиксируем размер карточки для сетки */
+  width: 250px; 
+  height: 250px; 
+  padding: 20px;
+  
+  /* 🎨 Стили КАРТОЧКИ: Прозрачный фиолетовый фон */
+  background-color: rgba(31, 0, 58, 0.5); 
+  border: 1px solid rgba(175, 82, 237, 0.3); 
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(175, 82, 237, 0.3); 
+    
+  text-align: center;
+}
+
+.number-display-container:hover {
+  transform: translateY(-5px);
+}
+
+.number-display-label {
+  font-size: 1.1em; 
+  color: #FFFFFF; /* Белый цвет */
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.number-display-value {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #34D399; /* Яркий зеленый для значения */
+}

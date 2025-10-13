@@ -75,15 +75,6 @@ export default function TopBar() {
           </span>
         ))}
       </nav>
-      <div style={{ paddingTop: 6 }}>
-        <a
-          href="/tags"
-          onClick={(e) => { e.preventDefault(); navigate('/tags'); }}
-          style={{ color: '#0d6efd', textDecoration: 'none' }}
-        >
-          Теги
-        </a>
-      </div>
     </div>
   );
 }

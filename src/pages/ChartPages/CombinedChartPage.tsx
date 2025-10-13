@@ -1,21 +1,16 @@
-import { useEffect, useState } from "react";
-import "../App.css";
-import Chart from "../components/chart/Chart";
-import { getColorByIndex } from "../components/chart/utils/colors";
-import Controls from "../features/sensors/components/Controls";
-import { useSensorData } from "../features/sensors/hooks/useSensorData";
-import { useTags } from "../hooks/useTags";
-import { useThresholds } from "../hooks/useThresholds";
-import { useEdges } from "../hooks/useEdges";
-import { useEdgeBlocks, useBlockTags } from "../hooks/useBlocks";
-import Loader from "../components/Loader";
+import { useEffect, useState, useCallback } from "react";
+import CombinedChart from "../../components/CombinedChart";
+import Controls from "../../features/sensors/components/Controls";
+import { useSensorData } from "../../features/sensors/hooks/useSensorData";
+import { useTags } from "../../hooks/useTags";
+import { useThresholds } from "../../hooks/useThresholds";
+import { useEdges } from "../../hooks/useEdges";
+import { useEdgeBlocks, useBlockTags } from "../../hooks/useBlocks";
+import Loader from "../../components/Loader";
 
-interface TagLimits {
-  upperLimit: number;
-  lowerLimit: number;
-}
+type TagLimits = { upperLimit: number; lowerLimit: number };
 
-export default function SeparateChartsPage({
+export default function CombinedChartPage({
   mode,
   onChangeMode,
   selectedTags,
@@ -52,19 +47,12 @@ export default function SeparateChartsPage({
   const { tagNames, getTagNameMap, loading: tagsLoading } = useTags();
   const { getLimitsForTag, loading: thresholdsLoading } = useThresholds();
   const [tagLimits, setTagLimits] = useState<{ [tag: string]: TagLimits }>({});
-
   const { chartsData, loading: dataLoading } = useSensorData({
     selectedTags,
     startDate,
     endDate,
     interval,
   });
-
-  const [globalVerticalLine, setGlobalVerticalLine] = useState<{
-    visible: boolean;
-    x: number;
-    timestamp: string | null;
-  }>({ visible: false, x: 0, timestamp: null });
 
   // Определяем доступные теги в зависимости от выбранного блока
   const availableTags = selectedBlockName ? blockTags : tagNames;
@@ -90,7 +78,6 @@ export default function SeparateChartsPage({
   // Сбрасываем выбранные теги при смене блока
   useEffect(() => {
     if (selectedBlockName && blockTags.length > 0) {
-      // Оставляем только те теги, которые есть в текущем блоке
       const validTags = selectedTags.filter(tag => blockTags.includes(tag));
       if (validTags.length !== selectedTags.length) {
         onTagsChange(validTags);
@@ -98,18 +85,37 @@ export default function SeparateChartsPage({
     }
   }, [selectedBlockName, blockTags, selectedTags, onTagsChange]);
 
-  useEffect(() => {
-    selectedTags.forEach((tag) => {
-      setTagLimits((prev) => {
-        if (!prev[tag]) {
-          const limits = getLimitsForTag(tag);
-          return { ...prev, [tag]: limits };
-        }
-        return prev;
-      });
-    });
-  }, [selectedTags, getLimitsForTag]);
+  // Мемоизируем функцию получения лимитов для тега
+  const getLimitsForTagMemo = useCallback((tag: string) => {
+    return getLimitsForTag(tag);
+  }, [getLimitsForTag]);
 
+  // Обновляем лимиты только когда изменяются выбранные теги
+  useEffect(() => {
+    const newTagLimits: { [tag: string]: TagLimits } = {};
+    
+    selectedTags.forEach((tag) => {
+      if (!tagLimits[tag]) {
+        newTagLimits[tag] = getLimitsForTagMemo(tag);
+      } else {
+        newTagLimits[tag] = tagLimits[tag];
+      }
+    });
+    
+    // Обновляем состояние только если есть изменения
+    const hasChanges = Object.keys(newTagLimits).some(
+      tag => !tagLimits[tag] || 
+             tagLimits[tag].upperLimit !== newTagLimits[tag].upperLimit ||
+             tagLimits[tag].lowerLimit !== newTagLimits[tag].lowerLimit
+    );
+    
+    if (hasChanges) {
+      setTagLimits(newTagLimits);
+    }
+  }, [selectedTags, getLimitsForTagMemo, tagLimits]);
+
+  const allSorted = chartsData;
+  
   return (
     <div className="App" style={{ padding: "8px 16px 16px 16px" }}>
       <div style={{ borderBottom: "1px solid #e9ecef", marginBottom: 16 }}>
@@ -126,7 +132,7 @@ export default function SeparateChartsPage({
           tagNameMap={getTagNameMap()}
         />
       </div>
-      <div className="chart-panel">
+      <div className="chart-panel" style={{ position: "relative" }}>
         <div className="charts-switcher" style={{ marginBottom: 8 }}>
           <button
             className={`switch-btn${mode === "combined" ? " active" : ""}`}
@@ -147,62 +153,54 @@ export default function SeparateChartsPage({
             Одна плоскость
           </button>
         </div>
-
         {selectedTags.length === 0 ? (
           <div style={{ padding: 24, textAlign: "center", color: "#6c757d" }}>
             Выберите теги сенсоров
           </div>
-        ) : (dataLoading || tagsLoading || thresholdsLoading || edgesLoading || blocksLoading || blockTagsLoading) ? (
-          <Loader variant="inline" compact message="Загрузка данных..." />
         ) : (
+          (dataLoading || tagsLoading || thresholdsLoading || edgesLoading || blocksLoading || blockTagsLoading) && (
+            <Loader variant="inline" compact message="Загрузка данных..." />
+          )
+        )}
+        {!dataLoading && !tagsLoading && !thresholdsLoading && !edgesLoading && !blocksLoading && !blockTagsLoading && selectedTags.length > 0 && (
           <>
             <div className="chart-header">
               <div className="chart-info">
                 {selectedEdgeKey && selectedBlockName ? (
                   <>
                     Блок: {blocks.find(b => b.block_name === selectedBlockName)?.description || selectedBlockName} 
-                    ({selectedTags.length} графиков)
+                    ({selectedTags.length} тегов)
                   </>
                 ) : selectedEdgeKey ? (
                   <>
                     Буровая: {edges.find(e => e.key === selectedEdgeKey)?.name || selectedEdgeKey} 
-                    ({selectedTags.length} графиков)
+                    ({selectedTags.length} тегов)
                   </>
                 ) : (
-                  <>Выбрано графиков: {selectedTags.length}</>
+                  <>Выбрано тегов: {selectedTags.length}</>
                 )}
               </div>
             </div>
 
-            <div className="charts-container">
-              {selectedTags.map((tag, index) => {
-                const isLastChart = index === selectedTags.length - 1;
-                const data = chartsData[tag] || [];
-                const limits = tagLimits[tag] || getLimitsForTag(tag);
-                const color = getColorByIndex(index);
-
-                return (
-                  <div key={tag} className="chart-wrapper">
-                    <div className="chart-title-small">
-                      {getTagNameMap()[tag] || tag} ({data.length} точек)
-                    </div>
-
-                    <Chart
-                      data={data}
-                      upperLimit={limits.upperLimit}
-                      lowerLimit={limits.lowerLimit}
-                      showXAxis={isLastChart}
-                      height={300}
-                      allChartsData={chartsData}
-                      tagName={tag}
-                      color={color}
-                      globalVerticalLine={globalVerticalLine}
-                      setGlobalVerticalLine={setGlobalVerticalLine}
-                      tagNameMap={getTagNameMap()}
-                    />
-                  </div>
-                );
-              })}
+            <div className="chart-wrapper" style={{ padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "stretch", gap: 16 }}>
+                <div
+                  id="combined-chart-container"
+                  style={{ flex: 1, position: "relative" }}
+                >
+                  <CombinedChart
+                    series={selectedTags.map((tag) => ({
+                      tag,
+                      data: allSorted[tag] || [],
+                      upperLimit: tagLimits[tag]?.upperLimit ?? 50,
+                      lowerLimit: tagLimits[tag]?.lowerLimit ?? 10,
+                    }))}
+                    height={500}
+                    yMode={mode === "single" ? "shared" : "banded"}
+                    tagNameMap={getTagNameMap()}
+                  />
+                </div>
+              </div>
             </div>
           </>
         )}
