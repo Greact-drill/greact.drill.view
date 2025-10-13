@@ -11,16 +11,6 @@ import type { TagData, BypassDetail } from '../types/tag'; // Интерфейс
 import '../pages/BypassStatusPage/BypassStatusPage.css'; // Стили используем те же
 import BypassStatusBlock from './BypassStatusBlock/BypassStatusBlock'; // Блоки используем те же
 
-interface KtuWidgetConfig {
-    key: string;
-    type: 'gauge' | 'bar' | 'number';
-    label: string;
-    value: number;
-    max?: number;
-    unit: string;
-}
-// --- ФУНКЦИИ ТРАНСФОРМАЦИИ И ПРОВЕРКИ (остаются без изменений) ---
-
 /**
  * Проверяет, находится ли значение тега в "нормальном" диапазоне.
  */

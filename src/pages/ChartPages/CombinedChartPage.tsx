@@ -173,7 +173,7 @@ export default function CombinedChartPage({
                   </>
                 ) : selectedEdgeKey ? (
                   <>
-                    Буровая: {edges.find(e => e.key === selectedEdgeKey)?.name || selectedEdgeKey} 
+                    Буровая: {edges.find(e => e.id === selectedEdgeKey)?.name || selectedEdgeKey} 
                     ({selectedTags.length} тегов)
                   </>
                 ) : (

@@ -11,9 +11,6 @@ interface GaugeWidgetProps {
 }
 
 const GaugeWidget: React.FC<GaugeWidgetProps> = React.memo(({ label, value, max, unit = '' }) => {
-  // ... (логика percent остается прежней)
-  const clampedValue = Math.min(Math.max(value, 0), max);
-  const percent = max > 0 ? clampedValue / max : 0; 
   
   return (
     <div className="gauge-widget-container" style={{ 
