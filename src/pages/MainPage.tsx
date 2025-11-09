@@ -36,16 +36,58 @@ const SEGMENTS: { id: string; name: string; href: string; polygon: string }[] = 
 	{ 
 		id: "3",
 		name: "Циркуляционная система",
-		href: "/charts/separate",
+		href: "/",
 		polygon: "37.2% 68.1%, 45% 66.4%, 53.3% 68.7%, 53.3% 74.3%, 45.1% 76.8%, 44.9% 70.8%"
 	},
 	// Блок 4 — площадка у основания вышки
 	{ 
 		id: "4",
 		name: "Лебедочный блок",
-		href: "/charts/separate",
+		href: "/",
 		polygon: "41.5% 64.99%, 60.5% 60.9%, 73.5% 63.7%, 79.2% 64.8%, 84.5% 66%, 66.5% 71.5%"
 	},
+    {
+        id: "5",
+        name: "Состояние ПЧ",
+        href: "/",
+        polygon: ""
+    },
+    {
+        id: "6",
+        name: "СКПБ",
+        href: "/",
+        polygon: ""
+    },
+    {
+        id: "7",
+        name: "Действия бурильщика",
+        href: "/",
+        polygon: ""
+    },
+    {
+        id: "8",
+        name: "Аварии приводов",
+        href: "/",
+        polygon: ""
+    },
+    {
+        id: "9",
+        name: "Архив ТО",
+        href: "/",
+        polygon: ""
+    },
+    {
+        id: "10",
+        name: "Расход электроэнергии",
+        href: "/",
+        polygon: ""
+    },
+    {
+        id: "11",
+        name: "Видеонаблюдение",
+        href: "/",
+        polygon: ""
+    }
 ];
 
 const isTagValueOK = (tag: TagData): boolean => {
@@ -141,14 +183,14 @@ export default function MainPage() {
                         {blocks.length > 0 ? (
                             blocks.map((block, index) => (
                                 <button
-                                    key={block.block_name}
-                                    className={`seg-item ${hovered === block.block_name ? 'hovered' : ''}`}
-                                    onMouseEnter={() => setHovered(block.block_name)}
+                                    key={block.name}
+                                    className={`seg-item ${hovered === block.name ? 'hovered' : ''}`}
+                                    onMouseEnter={() => setHovered(block.name)}
                                     onMouseLeave={() => setHovered(null)}
-                                    onClick={() => navigate(`/charts?mode=separate&rig=${rigId}&block=${block.block_name}`)}
+                                    onClick={() => navigate(`/charts?mode=separate&rig=${rigId}&block=${block.name}`)}
                                 >
                                     <span className="seg-dot">{index + 1}</span>
-                                    {block.description || block.block_name}
+                                    {block.description || block.name}
                                 </button>
                             ))
                         ) : (
@@ -175,7 +217,7 @@ export default function MainPage() {
                             ))
                         )}
 						<button
-                            key="archive-data" 
+                            key="archive-data"
                             className="seg-item archive-button" 
                             onClick={() => {
                                 // Переходим на новый маршрут /rigs/:rigId/archive

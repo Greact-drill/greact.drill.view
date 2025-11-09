@@ -144,10 +144,6 @@ export default function KtuPage() {
         const widthClass = (config.type === 'gauge' || config.type === 'bar') 
                            ? 'widget-col-2' 
                            : 'widget-col-1';
-
-                           console.log(config.type);
-                           
-                           
         switch (config.type) {
             case 'gauge':
                 return (

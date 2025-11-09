@@ -31,10 +31,10 @@ interface MaintenanceRow {
 // --- ЗАГЛУШКА ДАННЫХ: Ежедневное ТО ---
 // Здесь в реальном приложении будет использован API-ответ для формирования этих данных
 const dailyMaintenanceDataStubs: MaintenanceRow[] = [
-    { device: 'Агрегат гидравлический_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Асдорбционный осушитель_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Буровая вышка', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Буровая лебёдка_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
+    { device: 'Агрегат гидравлический_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'success' },
+    { device: 'Асдорбционный осушитель_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'success' },
+    { device: 'Буровая вышка', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'warning' },
+    { device: 'Буровая лебёдка_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'warning' },
     { device: 'Буровой насос №1_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
     { device: 'Буровой насос №2_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
     { device: 'Вибросито №1_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
