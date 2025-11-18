@@ -101,6 +101,12 @@
     user-select: none !important;
 }
 
+.rig-status-image { 
+  width: 50%; 
+  height: auto; 
+  opacity: .95; 
+  animation: fadeInUp 0.2s ease both;
+}
 
 .rig-name {
     font-size: 1.5rem !important; 
@@ -174,12 +180,7 @@
 /* ------------------------------------------------------------------ */
 
 .rig-status-panel {
-    /* ... (Размеры, transition и overflow остаются прежними) ... */
-    
-    /* Установим максимально темный, однородный фон */
-    /* КОРРЕКЦИЯ: Глубокий, фиолетово-синий градиент */
-        /* КОРРЕКЦИЯ: Глубокий, ФИОЛЕТОВО-СИНИЙ ГРАДИЕНТ (Indigo/Violet) */
-        /* КОРРЕКЦИЯ: Глубокий, ФИОЛЕТОВО-СИНИЙ ПОЛУПРОЗРАЧНЫЙ ГРАДИЕНТ */
+
     background: linear-gradient(
         145deg, 
         /* Начинаем с яркого индиго (Indigo 600) с прозрачностью 0.95 */
@@ -188,8 +189,12 @@
         rgba(30, 41, 59, 0.95) 100% /* #1e293b в RGB: 30, 41, 59 */
     ) !important;
     
-        backdrop-filter: blur(8px); /* Размытие на 8 пикселей. Настройте по вкусу. */
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out;
+
+    backdrop-filter: blur(8px); /* Размытие на 8 пикселей. Настройте по вкусу. */
     -webkit-backdrop-filter: blur(8px); /* Для поддержки Safari */
+    right: 0;
 
     /* Усилим тень, чтобы панель выделялась */
     top: var(--topbar-height, 0); /* Начинаем от TopBar или от 0 */
@@ -217,7 +222,6 @@
     /* Добавляем внутренние стили для компоновки */
     display: flex;
     flex-direction: column;
-    position: relative; 
 }
 /* Класс, который добавляется при открытии панели */
 .rig-status-panel.open {
@@ -225,7 +229,9 @@
        но оставляем горизонтальный. */
     width: 500px !important; 
     padding: 20px !important; /* Общий padding для открытого состояния */
-    
+
+    transform: translateX(0) !important;
+
     /* Отступы, которые были в open, переместились в .rig-status-panel */
 }
 /* Стили для заголовка-ссылки (название буровой) */
@@ -304,4 +310,105 @@
 .tag-card-small.tag-card-bool .tag-card-value-small,
 .tag-card-small.tag-card-bool .tag-card-unit-small {
     display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Стили для кнопки перехода в подробную информацию */
+/* ------------------------------------------------------------------ */
+
+.rig-details-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    padding: 12px 24px !important;
+    margin-bottom: 25px !important;
+    
+    /* Полупрозрачный фон */
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    
+    /* Градиентная рамка */
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    
+    /* Текст */
+    color: var(--text-color, #f1f5f9) !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    
+    /* Анимации */
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    
+    /* Тень */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Цветовые варианты для статусов */
+.rig-details-button.ok {
+    border-color: rgba(52, 211, 153, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(52, 211, 153, 0.2) !important;
+}
+
+.rig-details-button.bad {
+    border-color: rgba(248, 113, 113, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2) !important;
+}
+
+/* Ховер-эффекты */
+.rig-details-button:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.rig-details-button.ok:hover {
+    box-shadow: 0 6px 20px rgba(52, 211, 153, 0.3) !important;
+}
+
+.rig-details-button.bad:hover {
+    box-shadow: 0 6px 20px rgba(248, 113, 113, 0.3) !important;
+}
+
+/* Активное состояние */
+.rig-details-button:active {
+    transform: translateY(0) !important;
+}
+
+/* Иконка стрелки */
+.rig-details-button .button-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.rig-details-button:hover .button-icon {
+    transform: translateX(3px);
+}
+
+/* Альтернатива: Градиентный фон для кнопки */
+.rig-details-button.gradient {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    ) !important;
+}
+
+.rig-details-button.ok.gradient {
+    background: linear-gradient(
+        135deg,
+        rgba(52, 211, 153, 0.2) 0%,
+        rgba(52, 211, 153, 0.05) 100%
+    ) !important;
+}
+
+.rig-details-button.bad.gradient {
+    background: linear-gradient(
+        135deg,
+        rgba(248, 113, 113, 0.2) 0%,
+        rgba(248, 113, 113, 0.05) 100%
+    ) !important;
 }

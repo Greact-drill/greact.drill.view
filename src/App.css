@@ -69,12 +69,6 @@
   margin-bottom: 4px; 
   animation: fadeInUp 0.2s ease both;
 }
-.rig-status-image { 
-  width: 60%; 
-  height: auto; 
-  opacity: .95; 
-  animation: fadeInUp 0.2s ease both;
-}
 .rig-status-title { 
   margin: 8px 0; 
   text-align: left; 
@@ -817,7 +811,6 @@ input[type="datetime-local"]::-ms-expand:hover {
   color: #212529;
   margin: 0 0 12px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e9ecef;
 }
 
 .status-items {
@@ -971,8 +964,6 @@ input[type="datetime-local"]::-ms-expand:hover {
   /* Новые стили для компоновки содержимого */
   display: flex;
   flex-direction: column;
-
-  position: relative; 
 }
 
 /* Класс, который добавляется при открытии панели */
