@@ -8,7 +8,7 @@ class ApiClient {
 
   constructor() {
     this.primaryUrl = import.meta.env.VITE_API_URL
-    this.fallbackUrl = 'http://localhost:3000'
+    this.fallbackUrl = 'https://test.backend.drill.greact.ru'
     
     // Создаем instance для основного URL
     this.currentInstance = this.createAxiosInstance(this.primaryUrl)
