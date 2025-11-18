@@ -8,6 +8,7 @@ import type { Edge, EdgeWithAttributes, EdgeAttribute, RawEdgeAttributes } from 
 import { transformRawAttributes } from "../../utils/edgeUtils";
 import { Button } from 'primereact/button'; // Добавляем импорт, если не был добавлен
 import './RigsListPage.css'; // <--- НОВЫЙ ИМПОРТ СТИЛЕЙ
+import '../../App.css';
 import videoMp4 from '../../assets/background.mp4'; // Обновите имя файла
 
 
@@ -128,9 +129,11 @@ export default function RigsListPage() {
                       </div>
                       <div className="rig-status-title">
                           {/* ЭТО КНОПКА ПЕРЕХОДА НА СЛЕДУЮЩУЮ СТРАНИЦУ */}
-                          <Link to={`/rigs/${currentRig.id}`} className={`rig-title-link${currentRig.ok ? " ok" : " bad"}`}>
+                          <Link 
+                              to={`/rigs/${currentRig.id}`} 
+                              className={`rig-details-button gradient${currentRig.ok ? " ok" : " bad"}`}
+                          >
                               {currentRig.name || `БУ №${currentRig.id}`}
-                              <i className="pi pi-arrow-right ml-2" />
                           </Link>
                       </div>
                       
@@ -145,7 +148,6 @@ export default function RigsListPage() {
               ) : (
                   // Состояние, когда буровая не выбрана
                   <div className="rig-status-placeholder">
-                      Выберите буровую для просмотра атрибутов
                   </div>
               )}
           </aside>
