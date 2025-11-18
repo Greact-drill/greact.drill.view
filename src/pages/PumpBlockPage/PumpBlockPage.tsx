@@ -168,8 +168,12 @@ export default function PumpBlockPage() {
                 return typeA - typeB; // Сначала Gauges/Bars (широкие), потом остальные
             }
 
-            // 2. Если типы одинаковые, сортируем по имени для стабильного порядка
-            return a.name.localeCompare(b.name);
+            // 2. Безопасная сортировка по имени
+            const nameA = a.name || ''; // fallback для пустого имени
+            const nameB = b.name || '';
+
+            // Если типы одинаковые, сортируем по имени для стабильного порядка
+            return nameA.localeCompare(nameB);
         });
 
         // ШАГ 3: ТРАНСФОРМАЦИЯ

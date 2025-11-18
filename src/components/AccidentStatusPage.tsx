@@ -80,10 +80,12 @@ export default function AccidentStatusPage() {
         const filteredTags = tagData.filter(isAccidentTag);
         
         // ШАГ 2: СОРТИРОВКА для стабильности порядка (по названию)
-        const sortedTags = [...filteredTags].sort((a, b) => 
-            a.name.localeCompare(b.name)
-        );
-        
+        const sortedTags = [...filteredTags].sort((a, b) => {
+            const nameA = a.name || '';
+            const nameB = b.name || '';
+            return nameA.localeCompare(nameB);
+        });
+
         // ШАГ 3: ТРАНСФОРМАЦИЯ
         return sortedTags.map(transformTagToDetail);
         

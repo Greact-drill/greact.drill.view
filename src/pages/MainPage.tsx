@@ -125,9 +125,12 @@ export default function MainPage() {
 
 	const sortedTagData = useMemo(() => {
         if (!tagData) return null;
-        // Создаем копию массива, чтобы не мутировать исходный (если useTagsData еще не сортирует)
-        // Если useTagsData уже сортирует, эта строка просто копирует отсортированный массив
-        return [...tagData].sort((a: TagData, b: TagData) => a.name.localeCompare(b.name));
+        
+        return [...tagData].sort((a: TagData, b: TagData) => {
+            const nameA = a.name || '';
+            const nameB = b.name || '';
+            return nameA.localeCompare(nameB);
+        });
     }, [tagData]);
 
     // Используем useMemo для определения статуса каждого сегмента
