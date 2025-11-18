@@ -130,8 +130,8 @@ export default function KtuPage() {
             }
 
             // 2. Безопасная сортировка по имени
-            const nameA = a.name || ''; // fallback для пустого имени
-            const nameB = b.name || '';
+            const nameA = a.name || a.tag || ''; // fallback для пустого имени
+            const nameB = b.name || b.tag || '';
 
             // Если типы одинаковые, сортируем по имени для стабильного порядка
             return nameA.localeCompare(nameB);

@@ -81,8 +81,8 @@ export default function AccidentStatusPage() {
         
         // ШАГ 2: СОРТИРОВКА для стабильности порядка (по названию)
         const sortedTags = [...filteredTags].sort((a, b) => {
-            const nameA = a.name || '';
-            const nameB = b.name || '';
+            const nameA = a.name || a.tag || '';
+            const nameB = b.name || b.tag || '';
             return nameA.localeCompare(nameB);
         });
 

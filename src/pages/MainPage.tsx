@@ -127,8 +127,8 @@ export default function MainPage() {
         if (!tagData) return null;
         
         return [...tagData].sort((a: TagData, b: TagData) => {
-            const nameA = a.name || '';
-            const nameB = b.name || '';
+            const nameA = a.name || a.tag || '';
+            const nameB = b.name || b.tag || '';
             return nameA.localeCompare(nameB);
         });
     }, [tagData]);
@@ -326,11 +326,11 @@ export default function MainPage() {
 
                                     return (
                                         <div 
-                                            key={tag.name} 
+                                            key={tag.name || tag.tag} 
                                             // Добавляем класс-модификатор для булевых тегов
                                             className={`tag-card-small ${statusClass} ${isBooleanTag ? 'tag-card-bool' : ''}`}
                                         >
-                                            <div className="tag-card-title-small">{tag.name}</div>
+                                            <div className="tag-card-title-small">{tag.name || tag.tag}</div>
                                             
                                             {/* 💡 УСЛОВНОЕ ОТОБРАЖЕНИЕ: Рендерим значение только для не-булевых тегов */}
                                             {!isBooleanTag && (
