@@ -9,7 +9,15 @@ import GaugeWidget from '../../components/Gauge/GaugeWidget.tsx';
 import NumberDisplay from '../../components/NumberDisplay/NumberDisplay.tsx'; 
 import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBlock.tsx';
 
-// 1. Определяем стабильную структуру для мемоизации
+// Интерфейс для конфигурации виджета из JSON
+interface WidgetConfig {
+    page: 'KTU' | 'PUMPBLOCK';
+    widgetType: 'gauge' | 'bar' | 'number' | 'status';
+    position: { x: number; y: number };
+    customLabel?: string;
+}
+
+// Обновленная структура для мемоизации
 interface KtuWidgetConfig {
     key: string;
     type: 'gauge' | 'bar' | 'number' | 'status'; 
@@ -18,44 +26,66 @@ interface KtuWidgetConfig {
     max: number;
     unit: string;
     isOK?: boolean; 
+    position: { x: number; y: number };
 }
 
-const findCustomizationKey = (tag: TagData, key: string): boolean => {
-    return tag.customization?.some(item => 
-        item.key === key && item.value === 'true'
-    ) ?? false;
+// Функция для получения конфигурации виджета из кастомизации
+const findWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): WidgetConfig | null => {
+    const configCustom = tag.customization?.find(item => item.key === 'widgetConfig');
+    
+    console.log(`Поиск конфига для тега ${tag.tag}:`, {
+        hasCustomization: !!tag.customization,
+        configCustom,
+        page
+    });
+    
+    if (configCustom) {
+        try {
+            const config: WidgetConfig = JSON.parse(configCustom.value);
+            console.log(`Успешно распарсен конфиг для тега ${tag.tag}:`, config);
+            
+            if (config.page === page) {
+                console.log(`Конфиг подходит для страницы ${page}`);
+                return config;
+            } else {
+                console.log(`Конфиг для другой страницы: ${config.page}, ожидалась: ${page}`);
+            }
+        } catch (error) {
+            console.error('Ошибка парсинга конфига виджета:', error, 'Строка:', configCustom.value);
+        }
+    } else {
+        console.log(`Для тега ${tag.tag} не найден widgetConfig`);
+    }
+    return null;
 };
 
 const isTagValueOK = (tag: TagData): boolean => {
     const { value, min, max, unit_of_measurement } = tag;
 
     if (unit_of_measurement !== 'bool' && typeof value === 'number') {
-        // Для числовых тегов: норма, если в диапазоне [min, max]
         return value >= min && value <= max;
     }
 
     const isStatusTag = unit_of_measurement === 'bool' || tag.customization?.some(c => c.key === 'isStatus');
-    // Для статусов: True/1 = OK
     if (isStatusTag) {
         return value === 1 || value === true;
     }
-    return true; // По умолчанию считаем ОК
+    return true;
 };
 
-const transformTagToWidgetConfig = (tag: TagData): KtuWidgetConfig => {
-    const type = findCustomizationKey(tag, 'isGauge') ? 'gauge' :
-                 findCustomizationKey(tag, 'isStatus') ? 'status' :
-                 findCustomizationKey(tag, 'isVerticalBar') ? 'bar' :
-                 'number';
+const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): KtuWidgetConfig | null => {
+    const config = findWidgetConfig(tag, page);
+    if (!config) return null;
 
     return {
-        key: tag.tag,
-        type: type as KtuWidgetConfig['type'],
-        label: tag.name,
+        key: `${tag.tag}-${page}`,
+        type: config.widgetType,
+        label: config.customLabel || tag.comment || tag.name,
         value: tag.value,
         max: tag.max,
         unit: tag.unit_of_measurement || '',
         isOK: isTagValueOK(tag),
+        position: config.position
     };
 };
 
@@ -63,95 +93,70 @@ export default function KtuPage() {
     const navigate = useNavigate();
     const { tagData, error } = useTagsData(); 
 
-        const ktuWidgetConfigs: KtuWidgetConfig[] = useMemo(() => {
-            if (!tagData) return [];
-            
-            const configs: KtuWidgetConfig[] = [];
+    const ktuWidgetConfigs: KtuWidgetConfig[] = useMemo(() => {
+        console.log('Начало обработки tagData:', tagData);
+        
+        if (!tagData) {
+            console.log('tagData пустой или undefined');
+            return [];
+        }
+        
+        // Фильтруем теги, у которых есть конфигурация для страницы КТУ
+        const widgetConfigs = tagData
+            .map(tag => transformTagToWidgetConfig(tag, 'KTU'))
+            .filter((config): config is KtuWidgetConfig => config !== null);
 
-            for (const tag of tagData) {
-                
-                const numericValue = typeof tag.value === 'number' ? tag.value : null;
-                const key = tag.name;
-                const label = tag.comment || tag.name;
-                const unit = tag.unit_of_measurement || '';
-                const max = tag.max ?? 100;
-                
-                let config: KtuWidgetConfig | null = null;
+        console.log('Найдено виджетов для KTU:', widgetConfigs.length, widgetConfigs);
 
-                // 4. Status Display (key=isDisplayBlock)
-                if (findCustomizationKey(tag, 'isDisplayBlock')) { 
-                    const isOK = isTagValueOK(tag);
-                    // Форматируем значение: 'В НОРМЕ' или 'ОТКЛ.', если это boolean/0/1
-                    const displayValue = tag.value === true || tag.value === 1 
-                                        ? 'В НОРМЕ' 
-                                        : tag.value === false || tag.value === 0
-                                        ? 'ОТКЛ.'
-                                        : tag.value.toString();
-                    
-                    config = { key, type: 'status', label, value: displayValue, max: 0, unit: '', isOK };
-
-                } 
-                // 1. Gauge Chart (key=isGauge)
-                else if (findCustomizationKey(tag, 'isGauge')) { 
-                    if (numericValue !== null) {
-                        config = { key, type: 'gauge', label, value: numericValue, max, unit, isOK: true };
-                    }
-                } 
-                // 2. Vertical Bar (key=isVerticalBar)
-                else if (findCustomizationKey(tag, 'isVerticalBar')) { 
-                    if (numericValue !== null) {
-                        config = { key, type: 'bar', label, value: numericValue, max, unit, isOK: true };
-                    }
-                } 
-                // 3. Number Display (key=isNumber)
-                else if (findCustomizationKey(tag, 'isNumber')) { 
-                    const val = numericValue !== null ? numericValue : 'Нет данных';
-                    config = { key, type: 'number', label, value: val, max: 0, unit: '' };
-                }
-                
-                if (config) {
-                    configs.push(config);
-                }
-            }
-
-        const filteredTags = tagData.filter(tag => 
-            tag.customization?.some(c => c.key === 'KTU' && c.value === 'true')
-        );
-
-        // 2. Группируем: сначала все манометры/гистограммы, потом статусы/числа
-        const sortedTags = filteredTags.sort((a, b) => {
-            // 1. Сортировка по типу: Gauge/Bar (0) должны идти раньше, чем Status/Number (1)
-            // Здесь a и b гарантированно имеют тип TagData
-            const typeA = findCustomizationKey(a, 'isGauge') || findCustomizationKey(a, 'isBar') ? 0 : 1;
-            const typeB = findCustomizationKey(b, 'isGauge') || findCustomizationKey(b, 'isBar') ? 0 : 1;
+        // Сортируем: сначала широкие виджеты (gauge, bar), потом компактные
+        const sorted = widgetConfigs.sort((a, b) => {
+            const typeA = (a.type === 'gauge' || a.type === 'bar') ? 0 : 1;
+            const typeB = (b.type === 'gauge' || b.type === 'bar') ? 0 : 1;
             
             if (typeA !== typeB) {
-                return typeA - typeB; // Сначала Gauges/Bars (широкие), потом остальные
+                return typeA - typeB;
             }
-
-            // 2. Безопасная сортировка по имени
-            const nameA = a.name || a.tag || ''; // fallback для пустого имени
-            const nameB = b.name || b.tag || '';
-
-            // Если типы одинаковые, сортируем по имени для стабильного порядка
-            return nameA.localeCompare(nameB);
+            return a.label.localeCompare(b.label);
         });
 
-        return sortedTags.map(transformTagToWidgetConfig);
+        console.log('Отсортированные виджеты:', sorted);
+        return sorted;
         
     }, [tagData]); 
 
     const renderWidget = (config: KtuWidgetConfig) => {
-        
-        // Определяем класс ширины в зависимости от типа виджета
-        // Gauge и Bar - широкие (2 колонки), остальные - компактные (1 колонка)
-        const widthClass = (config.type === 'gauge' || config.type === 'bar') 
-                           ? 'widget-col-2' 
-                           : 'widget-col-1';
+    console.log('🖼️ Рендер виджета:', config);
+    
+    // Определяем размеры виджета в зависимости от типа
+    const getWidgetDimensions = () => {
         switch (config.type) {
             case 'gauge':
-                return (
-                    <div className={widthClass} key={config.key}>
+                return { width: 250, height: 250 };
+            case 'bar':
+                return { width: 250, height: 500 };
+            case 'number':
+            case 'status':
+            default:
+                return { width: 250, height: 250 };
+        }
+    };
+
+    const dimensions = getWidgetDimensions();
+    
+    // Стиль для абсолютного позиционирования с учетом размеров
+    const positionStyle = {
+        position: 'absolute' as const,
+        left: `${config.position.x}px`,
+        top: `${config.position.y}px`,
+        width: `${dimensions.width}px`,
+        height: `${dimensions.height}px`,
+        zIndex: 10
+    };
+
+    const widgetContent = (() => {
+            switch (config.type) {
+                case 'gauge':
+                    return (
                         <GaugeWidget 
                             key={config.key} 
                             label={config.label} 
@@ -159,72 +164,99 @@ export default function KtuPage() {
                             max={config.max} 
                             unit={config.unit} 
                         />
-                    </div>
-                );
-            case 'bar':
-                return (
-                    <div className={widthClass} key={config.key}>
+                    );
+                case 'bar':
+                    return (
                         <VerticalBar
                             key={config.key} 
                             label={config.label} 
                             value={config.value as number} 
                             max={config.max} 
                         />
-                    </div>
-                );
-            case 'number':
-                const displayValue = `${config.value}${config.unit ? ` ${config.unit}` : ''}`;
-                return (
-                    <div className={widthClass} key={config.key}>
+                    );
+                case 'number':
+                    const displayValue = `${config.value}${config.unit ? ` ${config.unit}` : ''}`;
+                    return (
                         <NumberDisplay 
                             key={config.key} 
                             label={config.label} 
                             value={displayValue} 
                         />
-                    </div>
-                );
-            case 'status':
-                return (
-                    <div className={widthClass} key={config.key}>
+                    );
+                case 'status':
+                    return (
                         <BypassStatusBlock 
                             key={config.key} 
                             label={config.label} 
                             value={config.value as string} 
                             isOK={config.isOK ?? false} 
                         />
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
-    if (error || !tagData) {
-        return <div className="error-message">Ошибка загрузки: {error || 'Нет данных для отображения.'}</div>;
-    }
+                    );
+                default:
+                    console.warn('❌ Неизвестный тип виджета:', config.type);
+                    return null;
+            }
+        })();
 
         return (
+            <div 
+                className={`positioned-widget widget-${config.type}`} 
+                key={config.key}
+                style={positionStyle}
+                data-widget-type={config.type}
+                data-position-x={config.position.x}
+                data-position-y={config.position.y}
+            >
+                {widgetContent}
+            </div>
+        );
+    };
+
+    if (error) {
+        console.error('Ошибка загрузки данных:', error);
+        return <div className="error-message">Ошибка загрузки: {error}</div>;
+    }
+
+    if (!tagData) {
+        console.log('Данные тегов не загружены');
+        return <div className="error-message">Загрузка данных...</div>;
+    }
+
+    return (
         <div className="ktu-page-container">
             <div className="ktu-page-inner">
-                    <div className="bypass-controls-header">
-                        <Button 
-                            icon="pi pi-arrow-left"
-                            label="Назад"
-                            severity="secondary"
-                            onClick={() => {
-                                navigate(-1); 
-                            }} 
-                            className="mb-4 back-button-custom"
-                        />
+                <div className="bypass-controls-header">
+                    <Button 
+                        icon="pi pi-arrow-left"
+                        label="Назад"
+                        severity="secondary"
+                        onClick={() => {
+                            navigate(-1); 
+                        }} 
+                        className="mb-4 back-button-custom"
+                    />
+                </div>
+                <div className="bypass-content-block">
+                    <h1 className="ktu-blocks-title">
+                        Параметры КТУ
+                    </h1>
+                    <div className="ktu-blocks-grid positioned-grid">
+                        {ktuWidgetConfigs.map(renderWidget)}
+                        {ktuWidgetConfigs.length === 0 && (
+                            <div className="empty-grid-message">
+                                <i className="pi pi-inbox" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                                <p>Нет настроенных виджетов для КТУ</p>
+                                <p className="text-sm">Настройте виджеты в админ-панели</p>
+                                <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#888' }}>
+                                    <p>Отладочная информация:</p>
+                                    <p>Тегов загружено: {tagData.length}</p>
+                                    <p>Теги с кастомизацией: {tagData.filter(t => t.customization && t.customization.length > 0).length}</p>
+                                    <p>Теги с widgetConfig: {tagData.filter(t => t.customization?.some(c => c.key === 'widgetConfig')).length}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <div className="bypass-content-block">
-                        <h1 className="ktu-blocks-title">
-                            Параметры КТУ
-                        </h1>
-                        <div className="ktu-blocks-grid">
-                            {ktuWidgetConfigs.map(renderWidget)} 
-                        </div>
-                    </div>
+                </div>
             </div>
         </div>
     );

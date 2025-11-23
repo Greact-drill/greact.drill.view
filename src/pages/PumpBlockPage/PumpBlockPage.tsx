@@ -1,17 +1,21 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { Button } from 'primereact/button';
-
 import { useTagsData } from '../../hooks/useTagsData.ts'; 
 import type { TagData } from '../../types/tag.ts'; 
-
 import '../KtuPage/KtuPage.css'; 
-
 import VerticalBar from '../../components/VerticalBar/VerticalBar.tsx'; 
 import GaugeWidget from '../../components/Gauge/GaugeWidget.tsx'; 
 import NumberDisplay from '../../components/NumberDisplay/NumberDisplay.tsx'; 
 import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBlock.tsx';
+
+// Интерфейс для конфигурации виджета из JSON
+interface WidgetConfig {
+    page: 'KTU' | 'PUMPBLOCK';
+    widgetType: 'gauge' | 'bar' | 'number' | 'status';
+    position: { x: number; y: number };
+    customLabel?: string;
+}
 
 interface PumpBlockWidgetConfig {
     key: string;
@@ -21,20 +25,25 @@ interface PumpBlockWidgetConfig {
     max: number;
     unit: string;
     isOK?: boolean; 
+    position: { x: number; y: number };
 }
 
-/**
- * Ищет кастомизационный ключ в теге и проверяет его значение на 'true'.
- */
-const findCustomizationKey = (tag: TagData, key: string): boolean => {
-    return tag.customization?.some(item => 
-        item.key === key && item.value === 'true'
-    ) ?? false;
+// Функция для получения конфигурации виджета из кастомизации
+const findWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): WidgetConfig | null => {
+    const configCustom = tag.customization?.find(item => item.key === 'widgetConfig');
+    if (configCustom) {
+        try {
+            const config: WidgetConfig = JSON.parse(configCustom.value);
+            if (config.page === page) {
+                return config;
+            }
+        } catch (error) {
+            console.error('Ошибка парсинга конфига виджета:', error);
+        }
+    }
+    return null;
 };
 
-/**
- * Проверяет, находится ли значение тега в "нормальном" диапазоне (OK).
- */
 const isTagValueOK = (tag: TagData): boolean => {
     const { value, min, max, unit_of_measurement } = tag;
 
@@ -53,23 +62,19 @@ const isTagValueOK = (tag: TagData): boolean => {
     return true;
 };
 
-/**
- * Преобразует TagData в PumpBlockWidgetConfig.
- */
-const transformTagToWidgetConfig = (tag: TagData): PumpBlockWidgetConfig => {
-    const type = findCustomizationKey(tag, 'isGauge') ? 'gauge' :
-                 findCustomizationKey(tag, 'isStatus') ? 'status' :
-                 findCustomizationKey(tag, 'isVerticalBar') ? 'bar' :
-                 'number';
+const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): PumpBlockWidgetConfig | null => {
+    const config = findWidgetConfig(tag, page);
+    if (!config) return null;
 
     return {
         key: tag.tag,
-        type: type as PumpBlockWidgetConfig['type'],
-        label: tag.name,
+        type: config.widgetType,
+        label: config.customLabel || tag.comment || tag.name,
         value: tag.value,
         max: tag.max,
         unit: tag.unit_of_measurement || '',
         isOK: isTagValueOK(tag),
+        position: config.position
     };
 };
 
@@ -77,152 +82,96 @@ export default function PumpBlockPage() {
     const navigate = useNavigate();
     const { tagData, error } = useTagsData(); 
 
-    // const pumpBlockWidgetConfigs: PumpBlockWidgetConfig[] = useMemo(() => {
-    //     if (!tagData) return [];
-
-    //     const filteredTags = tagData.filter(tag => 
-    //         findCustomizationKey(tag, 'PUMPBLOCK')
-    //     );
-
-    //     // Преобразование данных тегов в конфигурацию виджетов
-    //     const configs: PumpBlockWidgetConfig[] = filteredTags.map(tag => {
-    //         const label = tag.comment || tag.name;
-    //         const unit = tag.unit_of_measurement || '';
-    //         const isOK = isTagValueOK(tag);
-    //         const key = tag.name;
-
-    //         const numericValue = typeof tag.value === 'number' ? tag.value : (tag.value === true ? 1 : (tag.value === false ? 0 : 0));
-            
-    //         if (findCustomizationKey(tag, 'isDisplayBlock')) {
-    //              const statusValue = typeof tag.value === 'boolean' 
-    //                 ? (tag.value ? 'Работает' : 'Не работает') 
-    //                 : String(tag.value);
-
-    //             return {
-    //                 key,
-    //                 type: 'status',
-    //                 label,
-    //                 value: statusValue,
-    //                 max: 1, // Не используется
-    //                 unit: '', // Не используется
-    //                 isOK,
-    //             };
-    //         }
-            
-    //         if (findCustomizationKey(tag, 'isVerticalBar')) {
-    //             return {
-    //                 key,
-    //                 type: 'bar',
-    //                 label,
-    //                 value: numericValue,
-    //                 max: tag.max,
-    //                 unit,
-    //             };
-    //         }
-            
-    //         if (findCustomizationKey(tag, 'isGauge')) {
-    //             return {
-    //                 key,
-    //                 type: 'gauge',
-    //                 label,
-    //                 value: numericValue,
-    //                 max: tag.max,
-    //                 unit,
-    //             };
-    //         }
-
-    //         if (findCustomizationKey(tag, 'isNumber')) {
-    //             return {
-    //                 key,
-    //                 type: 'number',
-    //                 label,
-    //                 value: numericValue.toFixed(2),
-    //                 max: tag.max, // Не используется
-    //                 unit,
-    //             };
-    //         }
-
-    //         // Игнорируем теги, которые не имеют настройки виджета
-    //         return null;
-    //     }).filter(item => item !== null) as PumpBlockWidgetConfig[];
-        
-    //     return configs.sort((a, b) => a.label.localeCompare(b.label));
-
-    // }, [tagData]);
-
     const pumpBlockWidgetConfigs: PumpBlockWidgetConfig[] = useMemo(() => {
         if (!tagData) return [];
 
-        const filteredTags = tagData.filter(tag => 
-            tag.customization?.some(c => c.key === 'PUMPBLOCK' && c.value === 'true')
-        );
-        
-        // 💡 ИСПРАВЛЕНИЕ: Комбинированная сортировка на массиве TagData
-        const sortedTags = filteredTags.sort((a, b) => {
-            // 1. Сортировка по типу: Gauge/Bar (0) должны идти раньше, чем Status/Number (1)
-            // Здесь a и b гарантированно имеют тип TagData, что исключает ошибку
-            const typeA = findCustomizationKey(a, 'isGauge') || findCustomizationKey(a, 'isBar') ? 0 : 1;
-            const typeB = findCustomizationKey(b, 'isGauge') || findCustomizationKey(b, 'isBar') ? 0 : 1;
+        // Фильтруем теги, у которых есть конфигурация для страницы Насосного блока
+        const widgetConfigs = tagData
+            .map(tag => transformTagToWidgetConfig(tag, 'PUMPBLOCK'))
+            .filter((config): config is PumpBlockWidgetConfig => config !== null);
+
+        // Сортируем: сначала широкие виджеты (gauge, bar), потом компактные
+        return widgetConfigs.sort((a, b) => {
+            const typeA = (a.type === 'gauge' || a.type === 'bar') ? 0 : 1;
+            const typeB = (b.type === 'gauge' || b.type === 'bar') ? 0 : 1;
             
             if (typeA !== typeB) {
                 return typeA - typeB; // Сначала Gauges/Bars (широкие), потом остальные
             }
 
-            // 2. Безопасная сортировка по имени
-            const nameA = a.name || a.tag || ''; // fallback для пустого имени
-            const nameB = b.name || b.tag || '';
-
-            // Если типы одинаковые, сортируем по имени для стабильного порядка
-            return nameA.localeCompare(nameB);
+            // Если типы одинаковые, сортируем по метке для стабильного порядка
+            return a.label.localeCompare(b.label);
         });
-
-        // ШАГ 3: ТРАНСФОРМАЦИЯ
-        return sortedTags.map(transformTagToWidgetConfig);
         
     }, [tagData]);
 
     const renderWidget = (config: PumpBlockWidgetConfig) => {
-        switch (config.type) {
-            case 'status':
-                return (
-                    <BypassStatusBlock 
-                        key={config.key} 
-                        label={config.label} 
-                        value={config.value as string} 
-                        isOK={config.isOK ?? false} 
-                    />
-                );
-            case 'gauge':
-                return (
-                    <GaugeWidget 
-                        key={config.key} 
-                        label={config.label} 
-                        value={config.value as number} 
-                        max={config.max} 
-                        unit={config.unit}
-                    />
-                );
-            case 'bar':
-                return (
-                    <VerticalBar 
-                        key={config.key} 
-                        label={config.label} 
-                        value={config.value as number} 
-                        max={config.max} 
-                    />
-                );
-            case 'number':
-                const displayValue = `${config.value}${config.unit ? ` ${config.unit}` : ''}`;
-                return (
-                    <NumberDisplay 
-                        key={config.key} 
-                        label={config.label} 
-                        value={displayValue} 
-                    />
-                );
-            default:
-                return null;
-        }
+        // Определяем класс ширины в зависимости от типа виджета
+        const widthClass = (config.type === 'gauge' || config.type === 'bar') 
+                           ? 'widget-col-2' 
+                           : 'widget-col-1';
+        
+        // Стиль для абсолютного позиционирования
+        const positionStyle = {
+            position: 'absolute' as const,
+            left: `${config.position.x}px`,
+            top: `${config.position.y}px`,
+            zIndex: 10
+        };
+
+        const widgetContent = (() => {
+            switch (config.type) {
+                case 'status':
+                    return (
+                        <BypassStatusBlock 
+                            key={config.key} 
+                            label={config.label} 
+                            value={config.value as string} 
+                            isOK={config.isOK ?? false} 
+                        />
+                    );
+                case 'gauge':
+                    return (
+                        <GaugeWidget 
+                            key={config.key} 
+                            label={config.label} 
+                            value={config.value as number} 
+                            max={config.max} 
+                            unit={config.unit}
+                        />
+                    );
+                case 'bar':
+                    return (
+                        <VerticalBar 
+                            key={config.key} 
+                            label={config.label} 
+                            value={config.value as number} 
+                            max={config.max} 
+                        />
+                    );
+                case 'number':
+                    const displayValue = `${config.value}${config.unit ? ` ${config.unit}` : ''}`;
+                    return (
+                        <NumberDisplay 
+                            key={config.key} 
+                            label={config.label} 
+                            value={displayValue} 
+                        />
+                    );
+                default:
+                    return null;
+            }
+        })();
+
+        return (
+            <div 
+                className={`positioned-widget ${widthClass}`} 
+                key={config.key}
+                style={positionStyle}
+            >
+                {widgetContent}
+            </div>
+        );
     };
 
     if (error || !tagData) {
@@ -232,27 +181,33 @@ export default function PumpBlockPage() {
     return (
         <div className="ktu-page-container">
             <div className="ktu-page-inner">
-                    
-                    <div className="bypass-controls-header">
-                        <Button 
-                            icon="pi pi-arrow-left"
-                            label="Назад"
-                            severity="secondary"
-                            onClick={() => {
-                                navigate(-1); 
-                            }} 
-                            className="mb-4 back-button-custom"
-                        />
-                    </div>
+                <div className="bypass-controls-header">
+                    <Button 
+                        icon="pi pi-arrow-left"
+                        label="Назад"
+                        severity="secondary"
+                        onClick={() => {
+                            navigate(-1); 
+                        }} 
+                        className="mb-4 back-button-custom"
+                    />
+                </div>
 
-                    <div className="bypass-content-block">
-                        <h1 className="ktu-blocks-title">
-                            Параметры Насосного блока
-                        </h1>
-                        <div className="ktu-blocks-grid">
-                            {pumpBlockWidgetConfigs.map(renderWidget)} 
-                        </div>
+                <div className="bypass-content-block">
+                    <h1 className="ktu-blocks-title">
+                        Параметры Насосного блока
+                    </h1>
+                    <div className="ktu-blocks-grid positioned-grid">
+                        {pumpBlockWidgetConfigs.map(renderWidget)}
+                        {pumpBlockWidgetConfigs.length === 0 && (
+                            <div className="empty-grid-message">
+                                <i className="pi pi-inbox" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                                <p>Нет настроенных виджетов для Насосного блока</p>
+                                <p className="text-sm">Настройте виджеты в админ-панели</p>
+                            </div>
+                        )}
                     </div>
+                </div>
             </div>
         </div>
     );
