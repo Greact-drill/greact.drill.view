@@ -205,10 +205,6 @@ export default function KtuPage() {
         return <div className="error-message">Ошибка загрузки: {error}</div>;
     }
 
-    if (!tagData) {
-        return <div className="error-message">Загрузка данных...</div>;
-    }
-
     return (
         <div className="ktu-page-container">
             <div className="ktu-page-inner">
@@ -234,12 +230,6 @@ export default function KtuPage() {
                                 <i className="pi pi-inbox" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
                                 <p>Нет настроенных виджетов для КТУ</p>
                                 <p className="text-sm">Настройте виджеты в админ-панели</p>
-                                <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#888' }}>
-                                    <p>Отладочная информация:</p>
-                                    <p>Тегов загружено: {tagData.length}</p>
-                                    <p>Теги с кастомизацией: {tagData.filter(t => t.customization && t.customization.length > 0).length}</p>
-                                    <p>Теги с widgetConfig: {tagData.filter(t => t.customization?.some(c => c.key === 'widgetConfig')).length}</p>
-                                </div>
                             </div>
                         )}
                     </div>
