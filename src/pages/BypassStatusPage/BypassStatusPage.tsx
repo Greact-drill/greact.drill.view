@@ -4,7 +4,7 @@ import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { useTagsData } from '../../hooks/useTagsData';
 import type { TagData, BypassDetail } from '../../types/tag'; 
-import { useNavigate } from 'react-router-dom'; 
+import { useParams, useNavigate } from 'react-router-dom'; 
 
 import './BypassStatusPage.css';
 import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBlock';
@@ -12,8 +12,12 @@ import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBl
 export default function BypassStatusPage() {
 
     const navigate = useNavigate();
+    const params = useParams();
+    const rigId = params.rigId;
+    // Используем rigId как edge_key для получения данных
+    const edgeKey = `${rigId}`;
 
-    const { tagData } = useTagsData(); 
+    const { tagData} = useTagsData(edgeKey);
 
     /**
      * Проверяет, находится ли значение тега в "нормальном" диапазоне.
