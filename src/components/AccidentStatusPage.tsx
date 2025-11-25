@@ -1,7 +1,7 @@
 // src/pages/AccidentStatusPage.tsx
 
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
@@ -69,7 +69,12 @@ const isAccidentTag = (tag: TagData): boolean => {
 
 export default function AccidentStatusPage() {
     const navigate = useNavigate();
-    const { tagData, error } = useTagsData(); 
+    const params = useParams();
+    const rigId = params.rigId;
+    // Используем rigId как edge_key для получения данных
+    const edgeKey = `${rigId}`;
+
+    const { tagData, error } = useTagsData(edgeKey); 
 
     // Используем useMemo для фильтрации, СОРТИРОВКИ и преобразования данных
     const accidentDetails: BypassDetail[] = useMemo(() => {
