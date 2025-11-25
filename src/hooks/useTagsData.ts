@@ -4,9 +4,6 @@ import type { TagDataList } from '../types/tag';
 // Адрес API, который вы указали
 const BASE_API_URL = import.meta.env.VITE_API_URL; 
 
-// Добавляем конкретный путь и параметры
-const API_URL = `${BASE_API_URL}/current/details?edge=test`;
-
 interface UseTagsDataResult {
     tagData: TagDataList | null;
     loading: boolean;
@@ -17,7 +14,7 @@ interface UseTagsDataResult {
  * Хук для получения текущих данных тегов с API.
  * @returns Объект с данными тегов, статусом загрузки и ошибкой.
  */
-export const useTagsData = (): UseTagsDataResult => {
+export const useTagsData = (edge: string): UseTagsDataResult => {
     const [tagData, setTagData] = useState<TagDataList | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -28,7 +25,8 @@ export const useTagsData = (): UseTagsDataResult => {
             setError(null);
             
             try {
-                const response = await fetch(API_URL);
+
+                const response = await fetch(`${BASE_API_URL}/current/details?edge=${edge}`);
 
                 if (!response.ok) {
                     throw new Error(`Ошибка HTTP: ${response.status}`);
