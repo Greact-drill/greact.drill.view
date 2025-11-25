@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { useTagsData } from '../../hooks/useTagsData.ts'; 
 import type { TagData } from '../../types/tag.ts'; 
@@ -80,7 +80,12 @@ const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): Pu
 
 export default function PumpBlockPage() {
     const navigate = useNavigate();
-    const { tagData, error } = useTagsData(); 
+    const params = useParams();
+    const rigId = params.rigId;
+    // Используем rigId как edge_key для получения данных
+    const edgeKey = `${rigId}`;
+
+    const { tagData, error } = useTagsData(edgeKey); 
 
     const pumpBlockWidgetConfigs: PumpBlockWidgetConfig[] = useMemo(() => {
         if (!tagData) return [];

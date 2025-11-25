@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from 'primereact/button';
 import { useTagsData } from '../../hooks/useTagsData.ts'; 
 import type { TagData } from '../../types/tag.ts'; 
@@ -33,22 +33,12 @@ interface KtuWidgetConfig {
 const findWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): WidgetConfig | null => {
     const configCustom = tag.customization?.find(item => item.key === 'widgetConfig');
     
-    console.log(`Поиск конфига для тега ${tag.tag}:`, {
-        hasCustomization: !!tag.customization,
-        configCustom,
-        page
-    });
-    
     if (configCustom) {
         try {
             const config: WidgetConfig = JSON.parse(configCustom.value);
-            console.log(`Успешно распарсен конфиг для тега ${tag.tag}:`, config);
             
             if (config.page === page) {
-                console.log(`Конфиг подходит для страницы ${page}`);
                 return config;
-            } else {
-                console.log(`Конфиг для другой страницы: ${config.page}, ожидалась: ${page}`);
             }
         } catch (error) {
             console.error('Ошибка парсинга конфига виджета:', error, 'Строка:', configCustom.value);
@@ -91,13 +81,16 @@ const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): Kt
 
 export default function KtuPage() {
     const navigate = useNavigate();
-    const { tagData, error } = useTagsData(); 
+    const params = useParams();
+	const rigId = params.rigId;
+    // Используем rigId как edge_key для получения данных
+	const edgeKey = `${rigId}`;
+
+    const { tagData, error } = useTagsData(edgeKey); 
 
     const ktuWidgetConfigs: KtuWidgetConfig[] = useMemo(() => {
-        console.log('Начало обработки tagData:', tagData);
         
         if (!tagData) {
-            console.log('tagData пустой или undefined');
             return [];
         }
         
@@ -105,8 +98,6 @@ export default function KtuPage() {
         const widgetConfigs = tagData
             .map(tag => transformTagToWidgetConfig(tag, 'KTU'))
             .filter((config): config is KtuWidgetConfig => config !== null);
-
-        console.log('Найдено виджетов для KTU:', widgetConfigs.length, widgetConfigs);
 
         // Сортируем: сначала широкие виджеты (gauge, bar), потом компактные
         const sorted = widgetConfigs.sort((a, b) => {
@@ -119,13 +110,11 @@ export default function KtuPage() {
             return a.label.localeCompare(b.label);
         });
 
-        console.log('Отсортированные виджеты:', sorted);
         return sorted;
         
     }, [tagData]); 
 
     const renderWidget = (config: KtuWidgetConfig) => {
-    console.log('🖼️ Рендер виджета:', config);
     
     // Определяем размеры виджета в зависимости от типа
     const getWidgetDimensions = () => {
@@ -213,12 +202,10 @@ export default function KtuPage() {
     };
 
     if (error) {
-        console.error('Ошибка загрузки данных:', error);
         return <div className="error-message">Ошибка загрузки: {error}</div>;
     }
 
     if (!tagData) {
-        console.log('Данные тегов не загружены');
         return <div className="error-message">Загрузка данных...</div>;
     }
 

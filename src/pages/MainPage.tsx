@@ -116,12 +116,12 @@ export default function MainPage() {
 	const [rig, setRig] = useState<Rig | null>(null);
 	const [hovered, setHovered] = useState<string | null>(null);
 
-	const { tagData, error: tagsError } = useTagsData(); 
-
 	// Используем rigId как edge_key для получения данных
 	const edgeKey = `${rigId}`;
 	const { error: edgeError } = useEdgeWithAttributes(edgeKey);
 	const { blocks } = useEdgeBlocks(edgeKey);
+
+    const { tagData, error: tagsError } = useTagsData(edgeKey); 
 
 	const sortedTagData = useMemo(() => {
         if (!tagData) return null;
