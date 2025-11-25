@@ -70,7 +70,7 @@ const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK'): Kt
     return {
         key: `${tag.tag}-${page}`,
         type: config.widgetType,
-        label: config.customLabel || tag.comment || tag.name,
+        label: config.customLabel || tag.name ||tag.comment,
         value: tag.value,
         max: tag.max,
         unit: tag.unit_of_measurement || '',
