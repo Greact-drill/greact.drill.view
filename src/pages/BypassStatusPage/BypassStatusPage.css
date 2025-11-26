@@ -1,5 +1,100 @@
 /* src/pages/BypassStatusPage.css */
 
+.bypass-status-page {
+  /* Базовые стили */
+  display: block; 
+  /* --- ИЗМЕНЕНИЕ: ГРАДИЕНТНЫЙ ФОН --- */
+  background: linear-gradient(
+    180deg, /* Сверху вниз */
+    #1f003a 0%,    /* Темный фиолетовый (Purple 900) */
+    #000000 80%    /* Черный */
+  );
+  /* ---------------------------------- */
+
+  /* КРИТИЧЕСКИЕ ПАРАМЕТРЫ ДЛЯ ПОЛНОЙ ШИРИНЫ */
+  position: absolute; 
+  left: 0;           
+  right: 0;          
+  
+  top: 0;          
+  bottom: 0;
+  
+  /* Убираем padding, чтобы он не конфликтовал с позиционированием */
+  padding: 0; 
+  z-index: 10;
+  
+  /* Используем 100vh, так как мы начинаем с top: 0 */
+  min-height: 100vh; 
+}
+
+.bypass-content-full-width {
+    width: 100%;
+    padding: calc(var(--topbar-height) + 2rem) 2rem 2rem 2rem; 
+}
+
+.bypass-content-block {
+    width: 100%;
+    
+    /* Имитируем фон Card из админки - МЕНЯЕМ НА ПРОЗРАЧНЫЙ */
+    background-color: transparent; 
+    color: var(--text-primary, #f1f5f9); 
+    
+    /* Аккуратные отступы вокруг содержимого */
+    padding: 30px; 
+    border-radius: 8px; /* Скругление, как у Card */
+    /* Уменьшаем или убираем тень, чтобы не было видно границ блока на градиенте */
+    box-shadow: none; 
+}
+
+.bypass-card {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--card-bg); /* Пример цвета из Admin.css */
+  color: var(--text-primary); /* Пример цвета текста */
+}
+
+.bypass-card .p-card-title {
+  color: var(--text-primary);
+}
+
+/* Стили заголовка с кнопкой "Назад" */
+.bypass-controls-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color, #475569);
+    padding-bottom: 20px;
+}
+
+.back-button-custom {
+    /* Удаляем стандартный фон и рамку для минималистичности */
+    background: transparent !important;
+    border: none !important;
+    /* Устанавливаем яркий акцентный цвет для текста */
+    color: var(--text-primary, #f1f5f9) !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.back-button-custom:hover {
+    /* Легкое изменение цвета при наведении */
+    color: #9333ea !important; /* Яркий фиолетовый акцент */
+    background-color: rgba(255, 255, 255, 0.05) !important; /* Едва заметный фон */
+    box-shadow: none !important;
+}
+
+.back-button-custom .pi {
+    /* Отступ и размер иконки */
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+/* Изменяем разделитель под кнопкой */
+.bypass-controls-header {
+    margin-bottom: 20px;
+    /* Делаем разделитель тоньше и светлее, чтобы он не конфликтовал с кнопкой */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+    padding-bottom: 20px;
+}
+
 .bypass-page-container {
     background: linear-gradient(
         180deg,
