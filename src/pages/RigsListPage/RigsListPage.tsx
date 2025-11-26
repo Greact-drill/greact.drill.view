@@ -75,18 +75,18 @@ export default function RigsListPage() {
   
   return (
     <div className="rigs-list-page">
-            <video 
-                id="bg-video" 
-                className="background-video" // Добавляем класс для стилизации
-                autoPlay 
-                loop 
-                muted 
-                playsInline 
-                // poster="path/to/placeholder-image.jpg"
-            >
-                <source src={videoMp4} type="video/mp4" />
-                {/* <source src="path/to/optimized-video.mp4" type="video/mp4" /> */}
-            </video>
+      <video 
+          id="bg-video" 
+          className="background-video" // Добавляем класс для стилизации
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          // poster="path/to/placeholder-image.jpg"
+      >
+          <source src={videoMp4} type="video/mp4" />
+          {/* <source src="path/to/optimized-video.mp4" type="video/mp4" /> */}
+      </video>
     
       <div className="content-wrapper">
         <div className="rigs-list">
@@ -94,8 +94,7 @@ export default function RigsListPage() {
             {rigs.map((rig) => (
               <button
                 key={rig.id}
-                // FIX 7: Добавляем класс 'active' при выборе
-                className={`rig-card${rig.ok ? " ok" : " bad"}${rig.id === selectedRigId ? ' active' : ''}`}
+                className={`rig-card${(rig.name !== 'test') ? " ok" : " bad"}${rig.id === selectedRigId ? ' active' : ''}`}
                 onClick={() => setSelectedRigId(rig.id === selectedRigId ? null : rig.id)}
               >
                 <img src={drillSvg} alt="Буровая вышка" />
