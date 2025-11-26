@@ -1,6 +1,6 @@
-/* src/pages/BypassStatusPage.css */
+/* src/pages/AccidentStatusPage.css */
 
-.bypass-page-container {
+.accident-page-container {
     background: linear-gradient(
         180deg,
         #1f003a 0%,
@@ -10,7 +10,7 @@
     padding: 20px 0;
 }
 
-.bypass-blocks-title {
+.accident-blocks-title {
     color: #ffffff;
     font-weight: 600;
     font-size: 2.2em;
@@ -19,7 +19,7 @@
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-.bypass-blocks-grid {
+.accident-blocks-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 30px;
@@ -32,7 +32,7 @@
     min-height: 600px;
 }
 
-.bypass-blocks-grid.positioned-grid {
+.accident-blocks-grid.positioned-grid {
     position: relative;
     min-height: 800px;
     width: 100%;
@@ -48,7 +48,7 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.bypass-page-inner {
+.accident-page-inner {
     margin: 0 auto;
     padding: 20px;
 }

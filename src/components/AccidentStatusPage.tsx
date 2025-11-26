@@ -1,19 +1,54 @@
-// src/pages/AccidentStatusPage.tsx
-
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
 import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
-import { useTagsData } from '../hooks/useTagsData'; // Хук для получения данных тегов
-import type { TagData, BypassDetail } from '../types/tag'; // Интерфейсы используются те же
+import { useTagsData } from '../hooks/useTagsData';
+import type { TagData } from '../types/tag';
+import './AccidentStatusPage.css';
+import VerticalBar from '../components/VerticalBar/VerticalBar';
+import GaugeWidget from '../components/Gauge/GaugeWidget';
+import NumberDisplay from '../components/NumberDisplay/NumberDisplay';
+import BypassStatusBlock from '../components/BypassStatusBlock/BypassStatusBlock';
 
-import '../pages/BypassStatusPage/BypassStatusPage.css'; // Стили используем те же
-import BypassStatusBlock from './BypassStatusBlock/BypassStatusBlock'; // Блоки используем те же
+// Интерфейс для конфигурации виджета из JSON
+interface WidgetConfig {
+    page: 'KTU' | 'PUMPBLOCK' | 'ACCIDENT' | 'BYPASS';
+    widgetType: 'gauge' | 'bar' | 'number' | 'status';
+    position: { x: number; y: number };
+    customLabel?: string;
+}
 
-/**
- * Проверяет, находится ли значение тега в "нормальном" диапазоне.
- */
+// Обновленная структура для мемоизации
+interface AccidentWidgetConfig {
+    key: string;
+    type: 'gauge' | 'bar' | 'number' | 'status';
+    label: string;
+    value: number | string | boolean;
+    max: number;
+    unit: string;
+    isOK?: boolean;
+    position: { x: number; y: number };
+}
+
+// Функция для получения конфигурации виджета из кастомизации
+const findWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK' | 'ACCIDENT' | 'BYPASS'): WidgetConfig | null => {
+    const configCustom = tag.customization?.find(item => item.key === 'widgetConfig');
+    
+    if (configCustom) {
+        try {
+            const config: WidgetConfig = JSON.parse(configCustom.value);
+            
+            if (config.page === page) {
+                return config;
+            }
+        } catch (error) {
+            console.error('Ошибка парсинга конфига виджета:', error, 'Строка:', configCustom.value);
+        }
+    } else {
+        console.log(`Для тега ${tag.tag} не найден widgetConfig`);
+    }
+    return null;
+};
+
 const isTagValueOK = (tag: TagData): boolean => {
     const { value, min, max, unit_of_measurement } = tag;
 
@@ -22,116 +57,176 @@ const isTagValueOK = (tag: TagData): boolean => {
     }
 
     const isStatusTag = unit_of_measurement === 'bool' || tag.customization?.some(c => c.key === 'isStatus');
-    // Для аварийного статуса: "OK" или "Норма" может означать False/0
-    // Поэтому логика для статус-тегов может требовать реверсии,
-    // но пока оставим как для bypass: True/1 = OK
     if (isStatusTag) {
         return value === 1 || value === true;
     }
     return true;
 };
 
-/**
- * Трансформирует один TagData в BypassDetail для отображения
- */
-const transformTagToDetail = (tag: TagData): BypassDetail => {
-    const isOK = isTagValueOK(tag);
-    let displayValue: string | React.ReactNode;
-
-    const isStatusTag = tag.unit_of_measurement === 'bool' || tag.customization?.some(c => c.key === 'isStatus');
-
-    if (isStatusTag) {
-        // Логика отображения для аварийных статусов:
-        // isOK (зеленый) = 'Норма' (значение тега False/0, если это аварийный флаг)
-        // !isOK (красный) = 'Авария' (значение тега True/1)
-        displayValue = (
-            <Tag
-                value={isOK ? 'Норма' : 'Авария'}
-                severity={isOK ? 'success' : 'danger'}
-            />
-        );
-    } else {
-        displayValue = `${tag.value} ${tag.unit_of_measurement}`;
-    }
+const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK' | 'ACCIDENT' | 'BYPASS'): AccidentWidgetConfig | null => {
+    const config = findWidgetConfig(tag, page);
+    if (!config) return null;
 
     return {
-        label: tag.name,
-        value: displayValue,
-        isOK: isOK,
+        key: `${tag.tag}-${page}`,
+        type: config.widgetType,
+        label: config.customLabel || tag.name || tag.comment,
+        value: tag.value,
+        max: tag.max,
+        unit: tag.unit_of_measurement || '',
+        isOK: isTagValueOK(tag),
+        position: config.position
     };
-};
-
-const isAccidentTag = (tag: TagData): boolean => {
-    return tag.customization?.some(item => 
-        item.key === 'isAccident' && item.value === 'true'
-    ) ?? false; // Возвращаем false, если customization не определен
 };
 
 export default function AccidentStatusPage() {
     const navigate = useNavigate();
     const params = useParams();
     const rigId = params.rigId;
-    // Используем rigId как edge_key для получения данных
     const edgeKey = `${rigId}`;
 
-    const { tagData, error } = useTagsData(edgeKey); 
+    const { tagData, error } = useTagsData(edgeKey);
 
-    // Используем useMemo для фильтрации, СОРТИРОВКИ и преобразования данных
-    const accidentDetails: BypassDetail[] = useMemo(() => {
-        if (!tagData) return [];
+    const accidentWidgetConfigs: AccidentWidgetConfig[] = useMemo(() => {
+        if (!tagData) {
+            return [];
+        }
         
-        // ШАГ 1: ФИЛЬТРАЦИЯ
-        // Используем новую функцию фильтрации
-        const filteredTags = tagData.filter(isAccidentTag);
-        
-        // ШАГ 2: СОРТИРОВКА для стабильности порядка (по названию)
-        const sortedTags = [...filteredTags].sort((a, b) => {
-            const nameA = a.name || a.tag || '';
-            const nameB = b.name || b.tag || '';
-            return nameA.localeCompare(nameB);
+        const widgetConfigs = tagData
+            .map(tag => transformTagToWidgetConfig(tag, 'ACCIDENT'))
+            .filter((config): config is AccidentWidgetConfig => config !== null);
+
+        const sorted = widgetConfigs.sort((a, b) => {
+            const typeA = (a.type === 'gauge' || a.type === 'bar') ? 0 : 1;
+            const typeB = (b.type === 'gauge' || b.type === 'bar') ? 0 : 1;
+            
+            if (typeA !== typeB) {
+                return typeA - typeB;
+            }
+            return a.label.localeCompare(b.label);
         });
 
-        // ШАГ 3: ТРАНСФОРМАЦИЯ
-        return sortedTags.map(transformTagToDetail);
+        return sorted;
         
     }, [tagData]);
 
-    // Если данные не найдены или есть ошибка
-    if (error || !tagData || tagData.length === 0) {
-        return <div className="error-message">Ошибка загрузки: {error || 'Нет данных для отображения.'}</div>;
-    }
-    
-    return (
-        <div className="bypass-status-page">
-            <div className="bypass-status-page-inner">
-                    
-                    <div className="bypass-controls-header">
-                        <Button 
-                            icon="pi pi-arrow-left"
-                            label="Назад"
-                            severity="secondary"
-                            onClick={() => {
-                                navigate(-1); 
-                            }} 
-                            className="mb-4 back-button-custom"
-                        />
-                    </div>
+    const renderWidget = (config: AccidentWidgetConfig) => {
+        const getWidgetDimensions = () => {
+            switch (config.type) {
+                case 'gauge':
+                    return { width: 250, height: 250 };
+                case 'bar':
+                    return { width: 250, height: 500 };
+                case 'number':
+                case 'status':
+                default:
+                    return { width: 250, height: 250 };
+            }
+        };
 
-                    <div className="bypass-content-block">
-                        <h1 className="bypass-blocks-title">
-                            Состояние аварийных флагов
-                        </h1>
-                        <div className="bypass-blocks-grid">
-                            {accidentDetails.map((item) => (
-                                <BypassStatusBlock
-                                    key={item.label}
-                                    label={item.label}
-                                    value={item.value}
-                                    isOK={item.isOK}
-                                />
-                            ))}
-                        </div>
+        const dimensions = getWidgetDimensions();
+        
+        const positionStyle = {
+            position: 'absolute' as const,
+            left: `${config.position.x}px`,
+            top: `${config.position.y}px`,
+            width: `${dimensions.width}px`,
+            height: `${dimensions.height}px`,
+            zIndex: 10
+        };
+
+        const widgetContent = (() => {
+            switch (config.type) {
+                case 'gauge':
+                    return (
+                        <GaugeWidget 
+                            key={config.key} 
+                            label={config.label} 
+                            value={config.value as number} 
+                            max={config.max} 
+                            unit={config.unit} 
+                        />
+                    );
+                case 'bar':
+                    return (
+                        <VerticalBar
+                            key={config.key} 
+                            label={config.label} 
+                            value={config.value as number} 
+                            max={config.max} 
+                        />
+                    );
+                case 'number':
+                    const displayValue = `${config.value}${config.unit ? ` ${config.unit}` : ''}`;
+                    return (
+                        <NumberDisplay 
+                            key={config.key} 
+                            label={config.label} 
+                            value={displayValue} 
+                        />
+                    );
+                case 'status':
+                    return (
+                        <BypassStatusBlock 
+                            key={config.key} 
+                            label={config.label} 
+                            value={config.value as string} 
+                            isOK={config.isOK ?? false} 
+                        />
+                    );
+                default:
+                    console.warn('❌ Неизвестный тип виджета:', config.type);
+                    return null;
+            }
+        })();
+
+        return (
+            <div 
+                className={`positioned-widget widget-${config.type}`} 
+                key={config.key}
+                style={positionStyle}
+                data-widget-type={config.type}
+                data-position-x={config.position.x}
+                data-position-y={config.position.y}
+            >
+                {widgetContent}
+            </div>
+        );
+    };
+
+    if (error) {
+        return <div className="error-message">Ошибка загрузки: {error}</div>;
+    }
+
+    return (
+        <div className="accident-page-container">
+            <div className="accident-page-inner">
+                <div className="accident-controls-header">
+                    <Button 
+                        icon="pi pi-arrow-left"
+                        label="Назад"
+                        severity="secondary"
+                        onClick={() => {
+                            navigate(-1); 
+                        }} 
+                        className="mb-4 back-button-custom"
+                    />
+                </div>
+                <div className="accident-content-block">
+                    <h1 className="accident-blocks-title">
+                        Состояние аварийных флагов
+                    </h1>
+                    <div className="accident-blocks-grid positioned-grid">
+                        {accidentWidgetConfigs.map(renderWidget)}
+                        {accidentWidgetConfigs.length === 0 && (
+                            <div className="empty-grid-message">
+                                <i className="pi pi-inbox" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                                <p>Нет настроенных виджетов для аварийных флагов</p>
+                                <p className="text-sm">Настройте виджеты в админ-панели</p>
+                            </div>
+                        )}
                     </div>
+                </div>
             </div>
         </div>
     );
