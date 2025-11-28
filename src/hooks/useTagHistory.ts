@@ -20,7 +20,7 @@ interface UseTagHistoryResult {
  * @param isRealTime Если true, данные будут обновляться с интервалом.
  * @returns Объект с историческими данными, статусом загрузки и ошибкой.
  */
-export const useTagHistory = (isRealTime: boolean): UseTagHistoryResult => {
+export const useTagHistory = (isRealTime: boolean, edge: string): UseTagHistoryResult => {
     const [tagHistoryData, setTagHistoryData] = useState<TagHistoryList | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export const useTagHistory = (isRealTime: boolean): UseTagHistoryResult => {
             setError(null);
             
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(`${BASE_API_URL}/history/details?edge=${edge}`);
 
                 if (!response.ok) {
                     throw new Error(`Ошибка HTTP: ${response.status} (${response.statusText})`);

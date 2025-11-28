@@ -225,11 +225,13 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
 // --- КОМПОНЕНТ СТРАНИЦЫ АРХИВА ---
 export default function ArchivePage() {
     const { rigId } = useParams<{ rigId: string }>();
+    const edgeKey = `${rigId}`;
     const navigate = useNavigate();
+
     // Включаем режим реального времени по умолчанию
     const [isRealTime, setIsRealTime] = useState(true);
     // ИСПОЛЬЗУЕМ ХУК с параметром isRealTime
-    const { tagHistoryData, loading, error } = useTagHistory(isRealTime);
+    const { tagHistoryData, loading, error } = useTagHistory(isRealTime, edgeKey);
 
     // Логика для кнопки
     const toggleRealTime = () => {
