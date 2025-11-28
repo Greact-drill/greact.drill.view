@@ -5,7 +5,7 @@ import type { TagHistoryList } from '../types/tag';
 const BASE_API_URL = import.meta.env.VITE_API_URL; 
 
 // Добавляем конкретный путь и параметры
-const API_URL = `${BASE_API_URL}/history/details?edge=test`;
+// const API_URL = `${BASE_API_URL}/history/details?edge=test`;
 
 const REFRESH_INTERVAL = 3000; 
 
