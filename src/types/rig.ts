@@ -7,11 +7,11 @@ export interface RigSensorTag {
 }
 
 export interface Rig {
-  id: string; // например "14820"
-  name: string; // "БУ №14820"
-  ok: boolean; // сводный статус вышки
-  image?: string; // путь к изображению (опционально)
-  sensors: RigSensorTag[]; // набор сенсоров
+  id: string;
+  name: string;
+  ok: boolean;
+  image?: string;
+  sensors: RigSensorTag[];
 }
 
 

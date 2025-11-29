@@ -1,5 +1,3 @@
-// src/components/VerticalBar.tsx
-
 import React from 'react';
 import './VerticalBar.css';
 

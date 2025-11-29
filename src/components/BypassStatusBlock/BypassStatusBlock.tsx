@@ -1,5 +1,3 @@
-// src/components/BypassStatusBlock.tsx
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Card } from 'primereact/card';
 import './BypassStatusBlock.css'; 

@@ -7,6 +7,7 @@ import type { TagHistoryList } from '../../types/tag';
 
 import ActionLogTable from '../../components/ActionLogTable/ActionLogTable'; 
 import { MOCK_ACTION_LOG } from '../../types/tag';
+import { useEdgeWithAttributes } from '../../hooks/useEdges';
 
 const ACCENT_COLOR_1 = '#a78bfa';
 const ACCENT_COLOR_2 = '#34D399';
@@ -17,29 +18,14 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
     const chartOption = useMemo(() => {
         if (tagsData.length === 0) return {};
         
-        // --- 1. Предобработка данных ---
-        // X-ось: берем таймстемпы из первого тега, форматируя их как Время
-        // const timestamps = tagsData[0].history
-        //     .map(item => new Date(item.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
-        //     .reverse(); // Разворачиваем, т.к. API обычно возвращает от нового к старому
-
         // Цветовая палитра для серий
         const colors = [ACCENT_COLOR_1, ACCENT_COLOR_2, '#ffc700', '#00bcd4'];
-
-        // Динамический расчет начального индекса для сдвига окна
-        // Определяем, сколько последних точек мы хотим показывать (например, 100)
-        //const VISIBLE_POINTS_COUNT = 100; 
-        // const dataLength = timestamps.length;
-        // // Индекс, с которого нужно начать показывать, чтобы в окне было VISIBLE_POINTS_COUNT точек
-        // const startValueIndex = dataLength > VISIBLE_POINTS_COUNT 
-        //                         ? dataLength - VISIBLE_POINTS_COUNT 
-        //                         : 0; 
 
         // --- 2. Создание серий данных ---
         const transformedSeriesData = tagsData.map((tag, index) => {
             const color = colors[index % colors.length];
 
-            // 💡 КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Форматирование данных в [timestamp_ms, value]
+            // Форматирование данных в [timestamp_ms, value]
             const data = tag.history.map(item => {
                 // Преобразуем строку времени в Unix-таймстамп (миллисекунды)
                 const timestamp = new Date(item.timestamp).getTime(); 
@@ -50,7 +36,6 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 name: tag.name,
                 type: 'line',
                 smooth: true,
-                // data: tag.history.map(item => item.value).reverse(), // Разворачиваем значения
                 data: data,
                 yAxisIndex: 0,
                 showSymbol: false, 
@@ -83,13 +68,9 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
         return {
             backgroundColor: 'transparent',
             animation: true, 
-            // 💡 ПЛАВНЫЙ ПЕРЕХОД: Анимация при обновлении данных
+            // ПЛАВНЫЙ ПЕРЕХОД: Анимация при обновлении данных
             animationDurationUpdate: 500, 
             title: {
-                // Настройки заголовка графика
-                // text: `Динамика: `, -- Заголовок
-                // left: 'left',
-                // textStyle: { color: ACCENT_COLOR_1, fontWeight: 'bold', fontSize: 18 }
             },
             tooltip: {
                 trigger: 'axis',
@@ -98,10 +79,6 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 borderWidth: 1,
                 textStyle: { color: 'var(--color-text-light)' },
                 axisPointer: {
-                    // type: 'cross',
-                    // label: {
-                    //     backgroundColor: '#6a7985'
-                    // }
                     type: 'line',
                     lineStyle: { 
                         color: ACCENT_COLOR_1,
@@ -155,7 +132,6 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                     xAxisIndex: [0],
                     height: 20, 
                     top: 10, 
-                    // startValue: startValueIndex, 
                     textStyle: {
                         color: 'var(--color-text-light)'
                     },
@@ -168,11 +144,6 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 // Внутренний зум (колесом мыши) обычно достаточен для Y.
             ],
             xAxis: {
-                // type: 'category',
-                // data: timestamps,
-                // axisLabel: { color: ACCENT_COLOR_1 },
-                // axisLine: { lineStyle: { color: 'var(--color-text-light)' } },
-                // splitLine: { show: false },
                 type: 'time', // Меняем на 'time'
                 axisLabel: {
                     formatter: (value: number) => {
@@ -185,13 +156,6 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 axisLine: { lineStyle: { color: ACCENT_COLOR_1 } }
             },
             yAxis: {
-                // type: 'value',
-                // // name: `Значение`,
-                // min: globalMin,
-                // max: globalMax,
-                // axisLabel: { color: ACCENT_COLOR_1 },
-                // axisLine: { lineStyle: { color: 'var(--color-text-light)' } },
-                // splitLine: { lineStyle: { color: '#475569', opacity: 0.3 } },
                 type: 'value',
                 min: globalMin,
                 max: globalMax,
@@ -227,6 +191,8 @@ export default function ArchivePage() {
     const { rigId } = useParams<{ rigId: string }>();
     const edgeKey = `${rigId}`;
     const navigate = useNavigate();
+
+    const { edgeData: selectedEdgeData } = useEdgeWithAttributes(edgeKey);
 
     // Включаем режим реального времени по умолчанию
     const [isRealTime, setIsRealTime] = useState(true);
@@ -265,7 +231,7 @@ export default function ArchivePage() {
                 </div>
                 
                 <h1 style={{ color: 'var(--color-accent-blue)', marginBottom: '30px' }}>
-                    Архив данных и графики для Буровой #{rigId}
+                    Архив данных и графики для Буровой {selectedEdgeData?.name}
                 </h1>
 
                 <div className="charts-grid" style={{ 

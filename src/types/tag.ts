@@ -1,12 +1,10 @@
-// src/types/tag.ts
-
 /**
  * Интерфейс для элемента настройки тега.
  * Примеры: chart, half-circle, isStatus
  */
 export interface TagCustomizationItem {
     key: string;
-    value: string; // Значение - строка, часто в формате "{...}"
+    value: string;
 }
 
 /**
@@ -62,9 +60,6 @@ export interface TagHistoryData {
  * Список исторических данных, возвращаемый API.
  */
 export type TagHistoryList = TagHistoryData[];
-
-// src/types/tag.ts (или history.ts)
-// ... (существующие типы HistoryItem, TagHistoryData, TagHistoryList) ...
 
 /**
  * Элемент журнала действий персонала.

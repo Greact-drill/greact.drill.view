@@ -1,8 +1,8 @@
 import React from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import type { ActionLogItem } from '../../types/tag'; // Убедитесь, что путь правильный
-import './ActionLogTable.css'; // 💡 ИМПОРТ СТИЛЕЙ
+import type { ActionLogItem } from '../../types/tag';
+import './ActionLogTable.css';
 
 
 interface ActionLogTableProps {

@@ -1,30 +1,26 @@
-// src/pages/MaintenancePage.tsx
-
 import { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'; // Добавляем useParams
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
-import { DataTable } from 'primereact/datatable'; // Для отображения таблицы
+import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import './MaintenancePage.css';
 
-// Предполагаем, что общие стили используются
 import '../../pages/BypassStatusPage/BypassStatusPage.css'; 
 import { Tag } from 'primereact/tag';
 
-// Определяем, как переводить ключ ТО в понятный заголовок
 const maintenanceTypeMap: { [key: string]: string } = {
     'daily_maintenance': 'Ежедневное ТО',
     'weekly_maintenance': 'Еженедельное ТО',
-    'monthly_maintenance': 'Ежемесячное ТО', // <--- Добавлено
+    'monthly_maintenance': 'Ежемесячное ТО',
     'semiannual_maintenance': 'Полугодовое ТО',
     'annual_maintenance': 'Годовое ТО',
 };
 
 interface MaintenanceRow {
     device: string;
-    status: string; // Строка для отображения статуса (например, "СЕРВИС ПРОСРОЧЕН...")
-    time: number | string; // Время, час.
+    status: string;
+    time: number | string;
     severity: 'success' | 'danger' | 'warning';
 }
 

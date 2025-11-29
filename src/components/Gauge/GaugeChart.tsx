@@ -20,7 +20,7 @@ interface GaugeChartProps {
 
 type DoughnutContext = ScriptableContext<'doughnut'>;
 
-// 💡 1. Добавляем React.memo для предотвращения мерцания
+// 1. Добавляем React.memo для предотвращения мерцания
 const GaugeChart: React.FC<GaugeChartProps> = React.memo(({ label, value, max }) => {
     const chartRef = useRef<ChartJS<'doughnut', number[], string> | null>(null);
     
@@ -42,7 +42,7 @@ const GaugeChart: React.FC<GaugeChartProps> = React.memo(({ label, value, max })
         return gradient;
     };
 
-    // 💡 Данные для Doughnut Chart
+    // Данные для Doughnut Chart
     const data: CoreChartData<'doughnut'> = {
         labels: [label],
         datasets: [{
@@ -59,7 +59,7 @@ const GaugeChart: React.FC<GaugeChartProps> = React.memo(({ label, value, max })
         } as ChartDataset<'doughnut'>], 
     };
 
-    // 💡 Опции для полукруга
+    // Опции для полукруга
     const options = {
         responsive: true,
         maintainAspectRatio: false, // Позволяет контролировать размер через div

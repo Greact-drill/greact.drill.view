@@ -1,6 +1,6 @@
 import type { EdgeAttribute } from '../../types/edge';
 import { Link } from 'react-router-dom';
-import './EdgeStatusPanel.css'; // <--- НОВЫЙ ИМПОРТ СТИЛЕЙ
+import './EdgeStatusPanel.css';
 
 
 interface EdgeStatusPanelProps {
@@ -97,7 +97,6 @@ export default function EdgeStatusPanel({ attributes, loading, onStatusChange, r
                   }`}
                 />
                 
-                {/* *** ОБНОВЛЕННАЯ ЛОГИКА ССЫЛОК *** */}
                 {statusLinkKeys.includes(item.key) && rigId ? (
                   <Link 
                     to={
@@ -105,7 +104,6 @@ export default function EdgeStatusPanel({ attributes, loading, onStatusChange, r
                         ? `/rigs/${rigId}/bypass-status` 
                         : item.key === 'drive_state'
                         ? `/rigs/${rigId}/accident-status`
-                        // НОВЫЕ ССЫЛКИ ДЛЯ ТО
                         : `/rigs/${rigId}/maintenance-status/${item.key}`
                     } 
                     className="status-label status-link"

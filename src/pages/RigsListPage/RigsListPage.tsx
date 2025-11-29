@@ -6,20 +6,19 @@ import { useAllEdgesWithAttributes, useEdgeWithAttributes } from "../../hooks/us
 import EdgeStatusPanel from "../../components/EdgeStatusPanel/EdgeStatusPanel";
 import type { Edge, EdgeWithAttributes, EdgeAttribute, RawEdgeAttributes } from "../../types/edge";
 import { transformRawAttributes } from "../../utils/edgeUtils";
-import { Button } from 'primereact/button'; // Добавляем импорт, если не был добавлен
-import './RigsListPage.css'; // <--- НОВЫЙ ИМПОРТ СТИЛЕЙ
+import { Button } from 'primereact/button';
+import './RigsListPage.css';
 import '../../App.css';
-import videoMp4 from '../../assets/background.mp4'; // Обновите имя файла
+import videoMp4 from '../../assets/background.mp4';
 
 
 interface RigCompatible extends Edge {
-  id: string; // 14820 -> 14820
+  id: string;
   ok: boolean;
 }
 
 export default function RigsListPage() {
   const [selectedRigId, setSelectedRigId] = useState<string | null>(null);
-  // const navigate = useNavigate();
   
   // Получаем данные edges с атрибутами
   const { edgesWithAttributes, loading: edgesLoading } = useAllEdgesWithAttributes();
@@ -81,12 +80,10 @@ export default function RigsListPage() {
           autoPlay 
           loop 
           muted 
-          playsInline 
-          // poster="path/to/placeholder-image.jpg"
+          playsInline
       >
           <source src={videoMp4} type="video/mp4" />
-          {/* <source src="path/to/optimized-video.mp4" type="video/mp4" /> */}
-      </video>
+          </video>
     
       <div className="content-wrapper">
         <div className="rigs-list">
@@ -105,7 +102,7 @@ export default function RigsListPage() {
             ))}
           </div>
 
-          {/* 4. ОБНОВЛЕНИЕ БОКОВОЙ ПАНЕЛИ: Условный рендеринг и новый класс */}
+          {/* 4. Условный рендеринг и новый класс */}
           <aside className={`rig-status-panel ${selectedRigId ? 'open' : ''}`} aria-live="polite">
               
               {edgesLoading ? (
@@ -138,8 +135,8 @@ export default function RigsListPage() {
                       
                       <div className="edge-status-container">
                           <EdgeStatusPanel 
-                              attributes={transformedSelectedAttributes} // FIX 8: Используем правильное имя
-                              loading={selectedLoading} // FIX 9: Используем правильное имя
+                              attributes={transformedSelectedAttributes}
+                              loading={selectedLoading}
                               rigId={selectedRigId}
                           />
                       </div>

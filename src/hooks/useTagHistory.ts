@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { TagHistoryList } from '../types/tag';
 
-// Адрес API для исторических данных
 const BASE_API_URL = import.meta.env.VITE_API_URL; 
-
-// Добавляем конкретный путь и параметры
-// const API_URL = `${BASE_API_URL}/history/details?edge=test`;
-
 const REFRESH_INTERVAL = 3000; 
 
 interface UseTagHistoryResult {
@@ -62,14 +57,10 @@ export const useTagHistory = (isRealTime: boolean, edge: string): UseTagHistoryR
         
         let intervalId: number | undefined; 
 
-        // 💡 ЛОГИКА РЕАЛЬНОГО ВРЕМЕНИ (POLLING)
+        // ЛОГИКА РЕАЛЬНОГО ВРЕМЕНИ (POLLING)
         if (isRealTime) {
             // setInterval в браузере возвращает число (number)
             intervalId = setInterval(fetchHistory, REFRESH_INTERVAL) as unknown as number; 
-            // Примечание: 'as unknown as number' может потребоваться, 
-            // если ваша tsconfig.json настроена на строгие типы Window
-            // Если без 'as unknown as number' работает, оставьте просто: 
-            // intervalId = setInterval(fetchHistory, REFRESH_INTERVAL);
         }
 
         // Функция очистки: останавливаем интервал при размонтировании или смене режима
