@@ -8,10 +8,8 @@
 .App {
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
-  color: #212529;
-  /* max-width: 1200px;
-  margin: 0 auto; */
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   width: 100%;
   min-height: 100dvh;
   overflow: hidden;
@@ -249,17 +247,104 @@ input[type="datetime-local"]::-ms-expand:hover {
 }
 
 /* Верхняя панель + хлебные крошки */
-.topbar { display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:6px 16px; border-bottom:1px solid #e9ecef; background:#fff; position: sticky; top: 0; z-index: 5; }
-.back-btn { border:1px solid #dee2e6; background:#fff; padding:6px 10px; border-radius:6px; cursor:pointer; }
-.back-btn:hover { background:#f8f9fa; }
-.breadcrumbs { color:#6c757d; font-size:14px; }
-.breadcrumbs .crumb { display:inline-flex; align-items:center; gap:6px; }
-.breadcrumbs .sep { margin: 0 8px; color:#adb5bd; }
+.topbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.back-btn {
+  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: all var(--transition-base);
+}
+
+.back-btn:hover {
+  background: rgba(100, 116, 139, 0.1);
+  border-color: var(--color-accent-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.breadcrumbs {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.breadcrumbs .crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: color var(--transition-fast);
+}
+
+.breadcrumbs .crumb a {
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.breadcrumbs .crumb a:hover {
+  color: var(--color-accent-secondary);
+}
+
+.breadcrumbs .sep {
+  margin: 0 var(--spacing-sm);
+  color: var(--color-text-tertiary);
+}
 
 /* Переключатель режимов графиков */
-.charts-switcher{ display:flex; gap:8px; justify-content:center; padding:6px 16px; background:#fff; }
-.switch-btn{ border:1px solid #dee2e6; background:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; }
-.switch-btn.active{ background:#0d6efd; color:#fff; border-color:#0d6efd; }
+.charts-switcher {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.switch-btn {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-base);
+  font-weight: 500;
+}
+
+.switch-btn:hover {
+  background: rgba(100, 116, 139, 0.1);
+  border-color: var(--color-accent-secondary);
+  color: var(--color-text-primary);
+}
+
+.switch-btn.active {
+  background: var(--color-accent-gradient-light);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--shadow-glow);
+}
 
 .chart-header {
   margin-bottom: 20px;
@@ -979,7 +1064,7 @@ input[type="datetime-local"]::-ms-expand:hover {
   
   /* 2. Размещаем в верхнем правом углу с небольшим отступом */
   top: 15px; 
-  right: 15px; 
+  right: 1px; 
   z-index: 1001; /* Выше, чем z-index самой панели, если это потребуется */
   
   /* 3. Улучшаем внешний вид, так как используется p-button-text */

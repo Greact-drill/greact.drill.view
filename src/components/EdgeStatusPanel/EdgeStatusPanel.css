@@ -13,85 +13,119 @@
 }
 
 .status-group {
-    margin-bottom: 30px; /* Увеличим отступ между группами для лучшей визуальной сепарации */
-    padding-bottom: 15px; /* Увеличим отступ под разделителем */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    position: relative;
+}
+
+.status-group::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-accent-secondary);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rig-status-panel.open .status-group::after {
+    width: 60px;
 }
 
 .status-group-title {
-    
-    font-size: 1.4rem; /* УВЕЛИЧИВАЕМ РАЗМЕР ШРИФТА (Было 1rem) */
-    font-weight: 600; /* Используем 600, чтобы не было слишком "жирно" */
-    color: #ffffff !important; 
-    margin-bottom: 10px; /* Немного уменьшим отступ от заголовка до элементов */
-    text-transform: none; /* Убираем uppercase, если он не нужен для читаемости */
-    letter-spacing: normal;
+    font-size: 1.125rem;
+    font-weight: 300;
+    color: var(--color-text-primary) !important; 
+    margin-bottom: 16px;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
 }
-
 
 .status-items {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Уменьшим gap для более плотного списка */
+    gap: 8px;
 }
 
 .status-item {
     display: flex;
     align-items: center;
-    padding: 10px;
-    border-radius: 6px;
-    transition: background-color 0.2s;
+    padding: 12px 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer; 
-    font-size: 1rem; /* Увеличим размер текста */
-    color: #e2e8f0; /* Основной текст светлее */
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    position: relative;
+}
+
+.status-item::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-accent-secondary);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .status-item:hover {
-    background-color: rgba(255, 255, 255, 0.05); /* Легкий hover-эффект */
+    border-bottom-color: rgba(212, 165, 116, 0.2);
+    color: var(--color-text-primary);
 }
 
-/* *** УСИЛЕННЫЙ ЭФФЕКТ СВЕЧЕНИЯ ДЛЯ ИНДИКАТОРОВ *** */
+.status-item:hover::before {
+    width: 100%;
+}
+
+/* Индикаторы статусов - стиль piano.io */
 .status-indicator {
-    width: 12px; /* Увеличим размер индикатора */
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 15px; /* Увеличим отступ */
-    transition: all 0.3s;
-    background-color: #64748b !important; /* Серый по умолчанию */
+    width: 8px;
+    height: 8px;
+    border-radius: 0;
+    margin-right: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: rgba(212, 165, 116, 0.3) !important;
+    transform: rotate(45deg);
+    flex-shrink: 0;
 }
 
-/* Градиент и СВЕЧЕНИЕ для ОК */
 .status-indicator.status-ok {
-    background: linear-gradient(
-        45deg, 
-        var(--status-ok-base-bright) 0%, 
-        var(--status-ok-dark) 80%
-    ) !important;
-    box-shadow: 0 0 10px var(--status-ok-base-bright) !important; /* Усиливаем свечение */
+    background: var(--color-success) !important;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4) !important;
 }
 
-/* Градиент и СВЕЧЕНИЕ для ОШИБКА */
 .status-indicator.status-error {
-    background: linear-gradient(
-        45deg, 
-        var(--status-error-base-bright) 0%, 
-        var(--status-error-dark) 80%
-    ) !important;
-    box-shadow: 0 0 10px var(--status-error-base-bright) !important; /* Усиливаем свечение */
+    background: var(--color-error) !important;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4) !important;
+}
+
+.status-item:hover .status-indicator {
+    transform: rotate(45deg) scale(1.2);
 }
 
 .status-label.status-link {
-    color: var(--primary-color, #93C5FD) !important; 
-    font-weight: 500;
+    color: var(--color-text-primary) !important; 
+    font-weight: 400;
+    transition: color 0.3s ease;
+}
+
+.status-label.status-link:hover {
+    color: var(--color-accent-secondary) !important;
 }
 
 /* Отключенные/неизвестные статусы */
 .status-item.status-disabled .status-indicator,
 .status-indicator.status-unknown {
-    background-color: #64748b !important;
+    background-color: rgba(212, 165, 116, 0.2) !important;
     box-shadow: none !important;
 }
 
 .status-item.status-disabled .status-label {
-    color: #64748b; 
+    color: var(--color-text-tertiary); 
 }

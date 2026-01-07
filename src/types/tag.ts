@@ -12,7 +12,7 @@ export interface TagCustomizationItem {
  */
 export interface TagData {
     tag: string;
-    value: number | string | boolean; // Значение тега, может быть числом, строкой или булевым
+    value: number | string | boolean | null; // Значение тега, может быть числом, строкой или булевым
     name: string; // Человекочитаемое название
     min: number;
     max: number;

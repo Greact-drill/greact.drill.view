@@ -3,23 +3,27 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react'; 
 import { Button } from 'primereact/button'; 
 import { useTagHistory } from '../../hooks/useTagHistory';
-import type { TagHistoryList } from '../../types/tag'; 
+import type { TagHistoryList, TagHistoryData } from '../../types/tag'; 
 
 import ActionLogTable from '../../components/ActionLogTable/ActionLogTable'; 
 import { MOCK_ACTION_LOG } from '../../types/tag';
 import { useEdgeWithAttributes } from '../../hooks/useEdges';
+import './ArchivePage.css';
 
-const ACCENT_COLOR_1 = '#a78bfa';
-const ACCENT_COLOR_2 = '#34D399';
-const WARN_COLOR = '#F87171';
+// Цвета промышленной палитры
+const ACCENT_COLOR_1 = '#c97a3d'; // Оранжево-коричневый
+const ACCENT_COLOR_2 = '#d4a574'; // Бежевый
+const ACCENT_COLOR_3 = '#e8c9a0'; // Светлый беж
+const ACCENT_COLOR_4 = '#8b5a2b'; // Темно-коричневый
+const WARN_COLOR = '#f87171';
 
 const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
 
     const chartOption = useMemo(() => {
         if (tagsData.length === 0) return {};
         
-        // Цветовая палитра для серий
-        const colors = [ACCENT_COLOR_1, ACCENT_COLOR_2, '#ffc700', '#00bcd4'];
+        // Цветовая палитра для серий - промышленная гамма
+        const colors = [ACCENT_COLOR_1, ACCENT_COLOR_2, ACCENT_COLOR_3, ACCENT_COLOR_4];
 
         // --- 2. Создание серий данных ---
         const transformedSeriesData = tagsData.map((tag, index) => {
@@ -74,15 +78,16 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
             },
             tooltip: {
                 trigger: 'axis',
-                backgroundColor: 'rgba(42, 26, 58, 0.9)',
+                backgroundColor: 'rgba(10, 13, 18, 0.95)',
                 borderColor: ACCENT_COLOR_1,
                 borderWidth: 1,
-                textStyle: { color: 'var(--color-text-light)' },
+                textStyle: { color: 'var(--color-text-primary)' },
                 axisPointer: {
                     type: 'line',
                     lineStyle: { 
                         color: ACCENT_COLOR_1,
-                        type: 'dashed'
+                        type: 'dashed',
+                        width: 1
                     }
                 },
                 // Форматирование подсказки для отображения времени и значения
@@ -102,10 +107,16 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
             },
             legend: {
                 data: tagsData.map(t => t.name),
-                bottom: '0', // Легенда будет у самого низа
-                left: 'center', // Выравниваем по центру
-                textStyle: { color: 'var(--color-text-light)' },
-                itemGap: 20 // Увеличим отступ между элементами
+                bottom: '0',
+                left: 'center',
+                textStyle: { 
+                    color: 'var(--color-text-primary)',
+                    fontSize: 12,
+                    fontWeight: 400
+                },
+                itemGap: 24,
+                itemWidth: 14,
+                itemHeight: 14
             },
             grid: { left: '3%', right: '10%', bottom: '20%', containLabel: true },
             // DATA ZOOM для эффекта скользящего окна
@@ -133,12 +144,41 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                     height: 20, 
                     top: 10, 
                     textStyle: {
-                        color: 'var(--color-text-light)'
+                        color: 'var(--color-text-primary)',
+                        fontSize: 11
                     },
-                    fillerColor: 'rgba(167, 139, 250, 0.3)', 
+                    fillerColor: 'rgba(201, 122, 61, 0.4)', 
                     handleStyle: {
-                        color: ACCENT_COLOR_1 
-                    }
+                        color: ACCENT_COLOR_1,
+                        borderColor: ACCENT_COLOR_1,
+                        borderWidth: 2
+                    },
+                    moveHandleStyle: {
+                        color: ACCENT_COLOR_1,
+                        borderColor: ACCENT_COLOR_1,
+                        borderWidth: 2
+                    },
+                    borderColor: 'rgba(212, 165, 116, 0.3)',
+                    dataBackground: {
+                        lineStyle: { 
+                            color: 'rgba(212, 165, 116, 0.3)',
+                            width: 1
+                        },
+                        areaStyle: { 
+                            color: 'rgba(201, 122, 61, 0.15)'
+                        }
+                    },
+                    selectedDataBackground: {
+                        lineStyle: { 
+                            color: ACCENT_COLOR_1,
+                            width: 1.5
+                        },
+                        areaStyle: { 
+                            color: 'rgba(201, 122, 61, 0.3)'
+                        }
+                    },
+                    handleIcon: 'path://M30.9,53.2C16.8,53.2,5.3,41.7,5.3,27.6S16.8,2,30.9,2C45,2,56.4,13.5,56.4,27.6S45,53.2,30.9,53.2z M30.9,3.5C17.6,3.5,6.8,14.4,6.8,27.6c0,13.2,10.8,24.1,24.1,24.1C44.2,51.7,55,40.8,55,27.6C54.9,14.4,44.1,3.5,30.9,3.5z M36.9,35.8c0,0.6-0.4,1-1,1H26c-0.6,0-1-0.4-1-1V19.4c0-0.6,0.4-1,1-1h9.9c0.6,0,1,0.4,1,1V35.8z',
+                    moveHandleIcon: 'path://M30.9,53.2C16.8,53.2,5.3,41.7,5.3,27.6S16.8,2,30.9,2C45,2,56.4,13.5,56.4,27.6S45,53.2,30.9,53.2z M30.9,3.5C17.6,3.5,6.8,14.4,6.8,27.6c0,13.2,10.8,24.1,24.1,24.1C44.2,51.7,55,40.8,55,27.6C54.9,14.4,44.1,3.5,30.9,3.5z M36.9,35.8c0,0.6-0.4,1-1,1H26c-0.6,0-1-0.4-1-1V19.4c0-0.6,0.4-1,1-1h9.9c0.6,0,1,0.4,1,1V35.8z'
                 }
                 // Примечание: Мы не добавляем слайдер по Y, чтобы не занимать место на странице. 
                 // Внутренний зум (колесом мыши) обычно достаточен для Y.
@@ -164,8 +204,11 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                     color: ACCENT_COLOR_2
                 },
                 splitLine: {
+                    show: true,
                     lineStyle: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(212, 165, 116, 0.1)',
+                        type: 'dashed',
+                        width: 1
                     }
                 },
                 axisLine: { lineStyle: { color: ACCENT_COLOR_2 } }
@@ -175,15 +218,78 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
     }, [tagsData]);
 
     return (
-        <div style={{ width: '100%', height: 700, padding: '20px', borderRadius: '16px', background: 'var(--color-card-dark)', boxShadow: '0 0 15px rgba(167, 139, 250, 0.2)' }}>
+        <div className="archive-chart-container">
             <ReactECharts 
                 option={chartOption} 
-                style={{ height: '100%', width: '100%' }}
-                notMerge={true} // Важно для перерисовки, когда меняется тип оси
+                style={{ height: '100%', width: '100%', minHeight: '600px' }}
+                notMerge={true}
                 opts={{ renderer: 'canvas' }}
             />
         </div>
     );
+};
+
+// Тестовые данные для эмуляции
+const generateMockTagHistory = (): TagHistoryList => {
+    const now = Date.now();
+    const hoursAgo = (h: number) => now - (h * 60 * 60 * 1000);
+    
+    const tags: TagHistoryData[] = [
+        {
+            tag: 'pressure_main',
+            name: 'Давление в магистрали',
+            min: 0,
+            max: 100,
+            comment: 'Основное давление в системе',
+            unit_of_measurement: 'бар',
+            customization: [],
+            history: Array.from({ length: 50 }, (_, i) => ({
+                timestamp: new Date(hoursAgo(50 - i)).toISOString(),
+                value: 45 + Math.sin(i / 5) * 10 + Math.random() * 5
+            }))
+        },
+        {
+            tag: 'temperature_engine',
+            name: 'Температура двигателя',
+            min: 0,
+            max: 120,
+            comment: 'Температура основного двигателя',
+            unit_of_measurement: '°C',
+            customization: [],
+            history: Array.from({ length: 50 }, (_, i) => ({
+                timestamp: new Date(hoursAgo(50 - i)).toISOString(),
+                value: 75 + Math.cos(i / 7) * 15 + Math.random() * 3
+            }))
+        },
+        {
+            tag: 'flow_rate',
+            name: 'Расход жидкости',
+            min: 0,
+            max: 200,
+            comment: 'Скорость потока',
+            unit_of_measurement: 'л/мин',
+            customization: [],
+            history: Array.from({ length: 50 }, (_, i) => ({
+                timestamp: new Date(hoursAgo(50 - i)).toISOString(),
+                value: 120 + Math.sin(i / 4) * 30 + Math.random() * 10
+            }))
+        },
+        {
+            tag: 'vibration_level',
+            name: 'Уровень вибрации',
+            min: 0,
+            max: 50,
+            comment: 'Вибрация оборудования',
+            unit_of_measurement: 'мм/с',
+            customization: [],
+            history: Array.from({ length: 50 }, (_, i) => ({
+                timestamp: new Date(hoursAgo(50 - i)).toISOString(),
+                value: 15 + Math.random() * 10 + (i > 30 ? 5 : 0)
+            }))
+        }
+    ];
+    
+    return tags;
 };
 
 // --- КОМПОНЕНТ СТРАНИЦЫ АРХИВА ---
@@ -197,7 +303,12 @@ export default function ArchivePage() {
     // Включаем режим реального времени по умолчанию
     const [isRealTime, setIsRealTime] = useState(true);
     // ИСПОЛЬЗУЕМ ХУК с параметром isRealTime
-    const { tagHistoryData, loading, error } = useTagHistory(isRealTime, edgeKey);
+    const { tagHistoryData: apiTagHistoryData, loading, error } = useTagHistory(isRealTime, edgeKey);
+    
+    // Используем тестовые данные, если API не вернул данные
+    const tagHistoryData = apiTagHistoryData && apiTagHistoryData.length > 0 
+        ? apiTagHistoryData 
+        : generateMockTagHistory();
 
     // Логика для кнопки
     const toggleRealTime = () => {
@@ -208,66 +319,64 @@ export default function ArchivePage() {
     const buttonLabel = isRealTime ? 'Приостановить' : 'Возобновить';
 
     return (
-        <div className="main-page-container">
-            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+        <div className="archive-page-container">
+            <div className="archive-content-wrapper">
                 
-                <div className="bypass-controls-header" style={{ borderBottom: '1px solid #475569', paddingBottom: '15px', marginBottom: '30px' }}>
-                    <Button 
-                        icon="pi pi-arrow-left"
-                        label={`Назад к Буровой ${rigId}`}
-                        severity="secondary"
-                        onClick={() => navigate(`/rigs/${rigId}`)}
-                        className="mb-4 back-button-custom"
-                        style={{ color: 'var(--color-text-light)' }}
-                    />
-                    <Button
-                        icon={buttonIcon}
-                        label={buttonLabel}
-                        severity={isRealTime ? 'danger' : 'success'} // Красный для паузы, зеленый для возобновления
-                        onClick={toggleRealTime}
-                        className="mb-4 back-button-custom"
-                        style={{ color: 'var(--color-text-light)' }}
-                    />
+                {/* Заголовок страницы */}
+                <div className="archive-page-header">
+                    <h1 className="archive-page-title">
+                        Архив данных
+                    </h1>
+                    <div className="archive-page-subtitle">
+                        Наименование буровой: {selectedEdgeData?.name || `Буровая установка №${rigId}`}
+                    </div>
                 </div>
-                
-                <h1 style={{ color: 'var(--color-accent-blue)', marginBottom: '30px' }}>
-                    Архив данных и графики для Буровой {selectedEdgeData?.name}
-                </h1>
 
-                <div className="charts-grid" style={{ 
-                    display: 'grid', 
-                    // Адаптация сетки для графика и таблицы
-                    gridTemplateColumns: tagHistoryData && tagHistoryData.length > 0 ? '2fr 1fr' : '1fr',
-                    gap: '30px' 
-                }}></div>
+                {/* Панель управления */}
+                <div className="archive-controls">
+                    <div className="archive-controls-left">
+                        <button 
+                            className="archive-back-button"
+                            onClick={() => navigate(`/rigs/${rigId}`)}
+                        >
+                            <i className="pi pi-arrow-left" />
+                            <span>Назад</span>
+                        </button>
+                        <button
+                            className={`archive-control-button ${isRealTime ? 'active' : 'paused'}`}
+                            onClick={toggleRealTime}
+                        >
+                            <i className={buttonIcon} />
+                            <span>{buttonLabel}</span>
+                        </button>
+                    </div>
+                </div>
 
-                <div className="charts-grid" style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: '1fr',
-                    gap: '30px' 
-                }}>
-
+                {/* Контент */}
+                <div>
                     {error && (
-                        <div className="edge-error" style={{ color: WARN_COLOR, padding: '20px', background: 'var(--color-card-dark)', borderRadius: '16px' }}>
+                        <div className="archive-error-message">
+                            <i className="pi pi-exclamation-triangle" style={{ marginRight: '8px' }} />
                             Ошибка загрузки данных: {error}
                         </div>
                     )}
                     
-                    {/* Проверяем, что данные есть и это не пустой массив */}
+                    {loading && !tagHistoryData && (
+                        <div className="archive-empty-message">
+                            <i className="pi pi-spin pi-spinner" style={{ marginRight: '8px' }} />
+                            Загрузка данных...
+                        </div>
+                    )}
+                    
+                    {/* График */}
                     {tagHistoryData && tagHistoryData.length > 0 && (
                         <TagHistoryChart tagsData={tagHistoryData} />
                     )}
 
-                    {/* БЛОК 2: ЖУРНАЛ ДЕЙСТВИЙ */}
-                    <div className="action-log-container">
+                    {/* Журнал действий */}
+                    <div className="archive-action-log-container">
                         <ActionLogTable data={MOCK_ACTION_LOG} />
                     </div>
-                    
-                    {tagHistoryData && tagHistoryData.length === 0 && !loading && (
-                        <div style={{ color: 'var(--color-text-light)', padding: '20px', background: 'var(--color-card-dark)', borderRadius: '16px' }}>
-                            Исторические данные не найдены.
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

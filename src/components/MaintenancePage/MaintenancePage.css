@@ -1,34 +1,425 @@
+/* Контейнер страницы - стиль piano.io с промышленной палитрой */
+.bypass-status-page {
+    background: #0a0d12 !important;
+    background-image: 
+        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%) !important;
+    min-height: 100vh !important;
+    padding: 80px var(--spacing-xl) var(--spacing-2xl) !important;
+    color: var(--color-text-primary) !important;
+    position: relative !important;
+    overflow-x: hidden !important;
+    /* Убираем фиолетовый градиент из BypassStatusPage.css */
+    display: block !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    z-index: auto !important;
+}
 
-/* Стиль контейнера таблицы */
+.bypass-status-page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bypass-status-page > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Внутренний контейнер */
+.bypass-status-page-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Контейнер с контентом */
+.bypass-content-block {
+    position: relative;
+    z-index: 1;
+    padding-top: 40px;
+}
+
+/* Заголовок с кнопкой назад */
+.bypass-controls-header {
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.bypass-controls-header .back-button-custom {
+    background: transparent !important;
+    border: 1px solid rgba(212, 165, 116, 0.15) !important;
+    color: var(--color-text-primary) !important;
+    padding: 12px 24px !important;
+    border-radius: 0 !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.05em !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.bypass-controls-header .back-button-custom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-secondary);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+}
+
+.bypass-controls-header .back-button-custom::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-accent-secondary);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bypass-controls-header .back-button-custom:hover {
+    border-color: rgba(212, 165, 116, 0.3) !important;
+    background: rgba(201, 122, 61, 0.04) !important;
+    color: var(--color-accent-secondary) !important;
+}
+
+.bypass-controls-header .back-button-custom:hover::before {
+    height: 100%;
+}
+
+.bypass-controls-header .back-button-custom:hover::after {
+    width: 100%;
+}
+
+/* Заголовок страницы - стиль piano.io */
+.bypass-blocks-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 300;
+    margin: 0 auto 16px auto;
+    color: var(--color-text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-align: center;
+    position: relative;
+    padding-bottom: 40px;
+    margin-bottom: 60px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    /* Элегантное появление в стиле piano.io */
+    opacity: 0;
+    transform: translateY(15px);
+    animation: elegantTitleAppear 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    display: block;
+    width: 100%;
+}
+
+.bypass-blocks-title::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: var(--color-accent-secondary);
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.bypass-blocks-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: elegantLineExpand 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.3s;
+}
+
+@keyframes elegantTitleAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes elegantLineExpand {
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        width: 200px;
+        opacity: 0.6;
+    }
+}
+
+/* Стиль контейнера таблицы - элегантный с промышленной палитрой */
 .maintenance-table-container {
-    padding: 10px 0; /* Небольшой вертикальный отступ */
+    padding: 0;
+    margin-top: 60px;
+    position: relative;
 }
 
-/* Общий стиль для таблицы (перезаписывает стили PrimeReact для темной темы) */
-.maintenance-table-custom .p-datatable-thead > tr > th {
-    color: var(--text-color, #f1f5f9) !important; 
-    font-weight: 700; /* Более жирный шрифт */
-    font-size: 11px; /* Чуть меньший размер, как часто бывает в таблицах */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--surface-600); /* Жирный нижний разделитель */
+/* Общий стиль для таблицы - премиальный стиль с промышленной палитрой */
+.maintenance-table-custom {
+    background: rgba(26, 29, 36, 0.4) !important;
+    border: 1px solid rgba(212, 165, 116, 0.15) !important;
+    border-radius: 0 !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Стиль для тела таблицы (ячейки) */
+/* Обертка таблицы */
+.maintenance-table-custom .p-datatable-wrapper {
+    background: transparent !important;
+}
+
+/* Исправление выравнивания колонок */
+.maintenance-table-custom .p-datatable-table {
+    table-layout: auto !important;
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+/* Правильное выравнивание содержимого ячеек */
+.maintenance-table-custom .p-datatable-thead > tr > th,
 .maintenance-table-custom .p-datatable-tbody > tr > td {
-    /* Цвет текста в теле таблицы */
-    color: var(--text-color-secondary, #cbd5e1); 
-    padding: 10px 15px;
-    vertical-align: middle;
+    overflow: visible !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+    display: table-cell !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-/* Стиль для активной (наведенной) строки */
+/* Первая колонка (устройство) - может быть длинной */
+.maintenance-table-custom .p-datatable-thead > tr > th:first-child,
+.maintenance-table-custom .p-datatable-tbody > tr > td:first-child {
+    word-break: break-word !important;
+    white-space: normal !important;
+}
+
+/* Вторая колонка (статус) - теги */
+.maintenance-table-custom .p-datatable-thead > tr > th:nth-child(2),
+.maintenance-table-custom .p-datatable-tbody > tr > td:nth-child(2) {
+    white-space: normal !important;
+}
+
+/* Третья колонка (время) - выравнивание по правому краю */
+.maintenance-table-custom .p-datatable-thead > tr > th:nth-child(3),
+.maintenance-table-custom .p-datatable-tbody > tr > td:nth-child(3) {
+    text-align: right !important;
+    white-space: nowrap !important;
+}
+
+/* Заголовки таблицы - элегантные с промышленной палитрой */
+.maintenance-table-custom .p-datatable-thead > tr {
+    background: rgba(201, 122, 61, 0.03) !important;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.15) !important;
+}
+
+.maintenance-table-custom .p-datatable-thead > tr > th {
+    color: var(--color-text-secondary) !important; 
+    font-weight: 500 !important;
+    font-size: 0.6875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.15em !important;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.15) !important;
+    background: transparent !important;
+    padding: 18px 24px !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    position: relative;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+}
+
+/* Тонкая линия под заголовком при hover */
+.maintenance-table-custom .p-datatable-thead > tr > th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-accent-secondary);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.maintenance-table-custom .p-datatable-thead > tr > th:hover {
+    color: var(--color-accent-secondary) !important;
+}
+
+.maintenance-table-custom .p-datatable-thead > tr > th:hover::after {
+    width: 100%;
+}
+
+/* Стиль для тела таблицы (ячейки) - премиальный */
+.maintenance-table-custom .p-datatable-tbody > tr {
+    border-bottom: 1px solid rgba(212, 165, 116, 0.08) !important;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    position: relative;
+    background: transparent !important;
+}
+
+/* Убираем псевдоэлемент, который может влиять на layout */
+.maintenance-table-custom .p-datatable-tbody > tr::before {
+    display: none !important;
+    content: none !important;
+}
+
+.maintenance-table-custom .p-datatable-tbody > tr > td {
+    color: var(--color-text-primary) !important;
+    padding: 18px 24px !important;
+    vertical-align: middle !important;
+    background: transparent !important;
+    border: none !important;
+    position: static !important;
+    z-index: auto !important;
+    font-weight: 400 !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.01em !important;
+    box-sizing: border-box !important;
+}
+
+/* Первая ячейка - убеждаемся, что она видна и правильно отображается */
+.maintenance-table-custom .p-datatable-thead > tr > th:first-child,
+.maintenance-table-custom .p-datatable-tbody > tr > td:first-child {
+    padding-left: 24px !important;
+    border-left: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: table-cell !important;
+}
+
+/* Альтернативные строки для лучшей читаемости */
+.maintenance-table-custom .p-datatable-tbody > tr:nth-child(even) {
+    background-color: rgba(212, 165, 116, 0.02) !important;
+}
+
+/* Стиль для активной (наведенной) строки - элегантный */
 .maintenance-table-custom .p-datatable-tbody > tr:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important; /* Едва заметное выделение */
+    background-color: rgba(201, 122, 61, 0.06) !important;
 }
 
-/* Улучшаем внешний вид Tag внутри таблицы */
-.p-datatable-sm .p-tag-sm {
-    padding: 4px 8px;
-    font-size: 0.7rem;
+/* Вертикальная линия слева при hover через первую ячейку */
+.maintenance-table-custom .p-datatable-tbody > tr:hover > td:first-child {
+    border-left: 2px solid var(--color-accent-secondary) !important;
+    padding-left: 22px !important; /* Компенсируем ширину border */
+}
+
+.maintenance-table-custom .p-datatable-tbody > tr:nth-child(even):hover {
+    background-color: rgba(201, 122, 61, 0.08) !important;
+}
+
+/* Стили для времени в таблице - использование промышленной палитры */
+.maintenance-table-custom .p-datatable-tbody > tr > td.p-text-right span {
+    transition: color 0.3s ease;
+}
+
+/* Цвета для времени в зависимости от статуса */
+.maintenance-table-custom .p-datatable-tbody > tr > td.p-text-right span[style*="var(--color-error-light)"] {
+    color: var(--color-error-light) !important; /* #f87171 */
+}
+
+.maintenance-table-custom .p-datatable-tbody > tr > td.p-text-right span[style*="var(--color-warning-light)"] {
+    color: var(--color-warning-light) !important; /* #fbbf24 */
+}
+
+.maintenance-table-custom .p-datatable-tbody > tr > td.p-text-right span[style*="var(--color-success-light)"] {
+    color: var(--color-success-light) !important; /* #4ade80 */
+}
+
+/* Улучшаем внешний вид Tag внутри таблицы - элегантный стиль с промышленной палитрой */
+.maintenance-table-custom .p-datatable-sm .p-tag-sm {
+    padding: 6px 14px !important;
+    font-size: 0.6875rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.08em !important;
+    border-radius: 0 !important;
+    border: 1px solid !important;
+    background: transparent !important;
+    text-transform: uppercase !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.maintenance-table-custom .p-tag-sm.p-tag-success {
+    color: var(--color-success-light) !important; /* #4ade80 */
+    border-color: rgba(34, 197, 94, 0.25) !important;
+    background: rgba(34, 197, 94, 0.08) !important;
+}
+
+.maintenance-table-custom .p-tag-sm.p-tag-success:hover {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    background: rgba(34, 197, 94, 0.12) !important;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.2) !important;
+}
+
+.maintenance-table-custom .p-tag-sm.p-tag-warning {
+    color: var(--color-warning-light) !important; /* #fbbf24 */
+    border-color: rgba(245, 158, 11, 0.25) !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+}
+
+.maintenance-table-custom .p-tag-sm.p-tag-warning:hover {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+    background: rgba(245, 158, 11, 0.12) !important;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
+}
+
+.maintenance-table-custom .p-tag-sm.p-tag-danger {
+    color: var(--color-error-light) !important; /* #f87171 */
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+}
+
+.maintenance-table-custom .p-tag-sm.p-tag-danger:hover {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Загрузка */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: var(--color-text-primary);
+}
+
+.loading-container .p-progress-spinner {
+    margin-bottom: 24px;
 }

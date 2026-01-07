@@ -4,10 +4,8 @@ import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import './MaintenancePage.css';
-
-import '../../pages/BypassStatusPage/BypassStatusPage.css'; 
 import { Tag } from 'primereact/tag';
+import './MaintenancePage.css';
 
 const maintenanceTypeMap: { [key: string]: string } = {
     'daily_maintenance': 'Ежедневное ТО',
@@ -97,9 +95,19 @@ const timeBodyTemplate = (rowData: MaintenanceRow) => {
     // Если статус 'danger' (просрочка), делаем время красным
     const isOverdue = rowData.severity === 'danger' || rowData.severity === 'warning';
     
+    // Определяем цвет в зависимости от severity
+    let timeColor = 'var(--color-text-primary)';
+    if (rowData.severity === 'danger') {
+        timeColor = 'var(--color-error-light)'; // #f87171
+    } else if (rowData.severity === 'warning') {
+        timeColor = 'var(--color-warning-light)'; // #fbbf24
+    } else if (rowData.severity === 'success') {
+        timeColor = 'var(--color-success-light)'; // #4ade80
+    }
+    
     return (
         <span style={{ 
-            color: isOverdue ? 'var(--red-400, #F87171)' : 'var(--text-primary)',
+            color: isOverdue ? timeColor : 'var(--color-text-primary)',
             fontWeight: isOverdue ? 600 : 400
         }}>
             {rowData.time}

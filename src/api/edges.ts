@@ -32,3 +32,8 @@ export async function getEdgeWithAttributes(edgeKey: string): Promise<RawEdgeAtt
         return null;
     }
 }
+
+export async function getRootEdges(): Promise<Edge[]> {
+  const response = await apiClient.get<Edge[]>('/edge/roots');
+  return response.data;
+}

@@ -14,49 +14,63 @@ interface ActionLogTableProps {
  */
 const ActionLogTable: React.FC<ActionLogTableProps> = ({ data }) => {
 
-    const tableStyle = {
-        background: 'var(--color-card-dark)', 
-        borderRadius: '16px',
-        boxShadow: '0 0 15px rgba(167, 139, 250, 0.2)',
-        overflow: 'hidden', // Чтобы скругления работали с шапкой
-    };
-
     const headerTemplate = (
-        <div style={{ color: 'var(--color-accent-blue)', fontSize: '1.25em', fontWeight: 'bold', padding: '15px' }}>
-            Журнал действий персонала
+        <div className="action-log-header">
+            <h3 className="action-log-header-title">
+                Журнал действий персонала
+            </h3>
         </div>
     );
     
-    // Функция форматирования времени (убираем дату, если она не нужна)
+    // Функция форматирования времени
     const timeBodyTemplate = (rowData: ActionLogItem) => {
         try {
-            // Пытаемся отформатировать время (убираем секунды для компактности)
-            return new Date(rowData.time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(rowData.time);
+            return (
+                <span className="action-log-time">
+                    {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+            );
         } catch (e) {
-            return rowData.time; // Возвращаем как есть, если не удалось распарсить
+            return <span className="action-log-time">{rowData.time}</span>;
         }
     };
 
+    // Функция форматирования действия
+    const actionBodyTemplate = (rowData: ActionLogItem) => {
+        return <span className="action-log-action">{rowData.action}</span>;
+    };
+
     return (
-        <div style={tableStyle}>
+        <div className="action-log-table-container">
             <DataTable 
                 value={data} 
                 header={headerTemplate}
                 size="small"
                 stripedRows
-                // Адаптация стиля PrimeReact к темной теме
+                className="action-log-table"
+                selectionMode={undefined}
+                dataKey=""
                 pt={{
-                    root: { className: 'p-datatable-gridlines' }, // Добавляем сетку
-                    header: { style: { background: 'rgba(167, 139, 250, 0.1)' } },
-                    table: { style: { borderCollapse: 'collapse' } },
-                    column: {
-                        headerCell: { style: { color: 'var(--color-text-light)', background: 'rgba(167, 139, 250, 0.1)', fontWeight: '600' } },
-                        bodyCell: { style: { color: 'var(--color-text-light)', background: 'rgba(167, 139, 250, 0.1)' } }
-                    }
+                    root: { style: { border: 'none', background: 'transparent' } },
+                    table: { style: { borderCollapse: 'collapse', width: '100%' } },
+                    thead: { style: { border: 'none' } },
+                    tbody: { style: { border: 'none' } }
                 }}
             >
-                <Column field="time" header="Время" body={timeBodyTemplate} style={{ width: '150px' }} />
-                <Column field="action" header="Действие" />
+                <Column 
+                    field="time" 
+                    header="Время" 
+                    body={timeBodyTemplate} 
+                    style={{ width: '180px', minWidth: '180px' }}
+                    className="action-log-time-column"
+                />
+                <Column 
+                    field="action" 
+                    header="Действие" 
+                    body={actionBodyTemplate}
+                    className="action-log-action-column"
+                />
             </DataTable>
         </div>
     );

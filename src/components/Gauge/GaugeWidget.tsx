@@ -7,7 +7,8 @@ interface GaugeWidgetProps {
   label: string;
   value: number;
   max: number;
-  unit?: string; 
+  unit?: string;
+  compact?: boolean;
 }
 
 const GaugeWidget: React.FC<GaugeWidgetProps> = React.memo(({ label, value, max, unit = '' }) => {

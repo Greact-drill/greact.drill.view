@@ -5,6 +5,7 @@ interface VerticalBarProps {
   label: string;
   value: number;
   max: number;
+  compact?: boolean;
 }
 
 const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {

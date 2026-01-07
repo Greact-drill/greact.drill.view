@@ -6,6 +6,7 @@ interface BypassStatusBlockProps {
     label: string;
     value: string | React.ReactNode;
     isOK: boolean; // True для зеленого (успех), False для красного (ошибка)
+    compact?: boolean;
 }
 
 /**

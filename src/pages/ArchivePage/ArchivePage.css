@@ -1,0 +1,431 @@
+/* Контейнер страницы архива - стиль piano.io с промышленной палитрой */
+.archive-page-container {
+    background: #0a0d12;
+    background-image: 
+        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+    min-height: 100vh;
+    padding: 80px var(--spacing-xl) var(--spacing-2xl);
+    color: var(--color-text-primary);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.archive-page-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.archive-page-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+.archive-content-wrapper {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Заголовок страницы - элегантный стиль piano.io */
+.archive-page-header {
+    margin-bottom: 60px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-15px);
+    animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.archive-page-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 300;
+    margin: 0 0 16px 0;
+    color: var(--color-text-primary);
+    letter-spacing: -0.02em;
+    position: relative;
+}
+
+.archive-page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+    animation: elegantLineExpand 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.3s;
+}
+
+.archive-page-subtitle {
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: var(--color-accent-secondary);
+    letter-spacing: 0.05em;
+    text-transform: none;
+    margin-top: 32px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.4s;
+}
+
+/* Панель управления - элегантная */
+.archive-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.2s;
+}
+
+.archive-controls-left {
+    display: flex;
+    gap: 12px;
+}
+
+.archive-back-button,
+.archive-control-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    background: rgba(201, 122, 61, 0.04);
+    color: var(--color-text-primary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
+    border-radius: 0;
+}
+
+.archive-back-button::before,
+.archive-control-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-secondary);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+}
+
+.archive-back-button::after,
+.archive-control-button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.archive-back-button:hover,
+.archive-control-button:hover {
+    border-color: rgba(212, 165, 116, 0.3);
+    background: rgba(201, 122, 61, 0.08);
+    color: var(--color-accent-secondary);
+    transform: translateY(-2px);
+}
+
+.archive-back-button:hover::before,
+.archive-control-button:hover::before {
+    height: 100%;
+}
+
+.archive-back-button:hover::after,
+.archive-control-button:hover::after {
+    opacity: 1;
+}
+
+.archive-control-button.paused {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.archive-control-button.paused:hover {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.archive-control-button.active {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.archive-control-button.active:hover {
+    border-color: rgba(34, 197, 94, 0.5);
+    background: rgba(34, 197, 94, 0.1);
+}
+
+/* Контейнер графика - элегантный */
+.archive-chart-container {
+    width: 100%;
+    min-height: 700px;
+    padding: 40px;
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    background: transparent;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInFromBottom 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.4s;
+    /* Скрываем стандартный браузерный скроллбар контейнера */
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE и Edge */
+}
+
+.archive-chart-container::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Скрываем стандартный браузерный скроллбар ECharts контейнера */
+.archive-chart-container .echarts-for-react {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE и Edge */
+    overflow: visible !important;
+}
+
+.archive-chart-container .echarts-for-react::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Скрываем все стандартные браузерные скроллбары внутри контейнера графика */
+.archive-chart-container * {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE и Edge */
+}
+
+.archive-chart-container *::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.archive-chart-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-secondary);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.archive-chart-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.archive-chart-container:hover {
+    border-color: rgba(212, 165, 116, 0.25);
+    background: rgba(201, 122, 61, 0.04);
+}
+
+.archive-chart-container:hover::before {
+    height: 100%;
+}
+
+.archive-chart-container:hover::after {
+    opacity: 1;
+}
+
+/* Контейнер таблицы действий */
+.archive-action-log-container {
+    width: 100%;
+    margin-top: 32px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInFromBottom 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.6s;
+}
+
+/* Сообщения об ошибках и пустых данных */
+.archive-error-message,
+.archive-empty-message {
+    padding: 32px;
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    background: transparent;
+    color: var(--color-text-primary);
+    text-align: center;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    position: relative;
+    overflow: hidden;
+}
+
+.archive-error-message {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+    color: var(--color-error-light);
+}
+
+.archive-empty-message {
+    color: var(--color-text-tertiary);
+}
+
+/* Анимации */
+@keyframes fadeInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes elegantLineExpand {
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        width: 200px;
+        opacity: 0.6;
+    }
+}
+
+/* Стилизация скроллбара ECharts dataZoom slider */
+.archive-chart-container .echarts-for-react canvas {
+    display: block;
+}
+
+/* Стили для dataZoom slider ECharts */
+.archive-chart-container :global(.echarts-slider) {
+    background: rgba(10, 13, 18, 0.9) !important;
+    
+    border: 1px solid rgba(212, 165, 116, 0.3) !important;
+    border-radius: 4px !important;
+    /* Скрываем стандартный браузерный скроллбар внутри dataZoom slider */
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.archive-chart-container :global(.echarts-slider)::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Стили для всех ручек dataZoom slider (левая, правая, центральная) - SVG элементы */
+.archive-chart-container :global(.echarts-slider-handle),
+.archive-chart-container :global(.echarts-slider-moveHandle) {
+    fill: rgba(201, 122, 61, 0.9) !important;
+    stroke: rgba(212, 165, 116, 0.8) !important;
+    stroke-width: 2 !important;
+    opacity: 1 !important;
+}
+
+.archive-chart-container :global(.echarts-slider-handle:hover),
+.archive-chart-container :global(.echarts-slider-moveHandle:hover) {
+    fill: rgba(201, 122, 61, 1) !important;
+    stroke: rgba(212, 165, 116, 1) !important;
+    stroke-width: 2.5 !important;
+    filter: drop-shadow(0 0 6px rgba(201, 122, 61, 0.6)) !important;
+}
+
+/* Фон данных в dataZoom slider */
+.archive-chart-container :global(.echarts-slider-dataBackground) {
+    fill: rgba(201, 122, 61, 0.15) !important;
+    stroke: rgba(212, 165, 116, 0.3) !important;
+    stroke-width: 1 !important;
+}
+
+/* Выделенный фон данных в dataZoom slider */
+.archive-chart-container :global(.echarts-slider-selectedDataBackground) {
+    fill: rgba(201, 122, 61, 0.35) !important;
+    stroke: rgba(201, 122, 61, 0.7) !important;
+    stroke-width: 1.5 !important;
+}
+
+/* Заполнитель в dataZoom slider */
+.archive-chart-container :global(.echarts-slider-filler) {
+    fill: rgba(201, 122, 61, 0.5) !important;
+    stroke: rgba(212, 165, 116, 0.6) !important;
+    stroke-width: 1 !important;
+}
+
+/* Стили для всех SVG элементов внутри dataZoom slider */
+.archive-chart-container :global(.echarts-slider) svg {
+    overflow: visible !important;
+}
+
+/* Стили для текста в dataZoom slider */
+.archive-chart-container :global(.echarts-slider) text {
+    fill: var(--color-text-primary) !important;
+    font-size: 11px !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .archive-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .archive-controls-left {
+        flex-direction: column;
+    }
+    
+    .archive-chart-container {
+        padding: 24px;
+        min-height: 500px;
+    }
+}
+

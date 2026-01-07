@@ -3,7 +3,8 @@ import './NumberDisplay.css';
 
 interface NumberDisplayProps {
   label: string;
-  value: string; 
+  value: string;
+  compact?: boolean;
 }
 
 const NumberDisplay: React.FC<NumberDisplayProps> = ({ label, value }) => {
