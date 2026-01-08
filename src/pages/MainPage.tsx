@@ -108,7 +108,7 @@ export default function MainPage() {
 
   // Используем rigId как edge_key для получения данных
   const edgeKey = `${rigId}`;
-  const { edgeData, loading: edgeLoading, error: edgeError } = useEdgeWithAttributes(edgeKey);
+  const { edgeData } = useEdgeWithAttributes(edgeKey);
   
   // Получаем дочерние элементы текущей буровой
   const { children: childEdges, loading: childrenLoading, error: childrenError } = useEdgeChildren(edgeKey);

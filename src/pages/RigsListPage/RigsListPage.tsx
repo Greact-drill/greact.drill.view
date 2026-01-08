@@ -2,9 +2,8 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import drillSvg from "../../assets/drill.svg";
 import { useEdgeWithAttributes, useRootEdgesWithAttributes } from "../../hooks/useEdges";
-import EdgeStatusPanel from "../../components/EdgeStatusPanel/EdgeStatusPanel";
 import AnimatedCounter from "../../components/AnimatedCounter/AnimatedCounter";
-import type { Edge, EdgeWithAttributes, EdgeAttribute, RawEdgeAttributes } from "../../types/edge";
+import type { EdgeWithAttributes, EdgeAttribute, RawEdgeAttributes } from "../../types/edge";
 import { transformRawAttributes } from "../../utils/edgeUtils";
 import { Button } from 'primereact/button';
 import './RigsListPage.css';
@@ -68,7 +67,7 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
     }
   };
 
-  const formatValue = (key: string, value: any) => {
+  const formatValue = (_key: string, value: any) => {
     if (typeof value === 'boolean') {
       return value ? 'Выполнено' : 'Требуется';
     }
@@ -179,41 +178,6 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
   );
 };
 
-// Модифицированный EdgeStatusPanel для скрытия заголовков
-const ModifiedEdgeStatusPanel = ({ attributes, loading, rigId }: { 
-  attributes: ExtendedEdgeAttribute, 
-  loading: boolean, 
-  rigId: string | null 
-}) => {
-  if (loading) {
-    return <div>Загрузка статусов...</div>;
-  }
-
-  return (
-    <div className="edge-status-panel">
-      <div className="status-section-title" style={{ marginTop: '25px' }}>
-        <i className="pi pi-chart-line" />
-        <span>Дополнительные параметры</span>
-      </div>
-      
-      {/* Здесь будет контент EdgeStatusPanel без заголовков */}
-      <EdgeStatusPanel 
-        attributes={attributes}
-        loading={loading}
-        rigId={rigId}
-      />
-      
-      {/* Кнопка для перехода к дополнительным параметрам */}
-      <Link 
-        to={`/rigs/${rigId}#parameters`}
-        className="details-more-button"
-      >
-        <span>Все параметры</span>
-        <i className="pi pi-arrow-right button-icon" />
-      </Link>
-    </div>
-  );
-};
 
 export default function RigsListPage() {
   const [selectedRigId, setSelectedRigId] = useState<string | null>(null);
@@ -221,7 +185,7 @@ export default function RigsListPage() {
   const { edgesWithAttributes: rootEdges, loading: rootEdgesLoading, error: rootEdgesError } = useRootEdgesWithAttributes();
 
   const selectedEdgeKey = selectedRigId ? `${selectedRigId}` : null;
-  const { edgeData: selectedEdgeData, loading: selectedLoading } = useEdgeWithAttributes(selectedEdgeKey);
+  const { edgeData: selectedEdgeData } = useEdgeWithAttributes(selectedEdgeKey);
 
   // Статистика по всем буровым
   const hasErrorsInAttributes = (rawAttributes: RawEdgeAttributes | null | undefined, edgeId: string) => {

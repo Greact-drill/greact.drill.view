@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactECharts from 'echarts-for-react'; 
-import { Button } from 'primereact/button'; 
 import { useTagHistory } from '../../hooks/useTagHistory';
 import type { TagHistoryList, TagHistoryData } from '../../types/tag'; 
 
@@ -15,7 +14,6 @@ const ACCENT_COLOR_1 = '#c97a3d'; // Оранжево-коричневый
 const ACCENT_COLOR_2 = '#d4a574'; // Бежевый
 const ACCENT_COLOR_3 = '#e8c9a0'; // Светлый беж
 const ACCENT_COLOR_4 = '#8b5a2b'; // Темно-коричневый
-const WARN_COLOR = '#f87171';
 
 const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
 
