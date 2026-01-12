@@ -6,6 +6,11 @@ import { PrimeReactProvider } from 'primereact/api';
 import DynamicWidgetPage from './pages/DynamicWidgetPage/DynamicWidgetPage.tsx'; // Универсальный компонент
 import MaintenancePage from "./components/MaintenancePage/MaintenancePage.tsx";
 import ArchivePage from "./pages/ArchivePage/ArchivePage.tsx";
+import ElectricalDiagramPage from "./pages/ElectricalDiagramPage/ElectricalDiagramPage.tsx";
+import WinchBlockPage from "./pages/WinchBlockPage/WinchBlockPage.tsx";
+import PumpBlockPage from "./pages/PumpBlockPage/PumpBlockPage.tsx";
+import VideoPage from "./pages/VideoPage/VideoPage.tsx";
+import PowerConsumptionPage from "./pages/PowerConsumptionPage/PowerConsumptionPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +33,11 @@ export default function AppRouter() {
               <Route element={<Layout />}>
                 <Route path="/rigs/:rigId" element={<MainPage />} />
                 <Route path="/rigs/:rigId/archive" element={<ArchivePage />} />
+                <Route path="/rigs/:rigId/electrical-diagram" element={<ElectricalDiagramPage />} />
+                <Route path="/rigs/:rigId/winch-block" element={<WinchBlockPage />} />
+                <Route path="/rigs/:rigId/pump-block" element={<PumpBlockPage />} />
+                <Route path="/rigs/:rigId/video" element={<VideoPage />} />
+                <Route path="/rigs/:rigId/power-consumption" element={<PowerConsumptionPage />} />
               </Route>
 
               {/* Универсальные маршруты для виджетов */}

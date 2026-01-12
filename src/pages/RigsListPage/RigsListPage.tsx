@@ -105,8 +105,8 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
 
   // Основные статусы
   const mainStatuses = [
-    { key: 'bypass-status', value: attributes.bypass_state, type: 'state' as const },
-    { key: 'accident-status', value: attributes.drive_state, type: 'state' as const },
+    { key: 'Состояние байпасов', value: attributes.bypass_state, type: 'state' as const },
+    { key: 'Аварии приводов', value: attributes.drive_state, type: 'state' as const },
   ];
 
   // Статусы ТО
@@ -132,6 +132,7 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
           <Link
             key={key}
             to={`/rigs/${rigId}/widgets/${key}`}
+            state={{ pageTitle: getButtonTitle(key) }}
             className="status-button-link"
           >
             <div className={`status-button ${getStatusClass(value, type)}`}>
@@ -318,63 +319,63 @@ export default function RigsListPage() {
         {/* Заголовок страницы со статистикой */}
         <div className="page-header">
           <div className="page-header-content">
-            <h1 className="page-title">Буровые установки</h1>
+            <h1 className="rigs-page-title">Буровые установки</h1>
             <p className="page-subtitle">Мониторинг состояния оборудования</p>
           </div>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon total">
+          <div className="rigs-stats-grid">
+            <div className="rigs-stat-card">
+              <div className="rigs-stat-icon total">
                 <i className="pi pi-building" />
               </div>
-              <div className="stat-content">
-                <div className="stat-value">
+              <div className="rigs-stat-content">
+                <div className="rigs-stat-value">
                   <AnimatedCounter value={stats.total} duration={1000} />
                 </div>
-                <div className="stat-label">Всего установок</div>
+                <div className="rigs-stat-label">Всего установок</div>
               </div>
             </div>
-            <div className="stat-card">
-              <div className="stat-icon ok">
+            <div className="rigs-stat-card">
+              <div className="rigs-stat-icon ok">
                 <i className="pi pi-check-circle" />
               </div>
-              <div className="stat-content">
-                <div className="stat-value">
+              <div className="rigs-stat-content">
+                <div className="rigs-stat-value">
                   <AnimatedCounter value={stats.ok} duration={900} />
                 </div>
-                <div className="stat-label">В норме</div>
+                <div className="rigs-stat-label">В норме</div>
               </div>
             </div>
-            <div className="stat-card">
-              <div className="stat-icon error">
+            <div className="rigs-stat-card">
+              <div className="rigs-stat-icon error">
                 <i className="pi pi-exclamation-triangle" />
               </div>
-              <div className="stat-content">
-                <div className="stat-value">
+              <div className="rigs-stat-content">
+                <div className="rigs-stat-value">
                   <AnimatedCounter value={stats.errors} duration={900} />
                 </div>
-                <div className="stat-label">Требуют внимания</div>
+                <div className="rigs-stat-label">Требуют внимания</div>
               </div>
             </div>
-            <div className="stat-card">
-              <div className="stat-icon warning">
+            <div className="rigs-stat-card">
+              <div className="rigs-stat-icon warning">
                 <i className="pi pi-cog" />
               </div>
-              <div className="stat-content">
-                <div className="stat-value">
+              <div className="rigs-stat-content">
+                <div className="rigs-stat-value">
                   <AnimatedCounter value={stats.equipmentIssues} duration={900} />
                 </div>
-                <div className="stat-label">Проблемы оборудования</div>
+                <div className="rigs-stat-label">Проблемы оборудования</div>
               </div>
             </div>
-            <div className="stat-card">
-              <div className="stat-icon maintenance">
+            <div className="rigs-stat-card">
+              <div className="rigs-stat-icon maintenance">
                 <i className="pi pi-wrench" />
               </div>
-              <div className="stat-content">
-                <div className="stat-value">
+              <div className="rigs-stat-content">
+                <div className="rigs-stat-value">
                   <AnimatedCounter value={stats.maintenanceIssues} duration={900} />
                 </div>
-                <div className="stat-label">Требуется ТО</div>
+                <div className="rigs-stat-label">Требуется ТО</div>
               </div>
             </div>
           </div>

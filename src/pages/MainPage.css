@@ -72,12 +72,12 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 24px;
+    padding: 14px 20px;
     border: 1px solid rgba(212, 165, 116, 0.2);
     background: rgba(201, 122, 61, 0.04);
     color: var(--color-text-primary);
     font-size: 0.875rem;
-    font-weight: 400;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -85,6 +85,9 @@
     opacity: 0;
     transform: translateY(-10px);
     animation: fadeInFromTop 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    text-decoration: none;
+    font-family: inherit;
+    border-radius: 0;
 }
 
 /* Последовательное появление кнопок меню */
@@ -136,14 +139,14 @@
 }
 
 .subsystem-menu-number {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(212, 165, 116, 0.25);
     background: rgba(201, 122, 61, 0.06);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 500;
     flex-shrink: 0;
     transition: all 0.3s ease;
@@ -151,14 +154,28 @@
 
 .subsystem-menu-item:hover .subsystem-menu-number {
     border-color: var(--color-accent-secondary);
-    background: rgba(100, 116, 139, 0.1);
-    transform: scale(1.1);
+    background: rgba(201, 122, 61, 0.1);
+    transform: scale(1.05);
     color: var(--color-accent-secondary);
 }
 
 .subsystem-menu-name {
     white-space: nowrap;
     font-weight: 500;
+}
+
+.subsystem-menu-item i {
+    font-size: 0.875rem;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.subsystem-menu-item:hover i {
+    transform: translateX(2px);
+}
+
+.subsystem-menu-item:hover i.pi-arrow-left {
+    transform: translateX(-2px);
 }
 
 .subsystems-menu-nav {
@@ -244,9 +261,9 @@
 /* Основной layout: Статистика | Карта | Параметры */
 .main-content-layout {
     display: grid;
-    grid-template-columns: 320px 1fr 400px;
+    grid-template-columns: 280px 1fr 320px;
     gap: 32px;
-    max-width: 1800px;
+    max-width: 1600px;
     margin: 0 auto;
     align-items: start;
 }
@@ -419,19 +436,18 @@
 /* Карта - анимация появления снизу с масштабированием */
 .map-section {
     border: 1px solid rgba(212, 165, 116, 0.15);
-    padding: 40px;
+    padding: 35px;
     background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 600px;
+    min-height: 550px;
+    width: 100%;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-    animation: scaleInFromBottom 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    animation-delay: 0.5s;
+    overflow: visible;
+    opacity: 1;
+    transform: none;
 }
 
 .map-section::before {
@@ -471,11 +487,26 @@
     opacity: 1;
 }
 
-.map-svg {
-    max-width: 100%;
-    max-height: 700px;
-    width: auto;
-    height: auto;
+.map-section .map-svg {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 800px !important;
+    max-height: 820px !important;
+    min-width: 450px !important;
+    min-height: 450px !important;
+    aspect-ratio: 1010 / 1024;
+    opacity: 1 !important;
+    filter: none !important;
+    visibility: visible !important;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.map-section .map-svg image {
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Правая панель - Параметры - анимация появления справа */
@@ -618,29 +649,17 @@
     opacity: 1;
 }
 
-.map-svg {
-    display: block;
-    width: 100%;
-    height: auto;
-    filter: grayscale(0.2);
-    opacity: 0.9;
-    transition: all 0.4s ease;
-}
-
-.map-container:hover .map-svg {
-    opacity: 1;
-    filter: grayscale(0.1);
-}
 
 /* --- Сегменты (Polygon) на карте - стиль piano.io --- */
 .seg-polygon {
     fill: var(--color-accent-secondary);
-    fill-opacity: 0.05;
+    fill-opacity: 0.15;
     stroke: var(--color-accent-secondary);
-    stroke-width: 1;
+    stroke-width: 2;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     filter: none;
+    pointer-events: all;
 }
 
 .seg-polygon:hover,
@@ -918,9 +937,11 @@
 
 /* Статистика */
 .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+    width: 100%;
+    grid-template-columns: none !important;
 }
 
 .stat-item {
@@ -934,6 +955,10 @@
     opacity: 0;
     transform: scale(0.9);
     animation: scaleIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 /* Последовательное появление элементов статистики */
@@ -945,6 +970,21 @@
 .stat-item:hover {
     border-color: rgba(212, 165, 116, 0.25);
     background: rgba(201, 122, 61, 0.04);
+}
+
+/* Гарантируем вертикальное расположение для статистики в левой панели */
+.left-panel .info-section .stats-grid,
+.left-panel .stats-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+}
+
+.left-panel .info-section .stats-grid .stat-item,
+.left-panel .stats-grid .stat-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: auto !important;
 }
 
 .stat-label {

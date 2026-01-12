@@ -1,0 +1,403 @@
+/* Контейнер страницы расхода электроэнергии */
+.power-consumption-page-container {
+  min-height: 100vh;
+  background: #0a0d12;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+  padding: 80px var(--spacing-xl) var(--spacing-2xl);
+  position: relative;
+  color: var(--color-text-primary);
+}
+
+.power-consumption-page-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.power-consumption-page-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Заголовок страницы */
+.page-header {
+  margin-bottom: 60px;
+  text-align: center;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-header-content {
+  margin-bottom: 40px;
+}
+
+.power-page-title {
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 300;
+  margin: 0 auto 16px auto;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.power-page-title::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(212, 165, 116, 1) 50%, 
+    transparent 100%);
+}
+
+.power-page-subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-tertiary);
+  margin: 16px 0 0 0;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* Навигация */
+.power-page-nav {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.power-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  background: rgba(201, 122, 61, 0.04);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+}
+
+.power-nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 0;
+  background: var(--color-accent-secondary);
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.power-nav-link:hover {
+  border-color: rgba(212, 165, 116, 0.3);
+  background: rgba(201, 122, 61, 0.08);
+  transform: translateY(-2px);
+}
+
+.power-nav-link:hover::before {
+  height: 100%;
+}
+
+.power-nav-link i {
+  font-size: 0.875rem;
+}
+
+/* Контейнер контента */
+.power-content-wrapper {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Контейнер схемы КРУ */
+.kru-scheme-container {
+  background: transparent;
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  padding: 48px;
+}
+
+.kru-header {
+  margin-bottom: 40px;
+  text-align: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.15);
+}
+
+.kru-title {
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Сетка секций питания */
+.power-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 32px;
+}
+
+/* Карточка секции питания */
+.power-section-card {
+  background: transparent;
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  padding: 32px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+}
+
+.power-section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 0;
+  background: var(--color-accent-secondary);
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.power-section-card:hover {
+  border-color: rgba(212, 165, 116, 0.3);
+  background: rgba(201, 122, 61, 0.04);
+  transform: translateY(-2px);
+}
+
+.power-section-card:hover::before {
+  height: 100%;
+}
+
+.power-section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.1);
+}
+
+.power-section-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.power-section-icon i {
+  font-size: 1.5rem;
+  color: var(--color-accent-secondary);
+}
+
+.power-section-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin: 0;
+  flex: 1;
+}
+
+.power-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Параметры */
+.power-parameter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.power-parameter-row:last-of-type {
+  border-bottom: none;
+}
+
+.power-parameter-label {
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+.power-parameter-value {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.power-parameter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.power-parameter-label-group {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.power-parameter-values {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 16px;
+}
+
+.power-parameter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.power-param-name {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.power-param-value {
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+/* Информация о трансформаторе */
+.power-transformer-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(201, 122, 61, 0.04);
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  margin-top: 8px;
+  animation: pulseTransformer 3s ease-in-out infinite;
+}
+
+@keyframes pulseTransformer {
+  0%, 100% {
+    border-color: rgba(212, 165, 116, 0.2);
+    background: rgba(201, 122, 61, 0.04);
+    box-shadow: 0 0 0 0 rgba(212, 165, 116, 0);
+  }
+  50% {
+    border-color: rgba(212, 165, 116, 0.4);
+    background: rgba(201, 122, 61, 0.08);
+    box-shadow: 0 0 20px 0 rgba(212, 165, 116, 0.2);
+  }
+}
+
+.transformer-icon-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.transformer-icon {
+  color: #fbbf24;
+  stroke: #fbbf24;
+  fill: none;
+}
+
+.transformer-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.transformer-label {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.transformer-value {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+  .power-sections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .power-consumption-page-container {
+    padding: 40px var(--spacing-md);
+  }
+
+  .kru-scheme-container {
+    padding: 24px;
+  }
+
+  .power-page-title {
+    font-size: 2rem;
+  }
+
+  .power-page-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .power-sections-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .power-section-card {
+    padding: 24px;
+  }
+}

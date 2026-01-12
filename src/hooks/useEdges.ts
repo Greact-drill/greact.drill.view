@@ -49,9 +49,10 @@ export function useEdgeWithAttributes(edgeKey: string | null) {
         const edgesData = await getEdges({ key: edgeKey });
         const attributesData: RawEdgeAttributes | null | undefined = await getEdgeAttributes({ edge: edgeKey }); 
 
-        if (edgesData.length > 0) {
-          const edge = edgesData[0];
-          
+        // Находим edge, который совпадает по id с edgeKey
+        const edge = edgesData.find(e => e.id === edgeKey);
+        
+        if (edge) {
           const hasAttributes = attributesData && Object.keys(attributesData).length > 0;
           const attributes = hasAttributes ? attributesData : undefined;
           

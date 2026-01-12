@@ -1,0 +1,629 @@
+/* Контейнер страницы видео */
+.video-page-container {
+  min-height: 100vh;
+  background: #0a0d12;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+  padding: 80px var(--spacing-xl) var(--spacing-2xl);
+  position: relative;
+  color: var(--color-text-primary);
+}
+
+.video-page-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.video-page-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Заголовок страницы */
+.page-header {
+  margin-bottom: 60px;
+  text-align: center;
+  animation: fadeInDown 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-header-content {
+  margin-bottom: 40px;
+}
+
+.video-page-title {
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 300;
+  margin: 0 auto 24px auto;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(135deg, 
+    rgba(248, 250, 252, 1) 0%,
+    rgba(203, 213, 225, 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.video-page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(212, 165, 116, 1) 50%, 
+    transparent 100%);
+  animation: expandLine 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
+}
+
+@keyframes expandLine {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 120px;
+    opacity: 1;
+  }
+}
+
+.video-page-subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-tertiary);
+  margin: 32px 0 0 0;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Навигация */
+.video-page-nav {
+  margin-bottom: 48px;
+  display: flex;
+  justify-content: flex-start;
+  animation: fadeInLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.video-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  background: rgba(201, 122, 61, 0.04);
+  backdrop-filter: blur(10px);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.video-nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 0;
+  background: var(--color-accent-secondary);
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.video-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.video-nav-link:hover {
+  border-color: rgba(212, 165, 116, 0.4);
+  background: rgba(201, 122, 61, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(201, 122, 61, 0.15);
+}
+
+.video-nav-link:hover::before {
+  height: 100%;
+}
+
+.video-nav-link:hover::after {
+  opacity: 1;
+}
+
+.video-nav-link i {
+  font-size: 0.875rem;
+  position: relative;
+  z-index: 2;
+}
+
+.video-nav-link span {
+  position: relative;
+  z-index: 2;
+}
+
+/* Контейнер контента */
+.video-content-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  max-width: 1800px;
+  margin: 0 auto;
+  align-items: start;
+  animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Видео плеер */
+.video-player-section {
+  position: relative;
+}
+
+.video-player-container {
+  position: relative;
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  padding: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: linear-gradient(135deg, 
+    rgba(212, 165, 116, 0.1) 0%,
+    rgba(201, 122, 61, 0.05) 100%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.video-player-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  background: #000;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.video-player-border-glow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, 
+    rgba(212, 165, 116, 0.3) 0%,
+    rgba(201, 122, 61, 0.2) 50%,
+    rgba(212, 165, 116, 0.3) 100%);
+  border-radius: 4px;
+  opacity: 0;
+  animation: pulseGlow 3s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  outline: none;
+  z-index: 2;
+}
+
+.video-player-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 32px;
+  background: linear-gradient(180deg, 
+    rgba(10, 13, 18, 0.95) 0%, 
+    rgba(10, 13, 18, 0.7) 50%,
+    transparent 100%);
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.3s ease;
+}
+
+.video-player-wrapper:hover .video-player-overlay {
+  opacity: 1;
+}
+
+.video-player-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.video-player-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.video-player-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.video-player-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: var(--color-success);
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.video-player-status-badge i {
+  font-size: 0.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Боковая панель */
+.video-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-section {
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  padding: 32px;
+  background: rgba(201, 122, 61, 0.02);
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 0;
+  background: var(--color-accent-secondary);
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-section:hover {
+  border-color: rgba(212, 165, 116, 0.3);
+  background: rgba(201, 122, 61, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.info-section:hover::before {
+  height: 100%;
+}
+
+.info-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 24px 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+  position: relative;
+}
+
+.info-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    var(--color-accent-secondary) 0%,
+    transparent 100%);
+}
+
+.video-info-list,
+.video-cameras-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  transition: all 0.3s ease;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row:hover {
+  padding-left: 8px;
+  padding-right: 8px;
+  background: rgba(201, 122, 61, 0.03);
+  border-radius: 4px;
+}
+
+.info-label {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.info-value.success {
+  color: var(--color-success);
+}
+
+/* Список камер */
+.video-camera-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  background: transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.video-camera-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 0;
+  background: var(--color-accent-secondary);
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.video-camera-item:hover {
+  border-color: rgba(212, 165, 116, 0.3);
+  background: rgba(201, 122, 61, 0.06);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.video-camera-item:hover::before {
+  height: 100%;
+}
+
+.video-camera-item.active {
+  border-color: rgba(212, 165, 116, 0.5);
+  background: rgba(201, 122, 61, 0.1);
+  box-shadow: 0 4px 20px rgba(201, 122, 61, 0.2);
+}
+
+.video-camera-item.active::before {
+  height: 100%;
+}
+
+.camera-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.camera-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(201, 122, 61, 0.04);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.video-camera-item:hover .camera-icon,
+.video-camera-item.active .camera-icon {
+  border-color: var(--color-accent-secondary);
+  background: rgba(201, 122, 61, 0.1);
+  transform: scale(1.05);
+}
+
+.camera-icon i {
+  font-size: 1.5rem;
+  color: var(--color-text-secondary);
+  transition: color 0.3s ease;
+}
+
+.video-camera-item.active .camera-icon i {
+  color: var(--color-accent-secondary);
+}
+
+.camera-status-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-success);
+  border: 2px solid #0a0d12;
+  border-radius: 50%;
+  animation: pulseIndicator 2s ease-in-out infinite;
+}
+
+@keyframes pulseIndicator {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.camera-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.camera-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.camera-status {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.camera-status.success {
+  color: var(--color-success);
+}
+
+/* Адаптивность */
+@media (max-width: 1400px) {
+  .video-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .video-info-panel {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-page-container {
+    padding: 40px var(--spacing-md);
+  }
+
+  .video-page-title {
+    font-size: 2rem;
+  }
+
+  .video-page-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .video-player-container {
+    padding: 2px;
+  }
+
+  .info-section {
+    padding: 24px;
+  }
+}

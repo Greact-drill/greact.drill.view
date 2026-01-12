@@ -1,0 +1,578 @@
+/* --- Контейнер страницы лебедочного блока - стиль piano.io --- */
+.winch-block-page-container {
+    background: #0a0d12;
+    background-image: 
+        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+    min-height: 100vh;
+    padding: 80px var(--spacing-xl) var(--spacing-2xl);
+    color: var(--color-text-primary);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.winch-block-page-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.winch-block-page-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Заголовок страницы */
+.page-header {
+    margin-bottom: 60px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    text-align: center;
+}
+
+.page-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 300;
+    margin: 0;
+    color: var(--color-text-primary);
+    letter-spacing: -0.02em;
+}
+
+/* Меню подсистем */
+.subsystems-menu-top {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 32px;
+}
+
+.subsystems-menu-nav {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.nav-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: 1px solid rgba(212, 165, 116, 0.2);
+    background: rgba(201, 122, 61, 0.04);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 400;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
+}
+
+.nav-menu-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-secondary);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-menu-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-menu-link:hover {
+    border-color: var(--color-accent-secondary);
+    background: rgba(201, 122, 61, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu-link:hover::before {
+    height: 100%;
+}
+
+.nav-menu-link:hover::after {
+    opacity: 1;
+}
+
+.nav-menu-link i {
+    font-size: 0.875rem;
+    transition: transform 0.3s ease;
+}
+
+.nav-menu-link:hover i {
+    transform: translateX(-2px);
+}
+
+/* Основной контент: Статистика | Карта | Параметры */
+.main-content-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 32px;
+    align-items: start;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1400px) {
+    .main-content-layout {
+        grid-template-columns: 240px 1fr 240px;
+        gap: 24px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .main-content-layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+    
+    .left-panel,
+    .right-panel {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+    }
+}
+
+/* Левая панель - Статистика */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    opacity: 0;
+    transform: translateX(-40px);
+    animation: slideInFromLeft 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.3s;
+}
+
+/* Правая панель - Параметры */
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    opacity: 0;
+    transform: translateX(40px);
+    animation: slideInFromRight 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.4s;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Блоки информации */
+.info-section {
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    padding: 24px;
+    background: transparent;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Последовательное появление блоков информации */
+.left-panel .info-section:nth-child(1) { animation-delay: 0.6s; }
+.left-panel .info-section:nth-child(2) { animation-delay: 0.7s; }
+.left-panel .info-section:nth-child(3) { animation-delay: 0.8s; }
+.right-panel .info-section:nth-child(1) { animation-delay: 0.7s; }
+.right-panel .info-section:nth-child(2) { animation-delay: 0.8s; }
+.right-panel .info-section:nth-child(3) { animation-delay: 0.9s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.info-section:hover {
+    border-color: rgba(212, 165, 116, 0.25);
+    background: rgba(201, 122, 61, 0.04);
+}
+
+.info-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-secondary);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-section:hover::before {
+    height: 100%;
+}
+
+.info-title {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 0 0 20px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+    position: relative;
+}
+
+.info-title::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40px;
+    height: 1px;
+    background: var(--color-accent-secondary);
+}
+
+/* Сетка статистики */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    background: transparent;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.9);
+    animation: scaleIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.stats-grid .stat-item:nth-child(1) { animation-delay: 0.9s; }
+.stats-grid .stat-item:nth-child(2) { animation-delay: 1.0s; }
+.stats-grid .stat-item:nth-child(3) { animation-delay: 1.1s; }
+.stats-grid .stat-item:nth-child(4) { animation-delay: 1.2s; }
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.stat-item:hover {
+    border-color: rgba(212, 165, 116, 0.25);
+    background: rgba(201, 122, 61, 0.04);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 200;
+    color: var(--color-text-primary);
+    line-height: 1.2;
+}
+
+.stat-value.success {
+    color: #22c55e;
+}
+
+.stat-value.error {
+    color: #ef4444;
+}
+
+/* Информация о блоке */
+.rig-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.08);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 0.8125rem;
+    color: var(--color-text-tertiary);
+}
+
+.info-value {
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.info-value.success {
+    color: #22c55e;
+}
+
+/* Статусы оборудования */
+.equipment-status {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid rgba(212, 165, 116, 0.08);
+}
+
+.status-row:last-child {
+    border-bottom: none;
+}
+
+.status-row.ok {
+    color: #22c55e;
+}
+
+.status-row.error {
+    color: #ef4444;
+}
+
+.status-row i {
+    font-size: 0.75rem;
+}
+
+/* Параметры */
+.parameters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.parameter-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.08);
+}
+
+.parameter-item:last-child {
+    border-bottom: none;
+}
+
+.parameter-label {
+    font-size: 0.8125rem;
+    color: var(--color-text-tertiary);
+}
+
+.parameter-value {
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+/* Компоненты */
+.components-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.component-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.08);
+}
+
+.component-item:last-child {
+    border-bottom: none;
+}
+
+.component-name {
+    font-size: 0.8125rem;
+    color: var(--color-text-primary);
+}
+
+.component-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+}
+
+.component-status.ok {
+    color: #22c55e;
+}
+
+.component-status i {
+    font-size: 0.5rem;
+}
+
+/* Карта - анимация появления снизу с масштабированием */
+.map-section {
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    padding: 40px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 600px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
+}
+
+.map-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-secondary);
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.map-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-section:hover {
+    border-color: rgba(212, 165, 116, 0.25);
+    background: rgba(201, 122, 61, 0.04);
+}
+
+.map-section:hover::before {
+    height: 100%;
+}
+
+.map-section:hover::after {
+    opacity: 1;
+}
+
+.map-svg {
+    max-width: 100%;
+    max-height: 700px;
+    width: auto;
+    height: auto;
+}
+
+/* Связи от блоков к параметрам */
+.winch-connection-line {
+    stroke: rgba(212, 165, 116, 0.6);
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+    animation: connectionPulse 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes connectionPulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Точки соединения на блоках */
+.winch-connection-point {
+    fill: var(--color-accent-secondary);
+    stroke: rgba(212, 165, 116, 0.8);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.6));
+    pointer-events: none;
+}
+
+/* Блоки параметров внутри SVG */
+.winch-param-block {
+    overflow: visible;
+}
+
+.winch-param-block > div {
+    width: 100%;
+    height: 100%;
+}
+
+/* Точки соединения на концах связей */
+.winch-param-point {
+    fill: rgba(212, 165, 116, 0.8);
+    stroke: var(--color-accent-secondary);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.6));
+    pointer-events: none;
+}

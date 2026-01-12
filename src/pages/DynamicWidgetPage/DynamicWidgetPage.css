@@ -8,6 +8,12 @@
     min-height: 400px;
 }
 
+/* Стили для таблицы */
+.table-widget-section {
+    margin-bottom: var(--spacing-xl);
+    padding: 0 var(--spacing-xl);
+}
+
 /* Стили для позиционированных виджетов (страница оборудования) */
 .positioned-widget {
     position: absolute;

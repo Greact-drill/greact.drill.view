@@ -333,7 +333,7 @@ export default function MainPage() {
       {/* Заголовок */}
       <div className="page-header">
         <h1 className="page-title">
-          Буровая установка {edgeData?.name || rig?.name || `№${rigId}`}
+          Буровая установка {rig?.name || edgeData?.name || `№${rigId}`}
         </h1>
       </div>
 
@@ -344,32 +344,52 @@ export default function MainPage() {
             <div className="loading-message">Загрузка подсистем...</div>
           ) : childrenError ? (
             <div className="error-message">{childrenError}</div>
-          ) : childEdges.length > 0 ? (
-            childEdges.map((child, index) => (
-              <button
-                key={child.id}
-                className={`subsystem-menu-item ${hovered === child.id ? 'hovered' : ''}`}
-                onMouseEnter={() => setHovered(child.id)}
-                onMouseLeave={() => setHovered(null)}
-                onClick={() => navigate(`/rigs/${rigId}/widgets/${child.id}`)}
-              >
-                <span className="subsystem-menu-number">{index + 1}</span>
-                <span className="subsystem-menu-name">{child.name || `Подсистема ${child.id}`}</span>
-              </button>
-            ))
           ) : (
-            <div className="empty-message">Нет подсистем</div>
+            <>
+              {/* Статические кнопки */}
+              <Link to={`/rigs/${rigId}/electrical-diagram`} className="subsystem-menu-item">
+                <i className="pi pi-sitemap" />
+                <span className="subsystem-menu-name">Схема электроснабжения</span>
+              </Link>
+              <Link to={`/rigs/${rigId}/winch-block`} className="subsystem-menu-item">
+                <i className="pi pi-wrench" />
+                <span className="subsystem-menu-name">Лебедочный блок</span>
+              </Link>
+              <Link to={`/rigs/${rigId}/pump-block`} className="subsystem-menu-item">
+                <i className="pi pi-cog" />
+                <span className="subsystem-menu-name">Насосный блок</span>
+              </Link>
+              <Link to={`/rigs/${rigId}/video`} className="subsystem-menu-item">
+                <i className="pi pi-video" />
+                <span className="subsystem-menu-name">Видеонаблюдение</span>
+              </Link>
+              <Link to={`/rigs/${rigId}/power-consumption`} className="subsystem-menu-item">
+                <i className="pi pi-chart-bar" />
+                <span className="subsystem-menu-name">Расход электроэнергии</span>
+              </Link>
+              <Link to={`/rigs/${rigId}/archive`} className="subsystem-menu-item">
+                <i className="pi pi-chart-line" />
+                <span className="subsystem-menu-name">Архив</span>
+              </Link>
+              
+              {/* Динамические кнопки подсистем */}
+              {childEdges.length > 0 && childEdges.map((child) => (
+                <button
+                  key={child.id}
+                  className="subsystem-menu-item"
+                  onClick={() => navigate(`/rigs/${rigId}/widgets/${child.id}`, { state: { pageTitle: child.name || `Подсистема ${child.id}` } })}
+                >
+                  <span className="subsystem-menu-name">{child.name || `Подсистема ${child.id}`}</span>
+                </button>
+              ))}
+              
+              {/* Кнопка "Назад" */}
+              <button onClick={() => navigate('/')} className="subsystem-menu-item">
+                <i className="pi pi-arrow-left" />
+                <span className="subsystem-menu-name">Назад</span>
+              </button>
+            </>
           )}
-        </div>
-        <div className="subsystems-menu-nav">
-          <Link to={`/rigs/${rigId}/archive`} className="nav-menu-link">
-            <i className="pi pi-chart-line" />
-            <span>Архив</span>
-          </Link>
-          <button onClick={() => navigate('/')} className="nav-menu-link">
-            <i className="pi pi-arrow-left" />
-            <span>Назад</span>
-          </button>
         </div>
       </div>
 
@@ -447,6 +467,7 @@ export default function MainPage() {
             version="1.1"
             xmlns="http://www.w3.org/2000/svg"
             xmlnsXlink="http://www.w3.org/1999/xlink"
+            preserveAspectRatio="xMidYMid meet"
           >
             <defs>
               {/* ClipPath для скругления краев */}
@@ -498,29 +519,14 @@ export default function MainPage() {
             {/* Изображение со скругленными краями */}
             <g clipPath="url(#roundedCorners)">
               <image 
-                xlinkHref={drillSvg} 
+                xlinkHref={drillSvg}
                 x="0" 
                 y="0" 
                 width="1010" 
-                height="1024" 
+                height="1024"
                 preserveAspectRatio="xMidYMid meet"
               />
             </g>
-            
-            {/* Контур со свечением - толстый и яркий */}
-            <rect 
-              x="2" 
-              y="2" 
-              width="1006" 
-              height="1020" 
-              rx="24" 
-              ry="24" 
-              fill="none" 
-              stroke="url(#borderGradient)" 
-              strokeWidth="4"
-              filter="url(#glowFilter)"
-              opacity="1"
-            />
             
             {/* Интерактивные сегменты */}
             {staticSegmentsWithStatus.map((segment) => (
@@ -534,6 +540,22 @@ export default function MainPage() {
                 />
               )
             ))}
+            
+            {/* Контур со свечением - толстый и яркий - должен быть поверх всего */}
+            <rect 
+              x="2" 
+              y="2" 
+              width="1006" 
+              height="1020" 
+              rx="24" 
+              ry="24" 
+              fill="none" 
+              stroke="url(#borderGradient)" 
+              strokeWidth="4"
+              filter="url(#glowFilter)"
+              opacity="1"
+              style={{ pointerEvents: 'none' }}
+            />
           </svg>
         </div>
 
