@@ -49,16 +49,41 @@ const findWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK' | 'ACCIDENT' |
     return null;
 };
 
-const isTagValueOK = (tag: TagData): boolean => {
-    const { value, min, max, unit_of_measurement } = tag;
+const parseNumericValue = (value: number | string | boolean | null): number | null => {
+    if (typeof value === 'number') {
+        return value;
+    }
+    if (typeof value === 'boolean') {
+        return value ? 1 : 0;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.replace(',', '.').trim();
+        if (!normalized) {
+            return null;
+        }
+        const parsed = Number(normalized);
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
+};
 
-    if (unit_of_measurement !== 'bool' && typeof value === 'number') {
-        return value >= min && value <= max;
+const isTagValueOK = (tag: TagData, widgetType?: WidgetType): boolean => {
+    const { value, min, max, unit_of_measurement } = tag;
+    const minValue = typeof min === 'number' ? min : 0;
+    const maxValue = typeof max === 'number' ? max : 100;
+    const numericValue = parseNumericValue(value);
+
+    if (widgetType === 'status' && numericValue !== null) {
+        return numericValue >= minValue && numericValue <= maxValue;
+    }
+
+    if (unit_of_measurement !== 'bool' && numericValue !== null) {
+        return numericValue >= minValue && numericValue <= maxValue;
     }
 
     const isStatusTag = unit_of_measurement === 'bool' || tag.customization?.some(c => c.key === 'isStatus');
     if (isStatusTag) {
-        return value === 1 || value === true;
+        return value === 1 || value === true || String(value).toLowerCase() === 'true';
     }
     return true;
 };
@@ -74,7 +99,7 @@ const transformTagToWidgetConfig = (tag: TagData, page: 'KTU' | 'PUMPBLOCK' | 'A
         value: tag.value ?? (tag.unit_of_measurement === 'bool' ? false : 0),
         max: tag.max,
         unit: tag.unit_of_measurement || '',
-        isOK: isTagValueOK(tag),
+        isOK: isTagValueOK(tag, config.widgetType),
         position: config.position
     };
 };

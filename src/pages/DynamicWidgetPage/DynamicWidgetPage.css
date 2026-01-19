@@ -70,6 +70,49 @@
     opacity: 0.8;
 }
 
+/* Централизованный стиль для статус-виджета */
+.positioned-widget.widget-status.display-widget.widget-has-data {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+        var(--shadow-md),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    background-image:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+}
+
+.positioned-widget.widget-status.display-widget.widget-has-data .bypass-status-block,
+.positioned-widget.widget-status.display-widget.widget-has-data .p-card-body,
+.positioned-widget.widget-status.display-widget.widget-has-data .p-card-content {
+    height: 100%;
+    width: 100%;
+}
+
+.positioned-widget.widget-status.display-widget.widget-has-data .p-card-body {
+    padding: 1.25rem 1.5rem !important;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--glass-border) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.positioned-widget.widget-status.display-widget.widget-has-data .bypass-status-block.status-ok .p-card-body {
+    border-color: rgba(34, 197, 94, 0.35) !important;
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.18) !important;
+    background-image:
+        linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.positioned-widget.widget-status.display-widget.widget-has-data .bypass-status-block.status-error .p-card-body {
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.16) !important;
+    background-image:
+        linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(255, 255, 255, 0.02));
+}
+
 /* Заголовок страницы - стиль piano.io */
 .dynamic-blocks-title {
     font-size: clamp(2.5rem, 5vw, 4rem);

@@ -9,11 +9,17 @@
   height: 250px; 
   padding: 20px;
   
-  /* 🎨 Стили КАРТОЧКИ: Прозрачный фиолетовый фон */
-  background-color: rgba(31, 0, 58, 0.5); 
-  border: 1px solid rgba(175, 82, 237, 0.3); 
+  /* 🎨 Стили КАРТОЧКИ: стеклянный фон в теме приложения */
+  background: var(--color-bg-primary);
+  border: 1px solid var(--glass-border); 
   border-radius: 16px;
-  box-shadow: 0 0 15px rgba(175, 82, 237, 0.3); 
+  box-shadow:
+    var(--shadow-md),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
     
   text-align: center;
 }

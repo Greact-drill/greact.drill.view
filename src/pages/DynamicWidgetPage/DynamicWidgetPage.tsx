@@ -31,13 +31,42 @@ interface DynamicWidgetConfig {
   hasData?: boolean;
 }
 
-const isTagValueOK = (value: number | string | boolean | null, min: number, max: number, unit: string): boolean => {
+const parseNumericValue = (value: number | string | boolean | null): number | null => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+  if (typeof value === 'string') {
+    const normalized = value.replace(',', '.').trim();
+    if (!normalized) {
+      return null;
+    }
+    const parsed = Number(normalized);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  return null;
+};
+
+const isTagValueOK = (
+  value: number | string | boolean | null,
+  min: number,
+  max: number,
+  unit: string,
+  widgetType?: WidgetType
+): boolean => {
   if (value === null || value === undefined) {
     return true; // Если данных нет, считаем OK
   }
 
-  if (unit !== 'bool' && typeof value === 'number') {
-    return value >= min && value <= max;
+  const numericValue = parseNumericValue(value);
+  if (widgetType === 'status' && numericValue !== null) {
+    return numericValue >= min && numericValue <= max;
+  }
+
+  if (unit !== 'bool' && numericValue !== null) {
+    return numericValue >= min && numericValue <= max;
   }
 
   if (unit === 'bool') {
@@ -154,7 +183,8 @@ export default function DynamicWidgetPage() {
         value, 
         config.tag.min || 0, 
         config.tag.max || 100, 
-        config.tag.unit_of_measurement
+        config.tag.unit_of_measurement,
+        widgetType
       );
 
       return {
