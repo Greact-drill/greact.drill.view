@@ -73,8 +73,8 @@ const GaugeChart: React.FC<GaugeChartProps> = React.memo(({ label, value, max })
     };
 
     return (
-        // ✅ 2. ФИКС РАЗМЕРА: Контейнер для фиксации размера графика
-        <div style={{ height: '200px', width: '200px' }}> 
+        // Контейнер размера задается через CSS для разных контекстов
+        <div className="gauge-chart-container"> 
             <Doughnut 
                 ref={chartRef as React.LegacyRef<any>} 
                 data={data} 

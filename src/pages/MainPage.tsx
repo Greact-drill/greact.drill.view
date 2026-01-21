@@ -19,6 +19,7 @@ import WidgetPlaceholder from "../components/WidgetPlaceholder/WidgetPlaceholder
 
 // Используем хук для получения конфигураций по edge_id
 import { useWidgetConfigsByEdge } from "../hooks/useWidgetConfigs";
+import { useCurrentDetails } from "../hooks/useCurrentDetails";
 
 // Типы виджетов (такие же как в DynamicWidgetPage)
 type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
@@ -92,9 +93,6 @@ const getDefaultValue = (widgetType: WidgetType, unit: string): any => {
       return unit === 'bool' ? false : 0;
     case 'status':
       return 'Ожидание данных';
-    case 'compact':
-    case 'card':
-      return '--';
     default:
       return '--';
   }
@@ -150,19 +148,32 @@ export default function MainPage() {
 
   // Получаем конфигурации виджетов для этого edge (корневого уровня)
   const { widgetConfigs, loading: widgetsLoading, error: widgetsError } = useWidgetConfigsByEdge(edgeKey);
+  const { data: currentDetailsData } = useCurrentDetails(rigId || null);
 
   // Преобразуем конфигурации в динамические виджеты (аналогично DynamicWidgetPage)
   const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
     if (!widgetConfigs || widgetConfigs.length === 0) {
       return [];
     }
-    
+
+    const currentDetailsMap = new Map<string, number>();
+    if (currentDetailsData) {
+      currentDetailsData.forEach(tagData => {
+        currentDetailsMap.set(tagData.tag, tagData.value);
+      });
+    }
+
     return widgetConfigs.map(config => {
-      const widgetType = config.config.widgetType;
+      const rawWidgetType = config.config.widgetType;
+      const widgetType: WidgetType =
+        rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
       const displayType = config.config.displayType || 'widget';
       
-      // Используем данные из current, если они есть и не null
-      const currentValue = config.current?.value;
+      // Приоритет: currentDetailsData, затем config.current
+      const currentValueFromDetails = currentDetailsMap.get(config.tag_id);
+      const currentValue = currentValueFromDetails !== undefined
+        ? currentValueFromDetails
+        : config.current?.value;
       const hasData = currentValue !== null && currentValue !== undefined;
       const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
       const defaultValue = config.tag.unit_of_measurement === 'bool' ? false : 0;
@@ -191,7 +202,7 @@ export default function MainPage() {
         hasData
       };
     });
-  }, [widgetConfigs]);
+  }, [widgetConfigs, currentDetailsData]);
 
   // Статистика по тегам (после определения dynamicWidgetConfigs)
   const tagsStats = useMemo(() => {
@@ -314,7 +325,7 @@ export default function MainPage() {
 
     return (
       <div 
-        className={`main-page-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'}`} 
+        className={`main-page-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`} 
         key={config.key}
         data-widget-type={config.type}
         data-display-type={config.displayType}

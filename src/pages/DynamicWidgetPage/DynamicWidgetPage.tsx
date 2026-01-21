@@ -22,8 +22,10 @@ interface DynamicWidgetConfig {
   label: string;
   value: number | string | boolean | null;
   defaultValue?: number | string | boolean;
+  min?: number | null;
   max: number;
   unit: string;
+  comment?: string | null;
   isOK?: boolean;
   position: { x: number; y: number };
   displayType: 'widget' | 'compact' | 'card';
@@ -85,9 +87,6 @@ const getDefaultValue = (widgetType: WidgetType, unit: string): any => {
       return unit === 'bool' ? false : 0;
     case 'status':
       return 'Ожидание данных';
-    case 'compact':
-    case 'card':
-      return '--';
     default:
       return '--';
   }
@@ -99,9 +98,12 @@ export default function DynamicWidgetPage() {
   const params = useParams();
   const pageType = params.pageType || '';
   const rigId = params.rigId || '';
+  const configPage = (pageType === 'BYPASS' || pageType === 'ACCIDENT')
+    ? `${pageType}_${rigId}`
+    : pageType;
   
-  const { widgetConfigs, error } = useWidgetConfigsByPage(pageType);
-  const { tableConfig: tableConfigData } = useTableConfigByPage(pageType);
+  const { widgetConfigs, error } = useWidgetConfigsByPage(configPage);
+  const { tableConfig: tableConfigData } = useTableConfigByPage(configPage);
   
   // Опрашиваем /current/details по ключу главной буровой установки (rigId)
   const { data: currentDetailsData } = useCurrentDetails(rigId || null);
@@ -166,7 +168,9 @@ export default function DynamicWidgetPage() {
     }
     
     return widgetConfigs.map(config => {
-      const widgetType = config.config.widgetType;
+      const rawWidgetType = config.config.widgetType;
+      const widgetType: WidgetType =
+        rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
       const displayType = config.config.displayType || 'widget';
       
       // Приоритет: используем данные из currentDetailsData, если есть, иначе из config.current
@@ -193,8 +197,10 @@ export default function DynamicWidgetPage() {
         label: config.config.customLabel || config.tag.name || config.tag.comment,
         value: value,
         defaultValue: defaultValue,
+        min: config.tag.min ?? null,
         max: config.tag.max || 100,
         unit: config.tag.unit_of_measurement || '',
+        comment: config.tag.comment ?? null,
         isOK,
         position: config.config.position,
         displayType,
@@ -204,19 +210,26 @@ export default function DynamicWidgetPage() {
     });
   }, [widgetConfigs, currentDetailsData]);
 
+  const getMinMaxDisplay = (value: number | string | boolean | null | undefined) => {
+    if (value === null || value === undefined) {
+      return '—';
+    }
+    return String(value);
+  };
+
   const renderWidget = (config: DynamicWidgetConfig) => {
     const getWidgetDimensions = () => {
       switch (config.type) {
         case 'gauge':
-          return { width: 250, height: 250 };
+          return { width: 200, height: 200 };
         case 'bar':
-          return { width: 250, height: 500 };
+          return { width: 200, height: 400 };
         case 'number':
         case 'status':
         case 'compact':
         case 'card':
         default:
-          return { width: 250, height: 250 };
+          return { width: 200, height: 200 };
       }
     };
 
@@ -320,7 +333,7 @@ export default function DynamicWidgetPage() {
 
     return (
       <div 
-        className={`positioned-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'}`} 
+        className={`positioned-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`} 
         key={config.key}
         style={positionStyle}
         data-widget-type={config.type}
@@ -328,6 +341,26 @@ export default function DynamicWidgetPage() {
         data-has-data={config.hasData}
       >
         {widgetContent}
+        <div className="widget-tooltip" role="tooltip">
+          <div className="widget-tooltip-title">{config.label}</div>
+          <div className="widget-tooltip-row">
+            <span className="widget-tooltip-label">Мин</span>
+            <span className="widget-tooltip-value">
+              {getMinMaxDisplay(config.min)}{config.unit ? ` ${config.unit}` : ''}
+            </span>
+          </div>
+          <div className="widget-tooltip-row">
+            <span className="widget-tooltip-label">Макс</span>
+            <span className="widget-tooltip-value">
+              {getMinMaxDisplay(config.max)}{config.unit ? ` ${config.unit}` : ''}
+            </span>
+          </div>
+          {config.comment && (
+            <div className="widget-tooltip-comment">
+              {config.comment}
+            </div>
+          )}
+        </div>
       </div>
     );
   };

@@ -32,3 +32,8 @@
   margin-top: -20px;
   color: #34D399;
 }
+
+.gauge-chart-container {
+  width: 200px;
+  height: 200px;
+}

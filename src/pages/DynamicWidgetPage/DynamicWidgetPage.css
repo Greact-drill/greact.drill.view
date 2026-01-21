@@ -19,7 +19,7 @@
     position: absolute;
     box-shadow: var(--shadow-lg);
     border-radius: var(--radius-xl);
-    overflow: hidden;
+    overflow: visible;
     transition: all var(--transition-base);
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
@@ -32,6 +32,149 @@
     box-shadow: var(--shadow-xl), var(--shadow-glow);
     border-color: var(--color-accent-secondary);
     z-index: 100;
+}
+
+/* Custom tooltip for widget details */
+.positioned-widget .widget-tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 12px);
+    transform: translate(-50%, -8px);
+    opacity: 0;
+    pointer-events: none;
+    min-width: 220px;
+    max-width: 320px;
+    background: rgba(10, 13, 18, 0.92);
+    border: 1px solid rgba(212, 165, 116, 0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--color-text-primary);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 300;
+    text-align: left;
+}
+
+.positioned-widget .widget-tooltip::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    width: 12px;
+    height: 12px;
+    background: rgba(10, 13, 18, 0.92);
+    border-right: 1px solid rgba(212, 165, 116, 0.25);
+    border-bottom: 1px solid rgba(212, 165, 116, 0.25);
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.positioned-widget:hover .widget-tooltip {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.widget-tooltip-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    margin-bottom: 10px;
+}
+
+.widget-tooltip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    margin-bottom: 6px;
+}
+
+.widget-tooltip-label {
+    color: var(--color-text-tertiary);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.widget-tooltip-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
+
+.widget-tooltip-comment {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(212, 165, 116, 0.12);
+    color: var(--color-text-tertiary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+/* Постоянное красное свечение при выходе за min/max */
+.positioned-widget.widget-out-of-range {
+    box-shadow:
+        0 0 24px rgba(239, 68, 68, 0.35),
+        0 0 50px rgba(239, 68, 68, 0.2),
+        inset 0 0 0 1px rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.45);
+}
+
+.positioned-widget.widget-in-range {
+    box-shadow:
+        0 0 18px rgba(34, 197, 94, 0.28),
+        0 0 36px rgba(34, 197, 94, 0.16),
+        inset 0 0 0 1px rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+.positioned-widget.widget-out-of-range:hover {
+    box-shadow:
+        0 0 28px rgba(239, 68, 68, 0.45),
+        0 0 60px rgba(239, 68, 68, 0.25),
+        inset 0 0 0 1px rgba(239, 68, 68, 0.35);
+    border-color: rgba(239, 68, 68, 0.55);
+}
+
+.positioned-widget.widget-in-range,
+.positioned-widget.widget-in-range * {
+    color: #86efac !important;
+}
+
+.positioned-widget.widget-out-of-range,
+.positioned-widget.widget-out-of-range * {
+    color: #fca5a5 !important;
+}
+
+.positioned-widget.widget-in-range:hover {
+    box-shadow:
+        0 0 22px rgba(34, 197, 94, 0.38),
+        0 0 44px rgba(34, 197, 94, 0.22),
+        inset 0 0 0 1px rgba(34, 197, 94, 0.3);
+    border-color: rgba(34, 197, 94, 0.45);
+}
+
+/* Более деликатное свечение для status-виджета */
+.positioned-widget.widget-status.widget-in-range,
+.positioned-widget.widget-status.widget-in-range:hover {
+    box-shadow:
+        0 0 14px rgba(34, 197, 94, 0.2),
+        inset 0 0 0 1px rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.32);
+}
+
+.positioned-widget.widget-status.widget-out-of-range,
+.positioned-widget.widget-status.widget-out-of-range:hover {
+    box-shadow:
+        0 0 16px rgba(239, 68, 68, 0.22),
+        inset 0 0 0 1px rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.38);
 }
 
 /* Стили для компактных виджетов (главная страница) */
@@ -91,7 +234,7 @@
 }
 
 .positioned-widget.widget-status.display-widget.widget-has-data .p-card-body {
-    padding: 1.25rem 1.5rem !important;
+    padding: 0.75rem 1rem !important;
     display: flex;
     align-items: center;
     border: 1px solid var(--glass-border) !important;
@@ -111,6 +254,16 @@
     box-shadow: 0 0 18px rgba(239, 68, 68, 0.16) !important;
     background-image:
         linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-ok .block-label,
+.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-ok .block-value {
+    color: #86efac !important;
+}
+
+.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-error .block-label,
+.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-error .block-value {
+    color: #fca5a5 !important;
 }
 
 /* Заголовок страницы - стиль piano.io */
@@ -331,15 +484,15 @@
 
 /* Улучшенное состояние при наведении для разных типов */
 .display-widget:hover {
-    box-shadow: 0 12px 35px rgba(175, 82, 237, 0.5);
+    box-shadow: 0 12px 35px rgba(201, 122, 61, 0.45);
 }
 
 .display-compact:hover {
-    box-shadow: 0 6px 20px rgba(175, 82, 237, 0.4);
+    box-shadow: 0 6px 20px rgba(201, 122, 61, 0.35);
 }
 
 .display-card:hover {
-    box-shadow: 0 8px 25px rgba(175, 82, 237, 0.45);
+    box-shadow: 0 8px 25px rgba(201, 122, 61, 0.4);
 }
 
 /* Группировка виджетов на главной странице */
@@ -461,6 +614,73 @@
 
 .widget-page .positioned-widget {
     background: var(--glass-bg);
+}
+
+/* Компактные размеры для динамических виджетов */
+.widget-page .positioned-widget .gauge-widget-container,
+.widget-page .positioned-widget .vertical-bar-container,
+.widget-page .positioned-widget .number-display-container,
+.widget-page .positioned-widget .compact-tag-display,
+.widget-page .positioned-widget .bypass-status-block {
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.widget-page .positioned-widget .gauge-chart-container {
+    width: 100%;
+    height: 120px;
+}
+
+.widget-page .positioned-widget .gauge-widget-title {
+    font-size: 0.95em;
+}
+
+.widget-page .positioned-widget .gauge-widget-value {
+    font-size: 1.3em;
+    margin-top: -10px;
+}
+
+.widget-page .positioned-widget .vertical-bar-container {
+    gap: 6px;
+}
+
+.widget-page .positioned-widget .bar-label {
+    font-size: 0.95em;
+    margin-bottom: 6px;
+}
+
+.widget-page .positioned-widget .bar-wrapper {
+    width: 48px;
+    height: auto;
+    flex: 1;
+}
+
+.widget-page .positioned-widget .bar-value {
+    font-size: 1.3em;
+    margin-top: 6px;
+}
+
+.widget-page .positioned-widget .number-display-label {
+    font-size: 0.95em;
+    margin-bottom: 12px;
+}
+
+.widget-page .positioned-widget .number-display-value {
+    font-size: 2em;
+}
+
+.widget-page .positioned-widget .compact-tag-display {
+    min-height: 0;
+}
+
+.widget-page .positioned-widget .compact-tag-label {
+    font-size: 0.7rem;
+}
+
+.widget-page .positioned-widget .compact-tag-value {
+    font-size: 1.2rem;
 }
 
 /* Кастомный скроллбар для контейнера */

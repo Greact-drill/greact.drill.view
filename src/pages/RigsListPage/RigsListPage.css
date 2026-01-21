@@ -1365,6 +1365,16 @@
   transition: all 0.3s ease;
 }
 
+.rig-status-name-link.ok i:first-child {
+  color: var(--color-success);
+  opacity: 0.9;
+}
+
+.rig-status-name-link.bad i:first-child {
+  color: var(--color-error);
+  opacity: 0.9;
+}
+
 .rig-status-name-link span {
   flex: 1;
   transition: color 0.3s ease;
@@ -1376,6 +1386,16 @@
   opacity: 0.5;
   transition: all 0.3s ease;
   margin-left: auto;
+}
+
+.rig-status-name-link.ok .rig-status-link-arrow {
+  color: var(--color-success);
+  opacity: 0.8;
+}
+
+.rig-status-name-link.bad .rig-status-link-arrow {
+  color: var(--color-error);
+  opacity: 0.8;
 }
 
 .rig-status-name-link::before {
@@ -1702,6 +1722,11 @@
     border: 1px solid rgba(239, 68, 68, 0.4) !important;
 }
 
+.status-button.neutral {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
 .status-button.error::before {
     background: linear-gradient(90deg, var(--color-error), var(--color-error-light));
 }
@@ -1715,6 +1740,12 @@
     border: 1px solid var(--color-error) !important;
     transform: translateY(-3px) !important;
     box-shadow: var(--shadow-lg), var(--shadow-glow-error) !important;
+}
+
+.status-button.neutral:hover {
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(255, 255, 255, 0.08) !important;
 }
 
 .status-button.error:hover::before {
@@ -1777,6 +1808,26 @@
     border-color: rgba(248, 113, 113, 0.2);
 }
 
+.status-button.neutral .status-icon,
+.status-icon.neutral {
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: none;
+}
+
+/* Общая окраска иконок по статусу тегов */
+.status-icon.overall-ok {
+    color: #34d399 !important;
+    border-color: rgba(52, 211, 153, 0.35) !important;
+    box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
+}
+
+.status-icon.overall-bad {
+    color: #f87171 !important;
+    border-color: rgba(248, 113, 113, 0.35) !important;
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.2);
+}
+
 .status-title {
     font-size: 0.6875rem !important;
     font-weight: 500;
@@ -1805,6 +1856,10 @@
 
 .status-button.error .status-value {
     color: #f87171;
+}
+
+.status-button.neutral .status-value {
+    color: #ffffff;
 }
 
 /* Убираем пульсацию для чистого стиля piano.io */
@@ -1906,6 +1961,16 @@
 .maintenance-button.error .maintenance-status-indicator {
     background: #f87171;
     box-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+}
+
+.maintenance-status-indicator.overall-ok {
+    background: #34d399 !important;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
+}
+
+.maintenance-status-indicator.overall-bad {
+    background: #f87171 !important;
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.4);
 }
 
 .maintenance-button:hover .maintenance-status-indicator {

@@ -1,11 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import drillSvg from "../../assets/drill.svg";
 import { useEdgeWithAttributes, useRootEdgesWithAttributes } from "../../hooks/useEdges";
+import { useWidgetConfigsByEdge } from "../../hooks/useWidgetConfigs";
+import { useCurrentDetails } from "../../hooks/useCurrentDetails";
 import AnimatedCounter from "../../components/AnimatedCounter/AnimatedCounter";
 import type { EdgeWithAttributes, EdgeAttribute, RawEdgeAttributes } from "../../types/edge";
 import { transformRawAttributes } from "../../utils/edgeUtils";
 import { Button } from 'primereact/button';
+import { getCurrentDetails } from "../../api/current";
 import './RigsListPage.css';
 import '../../App.css';
 
@@ -31,7 +34,19 @@ const STATIC_STATUS_DATA: Omit<EdgeAttribute, 'id' | 'edge_key'> = {
 };
 
 // Компонент для кнопок статусов
-const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttribute, rigId: string }) => {
+type SectionStatus = 'ok' | 'bad' | 'empty';
+
+const RigStatusButtons = ({
+  attributes,
+  rigId,
+  overallOk,
+  sectionStatus
+}: {
+  attributes: ExtendedEdgeAttribute,
+  rigId: string,
+  overallOk: boolean,
+  sectionStatus: Record<string, SectionStatus>
+}) => {
   const getStatusClass = (value: any, type: 'boolean' | 'state') => {
     if (type === 'boolean') {
       return value ? 'ok' : 'error';
@@ -90,23 +105,22 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
     return String(value);
   };
 
-  const getButtonTitle = (key: string) => {
-    const titles: Record<string, string> = {
-      bypass_state: 'Байпас',
-      drive_state: 'Привод',
-      daily_maintenance: 'Ежедневное ТО',
-      weekly_maintenance: 'Еженедельное ТО',
-      monthly_maintenance: 'Ежемесячное ТО',
-      semiannual_maintenance: 'Полугодовое ТО',
-      annual_maintenance: 'Годовое ТО',
-    };
-    return titles[key] || key;
-  };
-
   // Основные статусы
   const mainStatuses = [
-    { key: 'Состояние байпасов', value: attributes.bypass_state, type: 'state' as const },
-    { key: 'Аварии приводов', value: attributes.drive_state, type: 'state' as const },
+    {
+      pageType: 'BYPASS',
+      title: 'Состояние байпасов',
+      value: attributes.bypass_state,
+      type: 'state' as const,
+      icon: attributes.bypass_state === 'closed' ? 'pi pi-lock' : 'pi pi-unlock'
+    },
+    {
+      pageType: 'ACCIDENT',
+      title: 'Аварии приводов',
+      value: attributes.drive_state,
+      type: 'state' as const,
+      icon: attributes.drive_state === 'normal' ? 'pi pi-cog' : 'pi pi-exclamation-triangle'
+    },
   ];
 
   // Статусы ТО
@@ -128,22 +142,33 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
         <span>Статусы оборудования</span>
       </div>
       <div className="rig-status-buttons">
-        {mainStatuses.map(({ key, value, type }) => (
+        {mainStatuses.map(({ pageType, title, value, type, icon }) => {
+          const override = sectionStatus[pageType];
+          const statusClass = override === 'empty'
+            ? 'neutral'
+            : override === 'bad'
+              ? 'error'
+              : override === 'ok'
+                ? 'ok'
+                : getStatusClass(value, type);
+
+          return (
           <Link
-            key={key}
-            to={`/rigs/${rigId}/widgets/${key}`}
-            state={{ pageTitle: getButtonTitle(key) }}
+            key={pageType}
+            to={`/rigs/${rigId}/widgets/${pageType}`}
+            state={{ pageTitle: title }}
             className="status-button-link"
           >
-            <div className={`status-button ${getStatusClass(value, type)}`}>
-              <div className="status-icon">
-                <i className={getStatusIcon(key, value)} />
+            <div className={`status-button ${statusClass}`}>
+              <div className={`status-icon ${statusClass}`}>
+                <i className={icon} />
               </div>
-              <div className="status-title">{getButtonTitle(key)}</div>
-              <div className="status-value">{formatValue(key, value)}</div>
+              <div className="status-title">{title}</div>
+              <div className="status-value">{formatValue(pageType, value)}</div>
             </div>
           </Link>
-        ))}
+        );
+        })}
       </div>
 
       {/* Статусы ТО */}
@@ -159,8 +184,8 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
             className="status-button-link"
           >
             <div className={`status-button maintenance-button ${getStatusClass(value, type)}`}>
-              <div className="maintenance-status-indicator" />
-              <div className="status-icon">
+              <div className={`maintenance-status-indicator ${overallOk ? 'overall-ok' : 'overall-bad'}`} />
+              <div className={`status-icon ${overallOk ? 'overall-ok' : 'overall-bad'}`}>
                 <i className={getStatusIcon(key, value)} />
               </div>
               <div className="status-title">
@@ -182,11 +207,14 @@ const RigStatusButtons = ({ attributes, rigId }: { attributes: ExtendedEdgeAttri
 
 export default function RigsListPage() {
   const [selectedRigId, setSelectedRigId] = useState<string | null>(null);
+  const [rigTagStatusMap, setRigTagStatusMap] = useState<Record<string, boolean>>({});
   
   const { edgesWithAttributes: rootEdges, loading: rootEdgesLoading, error: rootEdgesError } = useRootEdgesWithAttributes();
 
   const selectedEdgeKey = selectedRigId ? `${selectedRigId}` : null;
   const { edgeData: selectedEdgeData } = useEdgeWithAttributes(selectedEdgeKey);
+  const { widgetConfigs: selectedWidgetConfigs } = useWidgetConfigsByEdge(selectedEdgeKey);
+  const { data: selectedRigDetails } = useCurrentDetails(selectedEdgeKey);
 
   // Статистика по всем буровым
   const hasErrorsInAttributes = (rawAttributes: RawEdgeAttributes | null | undefined, edgeId: string) => {
@@ -225,6 +253,136 @@ export default function RigsListPage() {
       ok: !hasErrorsInAttributes(edge.attributes, edge.id)
     }));
   }, [rootEdges]);
+
+  const parseNumericValue = (value: unknown): number | null => {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'boolean') {
+      return value ? 1 : 0;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.replace(',', '.').trim();
+      if (!normalized) {
+        return null;
+      }
+      const parsed = Number(normalized);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const hasOutOfRangeTags = (tags: Array<{ value: any; min?: number; max?: number }>) => {
+    return tags.some(tag => {
+      const numericValue = parseNumericValue(tag.value);
+      if (numericValue === null) {
+        return false;
+      }
+      if (typeof tag.min === 'number' && numericValue < tag.min) {
+        return true;
+      }
+      if (typeof tag.max === 'number' && numericValue > tag.max) {
+        return true;
+      }
+      return false;
+    });
+  };
+
+  useEffect(() => {
+    if (!rootEdges.length) {
+      setRigTagStatusMap({});
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchTagStatuses = async () => {
+      try {
+        const results = await Promise.all(
+          rootEdges.map(async edge => {
+            try {
+              const tags = await getCurrentDetails(edge.id);
+              const hasOutOfRange = hasOutOfRangeTags(tags);
+              return { id: edge.id, ok: !hasOutOfRange };
+            } catch {
+              return { id: edge.id, ok: true };
+            }
+          })
+        );
+
+        if (!isCancelled) {
+          const nextMap: Record<string, boolean> = {};
+          results.forEach(result => {
+            nextMap[result.id] = result.ok;
+          });
+          setRigTagStatusMap(nextMap);
+        }
+      } catch {
+        if (!isCancelled) {
+          setRigTagStatusMap({});
+        }
+      }
+    };
+
+    fetchTagStatuses();
+    const intervalId = setInterval(fetchTagStatuses, 1000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [rootEdges]);
+
+  const selectedRigTagMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (selectedRigDetails) {
+      selectedRigDetails.forEach(tagData => {
+        map.set(tagData.tag, tagData.value);
+      });
+    }
+    return map;
+  }, [selectedRigDetails]);
+
+  const sectionStatus = useMemo<Record<string, SectionStatus>>(() => {
+    if (!selectedRigId) {
+      return { BYPASS: 'empty', ACCIDENT: 'empty' };
+    }
+
+    const resolveStatus = (pageAliases: string[]): SectionStatus => {
+      const sectionConfigs = selectedWidgetConfigs.filter(cfg =>
+        pageAliases.includes(cfg.config.page)
+      );
+
+      if (sectionConfigs.length === 0) {
+        return 'empty';
+      }
+
+      const hasBad = sectionConfigs.some(cfg => {
+        const rawValue = selectedRigTagMap.get(cfg.tag_id);
+        if (rawValue === undefined) {
+          return false;
+        }
+        const numericValue = parseNumericValue(rawValue);
+        if (numericValue === null) {
+          return false;
+        }
+        if (typeof cfg.tag.min === 'number' && numericValue < cfg.tag.min) {
+          return true;
+        }
+        if (typeof cfg.tag.max === 'number' && numericValue > cfg.tag.max) {
+          return true;
+        }
+        return false;
+      });
+
+      return hasBad ? 'bad' : 'ok';
+    };
+
+    return {
+      BYPASS: resolveStatus([`BYPASS_${selectedRigId}`, 'BYPASS', 'Состояние байпасов']),
+      ACCIDENT: resolveStatus([`ACCIDENT_${selectedRigId}`, 'ACCIDENT', 'Аварии приводов'])
+    };
+  }, [selectedRigId, selectedWidgetConfigs, selectedRigTagMap]);
 
   // Получаем атрибуты для каждой буровой для отображения на карточках
   const getRigAttributes = (rig: RigCompatible): EdgeAttribute => {
@@ -395,17 +553,18 @@ export default function RigsListPage() {
                 const maintenanceOk = attrs.daily_maintenance && attrs.weekly_maintenance && 
                                      attrs.monthly_maintenance && attrs.semiannual_maintenance && 
                                      attrs.annual_maintenance;
+                const rigTagsOk = rigTagStatusMap[rig.id] ?? rig.ok;
                 
                 return (
                   <button
                     key={rig.id}
-                    className={`rig-card ${rig.ok ? "ok" : "bad"} ${rig.id === selectedRigId ? 'active' : ''}`}
+                    className={`rig-card ${rigTagsOk ? "ok" : "bad"} ${rig.id === selectedRigId ? 'active' : ''}`}
                     onClick={() => setSelectedRigId(rig.id === selectedRigId ? null : rig.id)}
                   >
                     <div className="rig-card-header">
                       <div className="rig-status-badge">
-                        <i className={`pi ${rig.ok ? 'pi-check-circle' : 'pi-exclamation-triangle'}`} />
-                        <span>{rig.ok ? 'В норме' : 'Требует внимания'}</span>
+                        <i className={`pi ${rigTagsOk ? 'pi-check-circle' : 'pi-exclamation-triangle'}`} />
+                        <span>{rigTagsOk ? 'В норме' : 'Требует внимания'}</span>
                       </div>
                       <div className="rig-id">#{rig.id}</div>
                     </div>
@@ -469,7 +628,7 @@ export default function RigsListPage() {
                           <div className="rig-status-header-content">
                               <Link 
                                   to={`/rigs/${currentRig.id}`} 
-                                  className="rig-status-name-link"
+                                  className={`rig-status-name-link ${(rigTagStatusMap[currentRig.id] ?? currentRig.ok) ? 'ok' : 'bad'}`}
                               >
                                   <i className="pi pi-building" />
                                   <span>{currentRig.name || `БУ №${currentRig.id}`}</span>
@@ -500,6 +659,8 @@ export default function RigsListPage() {
                           <RigStatusButtons 
                             attributes={extendedAttributes} 
                             rigId={currentRig.id}
+                            overallOk={rigTagStatusMap[currentRig.id] ?? currentRig.ok}
+                            sectionStatus={sectionStatus}
                           />
                           
                           
