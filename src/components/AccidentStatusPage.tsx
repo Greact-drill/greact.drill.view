@@ -17,6 +17,8 @@ interface WidgetConfig {
     customLabel?: string;
 }
 
+type WidgetType = WidgetConfig['widgetType'];
+
 // Обновленная структура для мемоизации
 interface AccidentWidgetConfig {
     key: string;

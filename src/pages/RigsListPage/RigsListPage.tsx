@@ -105,19 +105,6 @@ const RigStatusButtons = ({
     return String(value);
   };
 
-  const getButtonTitle = (key: string) => {
-    const titles: Record<string, string> = {
-      bypass_state: 'Байпас',
-      drive_state: 'Привод',
-      daily_maintenance: 'Ежедневное ТО',
-      weekly_maintenance: 'Еженедельное ТО',
-      monthly_maintenance: 'Ежемесячное ТО',
-      semiannual_maintenance: 'Полугодовое ТО',
-      annual_maintenance: 'Годовое ТО',
-    };
-    return titles[key] || key;
-  };
-
   // Основные статусы
   const mainStatuses = [
     {
@@ -358,7 +345,7 @@ export default function RigsListPage() {
 
   const sectionStatus = useMemo<Record<string, SectionStatus>>(() => {
     if (!selectedRigId) {
-      return {};
+      return { BYPASS: 'empty', ACCIDENT: 'empty' };
     }
 
     const resolveStatus = (pageAliases: string[]): SectionStatus => {
