@@ -7,10 +7,19 @@ import type { EdgeAttribute, RawEdgeAttributes } from "../types/edge";
  * @param edgeId - ID текущего Edge (для поля edge_key).
  */
 export const transformRawAttributes = (rawAttributes: RawEdgeAttributes, edgeId: string): EdgeAttribute => {
+    const hasBypassData = 'P2_feed' in rawAttributes || 'PC_IO_2.30' in rawAttributes;
+    const hasDriveData = 'PC_IO_2.25' in rawAttributes || 'PC_IO_2.26' in rawAttributes;
+    const hasMaintenanceData = 'PC_IO_2.31' in rawAttributes;
 
-    const isBypassOk = rawAttributes['P2_feed'] === 0 && rawAttributes['PC_IO_2.30'] === 0;
-    const isDriveOk = rawAttributes['PC_IO_2.25'] === 1 && rawAttributes['PC_IO_2.26'] === 1;
-    const isMaintenanceOk = rawAttributes['PC_IO_2.31'] === 0;
+    const isBypassOk = hasBypassData
+        ? rawAttributes['P2_feed'] === 0 && rawAttributes['PC_IO_2.30'] === 0
+        : true;
+    const isDriveOk = hasDriveData
+        ? rawAttributes['PC_IO_2.25'] === 1 && rawAttributes['PC_IO_2.26'] === 1
+        : true;
+    const isMaintenanceOk = hasMaintenanceData
+        ? rawAttributes['PC_IO_2.31'] === 0
+        : true;
 
     return {
         id: 0,

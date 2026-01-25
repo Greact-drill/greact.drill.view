@@ -2,6 +2,7 @@
 
 import React from 'react';
 import GaugeChartComponent from './GaugeChart.tsx';
+import { formatNumberWithUnit } from '../../utils/formatters';
 import './GaugeWidget.css';
 
 interface GaugeWidgetProps {
@@ -13,6 +14,8 @@ interface GaugeWidgetProps {
 }
 
 const GaugeWidget: React.FC<GaugeWidgetProps> = React.memo(({ label, value, max, unit = '' }) => {
+  const displayValue = formatNumberWithUnit(value, unit);
+
   return (
     <div className="gauge-widget-container">
       <h3 className="gauge-widget-title">{label}</h3>
@@ -24,7 +27,7 @@ const GaugeWidget: React.FC<GaugeWidgetProps> = React.memo(({ label, value, max,
       />
 
       <div className="gauge-widget-value">
-        {Math.round(value)} {unit}
+        {displayValue}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import VerticalBar from '../../components/VerticalBar/VerticalBar.tsx';
 import GaugeWidget from '../../components/Gauge/GaugeWidget.tsx'; 
 import NumberDisplay from '../../components/NumberDisplay/NumberDisplay.tsx'; 
 import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBlock.tsx';
+import { formatNumberWithUnit } from '../../utils/formatters';
 
 // Интерфейс для конфигурации виджета из JSON
 interface WidgetConfig {
@@ -191,7 +192,7 @@ export default function KtuPage() {
                         />
                     );
                 case 'number':
-                    const displayValue = `${config.value}${config.unit ? ` ${config.unit}` : ''}`;
+                    const displayValue = formatNumberWithUnit(parseNumericValue(config.value), config.unit);
                     return (
                         <NumberDisplay 
                             key={config.key} 

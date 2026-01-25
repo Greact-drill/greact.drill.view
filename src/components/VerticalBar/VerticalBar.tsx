@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatNumber } from '../../utils/formatters';
 import './VerticalBar.css';
 
 interface VerticalBarProps {
@@ -11,8 +12,12 @@ interface VerticalBarProps {
 const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {
   // Обеспечиваем, что значение не выходит за пределы [0, max]
   const clampedValue = Math.min(Math.max(value, 0), max);
+  const safeMax = max > 0 ? max : 0;
+  const fillPercent = safeMax > 0 ? (clampedValue / safeMax) * 100 : 0;
   // Расчет, сколько процентов "закрывает" бар
-  const coverHeight = 100 - (clampedValue / max) * 100;
+  const coverHeight = 100 - fillPercent;
+
+  const displayValue = formatNumber(value);
 
   return (
     <div className="vertical-bar-container">
@@ -25,7 +30,7 @@ const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {
           }}>
         </div>
       </div>
-      <div className="bar-value">{value}</div>
+      <div className="bar-value">{displayValue}</div>
     </div>
   );
 };

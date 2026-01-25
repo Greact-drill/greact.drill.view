@@ -4,14 +4,15 @@ import { Button } from 'primereact/button';
 import { useWidgetConfigsByPage } from '../../hooks/useWidgetConfigs.ts';
 import { useTableConfigByPage } from '../../hooks/useTableConfig.ts';
 import { useCurrentDetails } from '../../hooks/useCurrentDetails.ts';
+import { formatNumber, formatNumberWithUnit } from '../../utils/formatters';
 import './DynamicWidgetPage.css';
 import VerticalBar from '../../components/VerticalBar/VerticalBar';
 import GaugeWidget from '../../components/Gauge/GaugeWidget';
 import NumberDisplay from '../../components/NumberDisplay/NumberDisplay';
-import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBlock';
 import CompactTagDisplay from '../../components/CompactTagDisplay/CompactTagDisplay';
 import WidgetPlaceholder from '../../components/WidgetPlaceholder/WidgetPlaceholder.tsx';
 import TableWidget from '../../components/TableWidget/TableWidget';
+import StatusTagWidget from '../../components/StatusTagWidget/StatusTagWidget';
 
 // Типы виджетов
 type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
@@ -49,6 +50,19 @@ const parseNumericValue = (value: number | string | boolean | null): number | nu
     return Number.isNaN(parsed) ? null : parsed;
   }
   return null;
+};
+
+const parseBooleanValue = (value: number | string | boolean | null): boolean => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value === 1;
+  }
+  return String(value).toLowerCase() === 'true' || String(value) === '1';
 };
 
 const isTagValueOK = (
@@ -214,6 +228,9 @@ export default function DynamicWidgetPage() {
     if (value === null || value === undefined) {
       return '—';
     }
+    if (typeof value === 'number') {
+      return formatNumber(value);
+    }
     return String(value);
   };
 
@@ -240,8 +257,7 @@ export default function DynamicWidgetPage() {
       left: `${config.position.x}px`,
       top: `${config.position.y}px`,
       width: `${dimensions.width}px`,
-      height: `${dimensions.height}px`,
-      zIndex: 10
+      height: `${dimensions.height}px`
     };
 
     // Если данных нет, показываем placeholder с анимацией загрузки
@@ -262,6 +278,10 @@ export default function DynamicWidgetPage() {
         </div>
       );
     }
+
+    const statusValue = config.type === 'status'
+      ? parseBooleanValue(config.value as number | string | boolean | null)
+      : false;
 
     const widgetContent = (() => {
       switch (config.type) {
@@ -284,10 +304,11 @@ export default function DynamicWidgetPage() {
               max={config.max} 
             />
           );
-        case 'number':
-          const displayValue = config.hasData 
-            ? `${config.value}${config.unit ? ` ${config.unit}` : ''}`
-            : `${config.defaultValue}${config.unit ? ` ${config.unit}` : ''}`;
+        case 'number': {
+          const numericValue = parseNumericValue(
+            config.hasData ? (config.value as number | string | boolean | null) : (config.defaultValue ?? null)
+          );
+          const displayValue = formatNumberWithUnit(numericValue, config.unit);
           return (
             <NumberDisplay 
               key={config.key} 
@@ -295,13 +316,13 @@ export default function DynamicWidgetPage() {
               value={displayValue}
             />
           );
+        }
         case 'status':
           return (
-            <BypassStatusBlock 
-              key={config.key} 
-              label={config.label} 
-              value={config.hasData ? (config.value as string) : 'Ожидание данных'} 
-              isOK={config.isOK ?? false} 
+            <StatusTagWidget
+              key={config.key}
+              label={config.label}
+              value={statusValue}
             />
           );
         case 'compact':
@@ -331,9 +352,19 @@ export default function DynamicWidgetPage() {
       }
     })();
 
+    const stateClassName = config.type === 'status'
+      ? ''
+      : `${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`;
+
+    const tooltipStateClass = config.hasData
+      ? (config.type === 'status'
+        ? (statusValue ? 'widget-tooltip--ok' : 'widget-tooltip--error')
+        : (config.isOK === true ? 'widget-tooltip--ok' : config.isOK === false ? 'widget-tooltip--error' : ''))
+      : '';
+
     return (
       <div 
-        className={`positioned-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`} 
+        className={`positioned-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${stateClassName}`} 
         key={config.key}
         style={positionStyle}
         data-widget-type={config.type}
@@ -341,7 +372,7 @@ export default function DynamicWidgetPage() {
         data-has-data={config.hasData}
       >
         {widgetContent}
-        <div className="widget-tooltip" role="tooltip">
+        <div className={`widget-tooltip ${tooltipStateClass}`} role="tooltip">
           <div className="widget-tooltip-title">{config.label}</div>
           <div className="widget-tooltip-row">
             <span className="widget-tooltip-label">Мин</span>

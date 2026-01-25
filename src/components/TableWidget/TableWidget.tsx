@@ -60,7 +60,7 @@ const TableWidget: React.FC<TableWidgetProps> = ({ config }) => {
 
     // Для числовых значений форматируем с единицами измерения
     const formatted = typeof value === 'number' 
-      ? (Number.isInteger(value) ? value.toString() : value.toFixed(1))
+      ? value.toFixed(2)
       : String(value);
     
     return tag?.unit_of_measurement && tag.unit_of_measurement !== 'bool'

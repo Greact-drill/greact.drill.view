@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tag } from 'primereact/tag';
+import { getCurrentByTags, getEdgeCustomizations } from '../../api/edges';
 import './MaintenancePage.css';
 
 const maintenanceTypeMap: { [key: string]: string } = {
@@ -16,68 +17,28 @@ const maintenanceTypeMap: { [key: string]: string } = {
 };
 
 interface MaintenanceRow {
+    tagId: string;
     device: string;
     status: string;
-    time: number | string;
+    value: number | string;
     severity: 'success' | 'danger' | 'warning';
 }
 
-// --- ЗАГЛУШКА ДАННЫХ: Ежедневное ТО ---
-// Здесь в реальном приложении будет использован API-ответ для формирования этих данных
-const dailyMaintenanceDataStubs: MaintenanceRow[] = [
-    { device: 'Агрегат гидравлический_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'success' },
-    { device: 'Асдорбционный осушитель_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'success' },
-    { device: 'Буровая вышка', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'warning' },
-    { device: 'Буровая лебёдка_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'warning' },
-    { device: 'Буровой насос №1_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Буровой насос №2_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №1_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №2_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №3_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Винтовой компрессор №1_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-];
-
-// --- НОВАЯ ЗАГЛУШКА ДАННЫХ: Еженедельное ТО (168 часов) ---
-const weeklyMaintenanceDataStubs: MaintenanceRow[] = [
-    { device: 'Асдорбционный осушитель_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Буровая лебёдка_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №1_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №2_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №3_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вспомогательная лебёдка_1_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вспомогательная лебёдка_2_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'ГШН гидроворонка БДЕ_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'ГШН для перекачки воды БДЕ_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'ГШН для перекачки воды_24', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Гидравлическая станция ГКШ_168', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-];
-
-const monthlyMaintenanceDataStubs: MaintenanceRow[] = [
-    { device: 'Агрегат гидравлический_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Асдорбционный осушитель_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Буровая лебёдка_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1581, severity: 'danger' },
-    { device: 'Буровой насос №1_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1581, severity: 'danger' },
-    { device: 'Буровой насос №2_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1581, severity: 'danger' },
-    { device: 'Вибросито №1_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №2_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вибросито №3_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1254, severity: 'danger' },
-    { device: 'Вспомогательная лебёдка_1_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1581, severity: 'danger' },
-    { device: 'Вспомогательная лебёдка_2_720', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 1581, severity: 'danger' },
-];
-
-const semiannualMaintenanceDataStubs: MaintenanceRow[] = [
-    { device: 'Буровая лебёдка_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Винтовой компрессор №1_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Винтовой компрессор №2_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Гидроворнка_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'ДЭС-400_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Дегазатор_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Доливной насос_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Илоотделитель_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Кран консольно поворотный_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Насос винтовой №1_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-    { device: 'Насос винтовой №2_2160', status: 'СЕРВИС ПРОСРОЧЕН НА (часов)', time: 2242, severity: 'danger' },
-];
+const parseValue = (raw: unknown): number | null => {
+    if (typeof raw === 'number') {
+        return raw;
+    }
+    if (typeof raw === 'string') {
+        const normalized = raw.replace(',', '.').trim();
+        if (!normalized) return null;
+        const parsed = Number(normalized);
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+    if (typeof raw === 'boolean') {
+        return raw ? 1 : 0;
+    }
+    return null;
+};
 
 const statusBodyTemplate = (rowData: MaintenanceRow) => {
     return (
@@ -90,60 +51,107 @@ const statusBodyTemplate = (rowData: MaintenanceRow) => {
     );
 };
 
-const timeBodyTemplate = (rowData: MaintenanceRow) => {
-    // В зависимости от severity (danger/warning), текст будет красным или желтым
-    // Если статус 'danger' (просрочка), делаем время красным
-    const isOverdue = rowData.severity === 'danger' || rowData.severity === 'warning';
-    
-    // Определяем цвет в зависимости от severity
-    let timeColor = 'var(--color-text-primary)';
+const valueBodyTemplate = (rowData: MaintenanceRow) => {
+    const isAlert = rowData.severity === 'danger' || rowData.severity === 'warning';
+    let color = 'var(--color-text-primary)';
     if (rowData.severity === 'danger') {
-        timeColor = 'var(--color-error-light)'; // #f87171
+        color = 'var(--color-error-light)';
     } else if (rowData.severity === 'warning') {
-        timeColor = 'var(--color-warning-light)'; // #fbbf24
+        color = 'var(--color-warning-light)';
     } else if (rowData.severity === 'success') {
-        timeColor = 'var(--color-success-light)'; // #4ade80
+        color = 'var(--color-success-light)';
     }
-    
+
     return (
-        <span style={{ 
-            color: isOverdue ? timeColor : 'var(--color-text-primary)',
-            fontWeight: isOverdue ? 600 : 400
+        <span style={{
+            color: isAlert ? color : 'var(--color-text-primary)',
+            fontWeight: isAlert ? 600 : 400
         }}>
-            {rowData.time}
+            {rowData.value}
         </span>
     );
 };
 
 export default function MaintenancePage() {
     const navigate = useNavigate();
-    const { maintenanceType } = useParams<{ maintenanceType: string }>(); 
+    const { maintenanceType, rigId } = useParams<{ maintenanceType: string; rigId: string }>(); 
     
     const title = maintenanceType ? maintenanceTypeMap[maintenanceType] : 'Обслуживание';
-    const loading = false; // Заглушка: считаем, что данные загружены
+    const [maintenanceData, setMaintenanceData] = useState<MaintenanceRow[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     
-    const maintenanceData: MaintenanceRow[] = useMemo(() => {
-        
-        if (maintenanceType === 'daily_maintenance') {
-            return dailyMaintenanceDataStubs;
-        }
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!rigId || !maintenanceType) {
+                return;
+            }
+            setLoading(true);
+            setErrorMessage(null);
+            try {
+                const customizations = await getEdgeCustomizations(rigId);
+                const maintenanceConfig = customizations.find(item => item.key === 'maintenanceConfig');
+                const parsedConfig = maintenanceConfig ? JSON.parse(maintenanceConfig.value) : {};
+                const tagIds: string[] = Array.isArray(parsedConfig[maintenanceType])
+                    ? parsedConfig[maintenanceType]
+                    : [];
 
-        if (maintenanceType === 'weekly_maintenance') {
-            return weeklyMaintenanceDataStubs;
-        }
+                if (!tagIds.length) {
+                    setMaintenanceData([]);
+                    setLoading(false);
+                    return;
+                }
 
-        if (maintenanceType === 'monthly_maintenance') {
-            return monthlyMaintenanceDataStubs;
-        }
+                const scoped = await getCurrentByTags(rigId, tagIds, true);
+                const tagMap = new Map(scoped.tags.map(tag => [tag.tag, tag]));
+                const tagNameMap = new Map(scoped.tags.map(tag => [tag.tag, tag.name || tag.tag]));
+                scoped.tagMeta?.forEach(tag => {
+                    if (!tagNameMap.has(tag.id)) {
+                        tagNameMap.set(tag.id, tag.name || tag.id);
+                    }
+                });
 
-        if (maintenanceType === 'semiannual_maintenance') {
-            return semiannualMaintenanceDataStubs;
-        }
-        // Заглушка для других типов ТО
-        return [
-            { device: `Данные для ${title}`, status: 'ОК', time: '-', severity: 'success' },
-        ];
-    }, [maintenanceType]);  
+                const rows = tagIds.map(tagId => {
+                    const data = tagMap.get(tagId);
+                    if (!data) {
+                        return {
+                            tagId,
+                            device: tagNameMap.get(tagId) ?? tagId,
+                            status: 'Нет данных',
+                            value: '-',
+                            severity: 'warning' as const
+                        };
+                    }
+
+                    const numericValue = parseValue(data.value);
+                    const hasMin = typeof data.min === 'number' && !Number.isNaN(data.min);
+                    const hasMax = typeof data.max === 'number' && !Number.isNaN(data.max);
+                    const minValue = hasMin ? (data.min as number) : null;
+                    const maxValue = hasMax ? (data.max as number) : null;
+                    let isOutOfRange = false;
+                    if (numericValue !== null && minValue !== null && maxValue !== null && maxValue > minValue) {
+                        isOutOfRange = numericValue < minValue || numericValue > maxValue;
+                    }
+
+                    return {
+                        tagId,
+                        device: tagNameMap.get(tagId) ?? (data.name || data.tag),
+                        status: isOutOfRange ? 'Требует внимания' : 'В норме',
+                        value: data.value,
+                        severity: isOutOfRange ? 'danger' as const : 'success' as const
+                    };
+                });
+
+                setMaintenanceData(rows);
+            } catch (error) {
+                setErrorMessage('Не удалось загрузить данные ТО.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [rigId, maintenanceType]);
 
 
     if (loading) {
@@ -174,37 +182,44 @@ export default function MaintenancePage() {
                             {title}
                         </h1>
                         
-                        <div className="maintenance-table-container">
-                             <DataTable 
-                                value={maintenanceData} 
-                                responsiveLayout="scroll"
-                                className="p-datatable-gridlines p-datatable-sm maintenance-table-custom"
-                            >
-                                {/* 1. УСТРОЙСТВО */}
-                                <Column 
-                                    field="device" 
-                                    header="УСТРОЙСТВО" 
-                                    style={{ width: '50%' }}
-                                />
-                                
-                                {/* 2. СТАТУС */}
-                                <Column 
-                                    field="status" 
-                                    header="СТАТУС" 
-                                    body={statusBodyTemplate}
-                                    style={{ width: '35%' }} 
-                                />
-                                
-                                {/* 3. Время, час. */}
-                                <Column 
-                                    field="time" 
-                                    header="Время, час." 
-                                    body={timeBodyTemplate} // Используем новый шаблон для стилизации времени
-                                    style={{ width: '15%' }} 
-                                    className="p-text-right" // Выравниваем по правому краю для чисел
-                                />
-                             </DataTable>
-                        </div>
+                        {errorMessage && (
+                            <div className="maintenance-table-container">
+                                <Tag severity="danger" value={errorMessage} />
+                            </div>
+                        )}
+                        {!errorMessage && maintenanceData.length === 0 && (
+                            <div className="maintenance-table-container">
+                                <Tag severity="warning" value="Нет данных для данного ТО." />
+                            </div>
+                        )}
+                        {!errorMessage && maintenanceData.length > 0 && (
+                            <div className="maintenance-table-container">
+                                <DataTable 
+                                    value={maintenanceData} 
+                                    responsiveLayout="scroll"
+                                    className="p-datatable-gridlines p-datatable-sm maintenance-table-custom"
+                                >
+                                    <Column 
+                                        field="device" 
+                                        header="ТЕГ" 
+                                        style={{ width: '50%' }}
+                                    />
+                                    <Column 
+                                        field="status" 
+                                        header="СТАТУС" 
+                                        body={statusBodyTemplate}
+                                        style={{ width: '30%' }} 
+                                    />
+                                    <Column 
+                                        field="value" 
+                                        header="Значение" 
+                                        body={valueBodyTemplate}
+                                        style={{ width: '20%' }} 
+                                        className="p-text-right"
+                                    />
+                                </DataTable>
+                            </div>
+                        )}
 
                     </div>
             </div>

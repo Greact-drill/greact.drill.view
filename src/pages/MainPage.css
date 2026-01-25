@@ -1815,16 +1815,18 @@
 /* Подсветка по диапазону min/max для виджетов справа */
 .main-page-widget.widget-in-range {
   box-shadow:
-    0 0 16px rgba(34, 197, 94, 0.22),
-    inset 0 0 0 1px rgba(34, 197, 94, 0.16);
-  border-color: rgba(34, 197, 94, 0.3) !important;
+    0 0 24px rgba(34, 197, 94, 0.5),
+    0 0 52px rgba(34, 197, 94, 0.32),
+    inset 0 0 0 1px rgba(34, 197, 94, 0.45);
+  border-color: rgba(34, 197, 94, 0.55) !important;
 }
 
 .main-page-widget.widget-out-of-range {
   box-shadow:
-    0 0 18px rgba(239, 68, 68, 0.24),
-    inset 0 0 0 1px rgba(239, 68, 68, 0.18);
-  border-color: rgba(239, 68, 68, 0.35) !important;
+    0 0 26px rgba(239, 68, 68, 0.5),
+    0 0 58px rgba(239, 68, 68, 0.34),
+    inset 0 0 0 1px rgba(239, 68, 68, 0.45);
+  border-color: rgba(239, 68, 68, 0.6) !important;
 }
 
 .main-page-widget.widget-in-range,

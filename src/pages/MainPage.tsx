@@ -6,6 +6,7 @@ import { useEdgeWithAttributes, useEdgeChildren } from "../hooks/useEdges";
 import type { Rig } from "../types/rig";
 import { polygonPercentToSvgPoints } from "../utils/polygonUtils";
 import { transformRawAttributes } from "../utils/edgeUtils";
+import { formatNumberWithUnit } from "../utils/formatters";
 import type { EdgeAttribute, RawEdgeAttributes } from "../types/edge";
 import './MainPage.css';
 
@@ -13,9 +14,9 @@ import './MainPage.css';
 import GaugeWidget from "../components/Gauge/GaugeWidget.tsx";
 import VerticalBar from "../components/VerticalBar/VerticalBar";
 import NumberDisplay from "../components/NumberDisplay/NumberDisplay";
-import BypassStatusBlock from "../components/BypassStatusBlock/BypassStatusBlock";
 import CompactTagDisplay from "../components/CompactTagDisplay/CompactTagDisplay";
 import WidgetPlaceholder from "../components/WidgetPlaceholder/WidgetPlaceholder.tsx";
+import StatusTagWidget from "../components/StatusTagWidget/StatusTagWidget";
 
 // Используем хук для получения конфигураций по edge_id
 import { useWidgetConfigsByEdge } from "../hooks/useWidgetConfigs";
@@ -55,6 +56,19 @@ const parseNumericValue = (value: number | string | boolean | null): number | nu
     return Number.isNaN(parsed) ? null : parsed;
   }
   return null;
+};
+
+const parseBooleanValue = (value: number | string | boolean | null): boolean => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value === 1;
+  }
+  return String(value).toLowerCase() === 'true' || String(value) === '1';
 };
 
 const isTagValueOK = (
@@ -274,10 +288,11 @@ export default function MainPage() {
               compact={true}
             />
           );
-        case 'number':
-          const displayValue = config.hasData 
-            ? `${config.value}${config.unit ? ` ${config.unit}` : ''}`
-            : `${config.defaultValue}${config.unit ? ` ${config.unit}` : ''}`;
+        case 'number': {
+          const numericValue = parseNumericValue(
+            config.hasData ? (config.value as number | string | boolean | null) : (config.defaultValue ?? null)
+          );
+          const displayValue = formatNumberWithUnit(numericValue, config.unit);
           return (
             <NumberDisplay 
               key={config.key} 
@@ -286,14 +301,13 @@ export default function MainPage() {
               compact={true}
             />
           );
+        }
         case 'status':
           return (
-            <BypassStatusBlock 
-              key={config.key} 
-              label={config.label} 
-              value={config.hasData ? (config.value as string) : 'Ожидание данных'} 
-              isOK={config.isOK ?? false}
-              compact={true}
+            <StatusTagWidget
+              key={config.key}
+              label={config.label}
+              value={parseBooleanValue(config.value as number | string | boolean | null)}
             />
           );
         case 'compact':
@@ -323,9 +337,13 @@ export default function MainPage() {
       }
     })();
 
+    const stateClassName = config.type === 'status'
+      ? ''
+      : `${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`;
+
     return (
       <div 
-        className={`main-page-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`} 
+        className={`main-page-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${stateClassName}`} 
         key={config.key}
         data-widget-type={config.type}
         data-display-type={config.displayType}
