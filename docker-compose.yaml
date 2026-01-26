@@ -7,6 +7,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL
+        - VITE_MEDIA_API_URL
     ports:
       - '4000:4000'
     volumes:
