@@ -274,6 +274,10 @@
   border-radius: 10px;
   border: 1px solid rgba(212, 165, 116, 0.3);
   transition: all 0.3s ease;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.2;
 }
 
 .document-card-link.secondary {

@@ -23,6 +23,8 @@ export default function DocumentsPage() {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busyDocId, setBusyDocId] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -103,6 +105,73 @@ export default function DocumentsPage() {
   }, [assets]);
 
   const totalDocuments = assets.length;
+  const resolveFileName = (doc: MediaAsset) => {
+    if (doc.name?.trim()) return doc.name.trim();
+    if (doc.key) {
+      const keyPart = doc.key.split("/").pop() || "document";
+      return decodeURIComponent(keyPart);
+    }
+    if (doc.url) {
+      try {
+        const url = new URL(doc.url);
+        const name = url.pathname.split("/").pop() || "document";
+        return decodeURIComponent(name);
+      } catch {
+        return "document";
+      }
+    }
+    return "document";
+  };
+
+  const fetchDocumentBlob = async (doc: MediaAsset) => {
+    if (!doc.url) throw new Error("missing-url");
+    const response = await fetch(doc.url);
+    if (!response.ok) {
+      throw new Error(`failed-${response.status}`);
+    }
+    const blob = await response.blob();
+    return {
+      blob,
+      filename: resolveFileName(doc)
+    };
+  };
+
+  const handleOpen = async (doc: MediaAsset) => {
+    if (!doc.url || busyDocId === doc.id) return;
+    setBusyDocId(doc.id);
+    setActionError(null);
+    try {
+      const { blob } = await fetchDocumentBlob(doc);
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch {
+      setActionError("Не удалось открыть документ. Попробуйте позже.");
+    } finally {
+      setBusyDocId(null);
+    }
+  };
+
+  const handleDownload = async (doc: MediaAsset) => {
+    if (!doc.url || busyDocId === doc.id) return;
+    setBusyDocId(doc.id);
+    setActionError(null);
+    try {
+      const { blob, filename } = await fetchDocumentBlob(doc);
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch {
+      setActionError("Не удалось скачать документ. Попробуйте позже.");
+    } finally {
+      setBusyDocId(null);
+    }
+  };
 
   return (
     <div className="documents-page-container">
@@ -135,6 +204,7 @@ export default function DocumentsPage() {
 
           {loading && <div className="documents-empty">Загрузка документов...</div>}
           {!loading && errorMessage && <div className="documents-error">{errorMessage}</div>}
+          {!loading && actionError && <div className="documents-error">{actionError}</div>}
           {!loading && !errorMessage && totalDocuments === 0 && (
             <div className="documents-empty">
               Документы пока не добавлены. Загрузите их через админ-панель.
@@ -161,21 +231,22 @@ export default function DocumentsPage() {
                         <div className="document-card-actions">
                           {doc.url ? (
                             <>
-                              <a
-                                className="document-card-link"
-                                href={doc.url}
-                                target="_blank"
-                                rel="noreferrer"
+                              <button
+                                type="button"
+                                className={`document-card-link${busyDocId === doc.id ? " disabled" : ""}`}
+                                onClick={() => handleOpen(doc)}
+                                disabled={busyDocId === doc.id}
                               >
-                                Открыть
-                              </a>
-                              <a
-                                className="document-card-link secondary"
-                                href={doc.url}
-                                download
+                                {busyDocId === doc.id ? "Открытие..." : "Открыть"}
+                              </button>
+                              <button
+                                type="button"
+                                className={`document-card-link secondary${busyDocId === doc.id ? " disabled" : ""}`}
+                                onClick={() => handleDownload(doc)}
+                                disabled={busyDocId === doc.id}
                               >
                                 Скачать
-                              </a>
+                              </button>
                             </>
                           ) : (
                             <span className="document-card-link disabled">Нет ссылки</span>
