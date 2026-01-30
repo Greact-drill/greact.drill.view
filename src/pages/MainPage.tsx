@@ -422,6 +422,10 @@ export default function MainPage() {
                 <i className="pi pi-video" />
                 <span className="subsystem-menu-name">Видеонаблюдение</span>
               </Link>
+              <Link to={`/rigs/${rigId}/documents`} className="subsystem-menu-item">
+                <i className="pi pi-file" />
+                <span className="subsystem-menu-name">Документы</span>
+              </Link>
               <Link to={`/rigs/${rigId}/power-consumption`} className="subsystem-menu-item">
                 <i className="pi pi-chart-bar" />
                 <span className="subsystem-menu-name">Расход электроэнергии</span>
