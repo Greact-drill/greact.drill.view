@@ -42,3 +42,12 @@ export async function presignDownload(params: {
   const response = await mediaClient.post<PresignDownloadResponse>('/media/presign-download', params);
   return response.data;
 }
+
+export function getMediaDownloadUrl(key: string, download?: boolean) {
+  const url = new URL('/media/download', mediaBaseUrl);
+  url.searchParams.set('key', key);
+  if (download) {
+    url.searchParams.set('download', '1');
+  }
+  return url.toString();
+}

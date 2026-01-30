@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getMediaConfig, presignDownload } from "../../api/media";
+import { getMediaConfig, getMediaDownloadUrl } from "../../api/media";
 import "./DocumentsPage.css";
 
 interface MediaAsset {
@@ -67,27 +67,21 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     let isActive = true;
-    const resolvePresigned = async () => {
+    const normalizeUrls = () => {
       if (assets.length === 0) return;
-      if (assets.every(asset => !asset.key)) return;
-      const updated = await Promise.all(
-        assets.map(async asset => {
-          if (!asset.key) return asset;
-          try {
-            const presign = await presignDownload({ key: asset.key, expiresIn: 3600 });
-            return { ...asset, url: presign.url };
-          } catch {
-            return asset;
-          }
-        })
-      );
+      const updated = assets.map(asset => {
+        if (asset.key) {
+          return { ...asset, url: getMediaDownloadUrl(asset.key) };
+        }
+        return asset;
+      });
       const hasUpdates = updated.some((asset, index) => asset.url !== assets[index]?.url);
       if (isActive && hasUpdates) {
         setAssets(updated);
       }
     };
 
-    resolvePresigned();
+    normalizeUrls();
     return () => {
       isActive = false;
     };
@@ -124,8 +118,9 @@ export default function DocumentsPage() {
   };
 
   const fetchDocumentBlob = async (doc: MediaAsset) => {
-    if (!doc.url) throw new Error("missing-url");
-    const response = await fetch(doc.url);
+    const url = doc.key ? getMediaDownloadUrl(doc.key) : doc.url;
+    if (!url) throw new Error("missing-url");
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`failed-${response.status}`);
     }
