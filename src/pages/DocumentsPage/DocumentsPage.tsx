@@ -67,10 +67,10 @@ export default function DocumentsPage() {
     let isActive = true;
     const resolvePresigned = async () => {
       if (assets.length === 0) return;
-      if (assets.every(asset => asset.url || !asset.key)) return;
+      if (assets.every(asset => !asset.key)) return;
       const updated = await Promise.all(
         assets.map(async asset => {
-          if (asset.url || !asset.key) return asset;
+          if (!asset.key) return asset;
           try {
             const presign = await presignDownload({ key: asset.key, expiresIn: 3600 });
             return { ...asset, url: presign.url };
