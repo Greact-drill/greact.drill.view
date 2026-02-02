@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { useWidgetConfigsByPage } from '../../hooks/useWidgetConfigs.ts';
 import { useTableConfigByPage } from '../../hooks/useTableConfig.ts';
-import { useCurrentDetails } from '../../hooks/useCurrentDetails.ts';
 import { formatNumber, formatNumberWithUnit } from '../../utils/formatters';
 import './DynamicWidgetPage.css';
 import VerticalBar from '../../components/VerticalBar/VerticalBar';
@@ -119,66 +118,9 @@ export default function DynamicWidgetPage() {
   const { widgetConfigs, error } = useWidgetConfigsByPage(configPage);
   const { tableConfig: tableConfigData } = useTableConfigByPage(configPage);
   
-  // Опрашиваем /current/details по ключу главной буровой установки (rigId)
-  const { data: currentDetailsData } = useCurrentDetails(rigId || null);
-
-  // Обновляем данные таблицы на основе currentDetailsData
-  const updatedTableConfigData = useMemo(() => {
-    if (!tableConfigData || !currentDetailsData) {
-      return tableConfigData;
-    }
-
-    // Создаем Map для быстрого поиска значений тегов
-    const currentDetailsMap = new Map<string, number>();
-    currentDetailsData.forEach(tagData => {
-      currentDetailsMap.set(tagData.tag, tagData.value);
-    });
-
-    // Создаем обновленную копию config с обновленными данными
-    const updatedData: typeof tableConfigData.data = {};
-    
-    for (let row = 0; row < tableConfigData.rows; row++) {
-      updatedData[row] = {};
-      for (let col = 0; col < tableConfigData.cols; col++) {
-        const cell = tableConfigData.cells?.[row]?.[col];
-        const existingCellData = tableConfigData.data?.[row]?.[col];
-        
-        if (cell && (cell.type === 'tag-number' || cell.type === 'tag-text') && cell.value) {
-          const tagId = cell.value;
-          const updatedValue = currentDetailsMap.get(tagId);
-          
-          if (updatedValue !== undefined && existingCellData) {
-            // Обновляем значение, сохраняя остальные данные
-            updatedData[row][col] = {
-              ...existingCellData,
-              value: updatedValue
-            };
-          } else {
-            updatedData[row][col] = existingCellData || null;
-          }
-        } else {
-          updatedData[row][col] = existingCellData || null;
-        }
-      }
-    }
-
-    return {
-      ...tableConfigData,
-      data: updatedData
-    };
-  }, [tableConfigData, currentDetailsData]);
-
   const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
     if (!widgetConfigs || widgetConfigs.length === 0) {
       return [];
-    }
-    
-    // Создаем Map для быстрого поиска актуальных значений тегов
-    const currentDetailsMap = new Map<string, number>();
-    if (currentDetailsData) {
-      currentDetailsData.forEach(tagData => {
-        currentDetailsMap.set(tagData.tag, tagData.value);
-      });
     }
     
     return widgetConfigs.map(config => {
@@ -187,11 +129,7 @@ export default function DynamicWidgetPage() {
         rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
       const displayType = config.config.displayType || 'widget';
       
-      // Приоритет: используем данные из currentDetailsData, если есть, иначе из config.current
-      const currentValueFromDetails = currentDetailsMap.get(config.tag_id);
-      const currentValue = currentValueFromDetails !== undefined 
-        ? currentValueFromDetails 
-        : config.current?.value;
+      const currentValue = config.current?.value;
       
       const hasData = currentValue !== null && currentValue !== undefined;
       const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
@@ -222,7 +160,7 @@ export default function DynamicWidgetPage() {
         hasData
       };
     });
-  }, [widgetConfigs, currentDetailsData]);
+  }, [widgetConfigs]);
 
   const getMinMaxDisplay = (value: number | string | boolean | null | undefined) => {
     if (value === null || value === undefined) {
@@ -454,9 +392,9 @@ export default function DynamicWidgetPage() {
           ) : (
             <>
               {/* Отображение таблицы, если она настроена */}
-              {updatedTableConfigData && (
+              {tableConfigData && (
                 <div className="table-widget-section">
-                  <TableWidget config={updatedTableConfigData} />
+                  <TableWidget config={tableConfigData} />
                 </div>
               )}
               
