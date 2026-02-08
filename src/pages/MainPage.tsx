@@ -26,6 +26,10 @@ import { useScopedCurrent } from '../hooks/useScopedCurrent';
 // Типы виджетов (такие же как в DynamicWidgetPage)
 type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
 
+// Получаем значение переменной окружения для Vite
+const branch = import.meta.env.VITE_BRANCH || import.meta.env.BRANCH || 'main';
+const featureFlag = branch !== 'main';
+
 interface DynamicWidgetConfig {
   edgeId?: string;
   key: string;
@@ -507,30 +511,41 @@ export default function MainPage() {
           ) : (
             <>
               {/* Статические кнопки */}
-              <Link to={`/rigs/${rigId}/electrical-diagram`} className="subsystem-menu-item">
-                <i className="pi pi-sitemap" />
-                <span className="subsystem-menu-name">Схема электроснабжения</span>
-              </Link>
-              <Link to={`/rigs/${rigId}/winch-block`} className="subsystem-menu-item">
-                <i className="pi pi-wrench" />
-                <span className="subsystem-menu-name">Лебедочный блок</span>
-              </Link>
-              <Link to={`/rigs/${rigId}/pump-block`} className="subsystem-menu-item">
-                <i className="pi pi-cog" />
-                <span className="subsystem-menu-name">Насосный блок</span>
-              </Link>
-              <Link to={`/rigs/${rigId}/video`} className="subsystem-menu-item">
-                <i className="pi pi-video" />
-                <span className="subsystem-menu-name">Видеонаблюдение</span>
-              </Link>
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/electrical-diagram`} className="subsystem-menu-item">
+                  <i className="pi pi-sitemap" />
+                  <span className="subsystem-menu-name">Схема электроснабжения</span>
+                </Link>
+              )}
+
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/winch-block`} className="subsystem-menu-item">
+                  <i className="pi pi-wrench" />
+                  <span className="subsystem-menu-name">Лебедочный блок</span>
+                </Link>
+              )}
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/pump-block`} className="subsystem-menu-item">
+                  <i className="pi pi-cog" />
+                  <span className="subsystem-menu-name">Насосный блок</span>
+                </Link>
+              )}
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/video`} className="subsystem-menu-item">
+                  <i className="pi pi-video" />
+                  <span className="subsystem-menu-name">Видеонаблюдение</span>
+                </Link>
+              )}
               <Link to={`/rigs/${rigId}/documents`} className="subsystem-menu-item">
                 <i className="pi pi-file" />
                 <span className="subsystem-menu-name">Документы</span>
               </Link>
-              <Link to={`/rigs/${rigId}/power-consumption`} className="subsystem-menu-item">
-                <i className="pi pi-chart-bar" />
-                <span className="subsystem-menu-name">Расход электроэнергии</span>
-              </Link>
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/power-consumption`} className="subsystem-menu-item">
+                  <i className="pi pi-chart-bar" />
+                  <span className="subsystem-menu-name">Расход электроэнергии</span>
+                </Link>
+              )}
               <Link to={`/rigs/${rigId}/archive`} className="subsystem-menu-item">
                 <i className="pi pi-chart-line" />
                 <span className="subsystem-menu-name">Архив</span>

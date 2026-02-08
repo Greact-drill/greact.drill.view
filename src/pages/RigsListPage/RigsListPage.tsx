@@ -181,7 +181,9 @@ const RigStatusButtons = ({
       </div>
       <div className="rig-status-buttons maintenance-buttons">
         {maintenanceStatuses.map(({ key, title }) => {
-          const status = maintenanceStatus[key] ?? 'empty';
+          const value = maintenanceStatus?.[key];
+          const isEmptyArray = Array.isArray(value) && value.length === 0;
+          const status = (value == null || isEmptyArray) ? 'empty' : value;
           const statusClass = status === 'empty' ? 'neutral' : status === 'bad' ? 'error' : 'ok';
           const statusLabel = status === 'empty'
             ? 'Отсутствуют данные'
