@@ -169,7 +169,7 @@ export default function MainPage() {
   // Получаем конфигурации виджетов для этого edge (корневого уровня)
   const { widgetConfigs, loading: widgetsLoading, error: widgetsError } = useWidgetConfigsByEdge(edgeKey);
   const { data: currentDetailsData } = useCurrentDetails(rigId || null);
-  const { data: scopedCurrentData, loading: scopedCurrentLoading } = useScopedCurrent(edgeKey, 1000); // Обновляем каждую секунду
+  const { data: scopedCurrentData } = useScopedCurrent(edgeKey, 1000); // Обновляем каждую секунду
 
    // Обновляем dynamicWidgetConfigs для работы с обновляемыми данными блоков
    const allWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
