@@ -25,13 +25,14 @@
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
+    z-index: 10;
 }
 
 .positioned-widget:hover {
     transform: translateY(-6px);
     box-shadow: var(--shadow-xl), var(--shadow-glow);
     border-color: var(--color-accent-secondary);
-    z-index: 100;
+    z-index: 1111;
 }
 
 /* Custom tooltip for widget details */
@@ -55,7 +56,7 @@
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     transition: opacity 0.25s ease, transform 0.25s ease;
-    z-index: 300;
+    z-index: 800;
     text-align: left;
 }
 
@@ -75,6 +76,38 @@
 .positioned-widget:hover .widget-tooltip {
     opacity: 1;
     transform: translate(-50%, 0);
+}
+
+.positioned-widget:hover .widget-tooltip {
+    z-index: 1000;
+}
+
+.positioned-widget .widget-tooltip.widget-tooltip--ok {
+    border-color: rgba(34, 197, 94, 0.45);
+    background: rgba(16, 38, 28, 0.92);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        0 0 24px rgba(34, 197, 94, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.positioned-widget .widget-tooltip.widget-tooltip--ok::after {
+    border-right-color: rgba(34, 197, 94, 0.45);
+    border-bottom-color: rgba(34, 197, 94, 0.45);
+}
+
+.positioned-widget .widget-tooltip.widget-tooltip--error {
+    border-color: rgba(239, 68, 68, 0.45);
+    background: rgba(48, 16, 18, 0.92);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        0 0 26px rgba(239, 68, 68, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.positioned-widget .widget-tooltip.widget-tooltip--error::after {
+    border-right-color: rgba(239, 68, 68, 0.45);
+    border-bottom-color: rgba(239, 68, 68, 0.45);
 }
 
 .widget-tooltip-title {
@@ -120,26 +153,28 @@
 /* Постоянное красное свечение при выходе за min/max */
 .positioned-widget.widget-out-of-range {
     box-shadow:
-        0 0 24px rgba(239, 68, 68, 0.35),
-        0 0 50px rgba(239, 68, 68, 0.2),
-        inset 0 0 0 1px rgba(239, 68, 68, 0.25);
-    border-color: rgba(239, 68, 68, 0.45);
+        0 0 30px rgba(239, 68, 68, 0.55),
+        0 0 70px rgba(239, 68, 68, 0.35),
+        0 0 110px rgba(239, 68, 68, 0.2),
+        inset 0 0 0 1px rgba(239, 68, 68, 0.45);
+    border-color: rgba(239, 68, 68, 0.6);
 }
 
 .positioned-widget.widget-in-range {
     box-shadow:
-        0 0 18px rgba(34, 197, 94, 0.28),
-        0 0 36px rgba(34, 197, 94, 0.16),
-        inset 0 0 0 1px rgba(34, 197, 94, 0.2);
-    border-color: rgba(34, 197, 94, 0.35);
+        0 0 26px rgba(34, 197, 94, 0.55),
+        0 0 60px rgba(34, 197, 94, 0.35),
+        0 0 95px rgba(34, 197, 94, 0.2),
+        inset 0 0 0 1px rgba(34, 197, 94, 0.45);
+    border-color: rgba(34, 197, 94, 0.55);
 }
 
 .positioned-widget.widget-out-of-range:hover {
     box-shadow:
-        0 0 28px rgba(239, 68, 68, 0.45),
-        0 0 60px rgba(239, 68, 68, 0.25),
-        inset 0 0 0 1px rgba(239, 68, 68, 0.35);
-    border-color: rgba(239, 68, 68, 0.55);
+        0 0 38px rgba(239, 68, 68, 0.65),
+        0 0 90px rgba(239, 68, 68, 0.4),
+        inset 0 0 0 1px rgba(239, 68, 68, 0.55);
+    border-color: rgba(239, 68, 68, 0.7);
 }
 
 .positioned-widget.widget-in-range,
@@ -154,27 +189,10 @@
 
 .positioned-widget.widget-in-range:hover {
     box-shadow:
-        0 0 22px rgba(34, 197, 94, 0.38),
-        0 0 44px rgba(34, 197, 94, 0.22),
-        inset 0 0 0 1px rgba(34, 197, 94, 0.3);
-    border-color: rgba(34, 197, 94, 0.45);
-}
-
-/* Более деликатное свечение для status-виджета */
-.positioned-widget.widget-status.widget-in-range,
-.positioned-widget.widget-status.widget-in-range:hover {
-    box-shadow:
-        0 0 14px rgba(34, 197, 94, 0.2),
-        inset 0 0 0 1px rgba(34, 197, 94, 0.18);
-    border-color: rgba(34, 197, 94, 0.32);
-}
-
-.positioned-widget.widget-status.widget-out-of-range,
-.positioned-widget.widget-status.widget-out-of-range:hover {
-    box-shadow:
-        0 0 16px rgba(239, 68, 68, 0.22),
-        inset 0 0 0 1px rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.38);
+        0 0 32px rgba(34, 197, 94, 0.65),
+        0 0 80px rgba(34, 197, 94, 0.4),
+        inset 0 0 0 1px rgba(34, 197, 94, 0.55);
+    border-color: rgba(34, 197, 94, 0.65);
 }
 
 /* Стили для компактных виджетов (главная страница) */
@@ -213,58 +231,6 @@
     opacity: 0.8;
 }
 
-/* Централизованный стиль для статус-виджета */
-.positioned-widget.widget-status.display-widget.widget-has-data {
-    background: var(--color-bg-primary);
-    border: 1px solid var(--glass-border);
-    box-shadow:
-        var(--shadow-md),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    background-image:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
-}
-
-.positioned-widget.widget-status.display-widget.widget-has-data .bypass-status-block,
-.positioned-widget.widget-status.display-widget.widget-has-data .p-card-body,
-.positioned-widget.widget-status.display-widget.widget-has-data .p-card-content {
-    height: 100%;
-    width: 100%;
-}
-
-.positioned-widget.widget-status.display-widget.widget-has-data .p-card-body {
-    padding: 0.75rem 1rem !important;
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--glass-border) !important;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.positioned-widget.widget-status.display-widget.widget-has-data .bypass-status-block.status-ok .p-card-body {
-    border-color: rgba(34, 197, 94, 0.35) !important;
-    box-shadow: 0 0 18px rgba(34, 197, 94, 0.18) !important;
-    background-image:
-        linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(255, 255, 255, 0.02));
-}
-
-.positioned-widget.widget-status.display-widget.widget-has-data .bypass-status-block.status-error .p-card-body {
-    border-color: rgba(239, 68, 68, 0.35) !important;
-    box-shadow: 0 0 18px rgba(239, 68, 68, 0.16) !important;
-    background-image:
-        linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(255, 255, 255, 0.02));
-}
-
-.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-ok .block-label,
-.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-ok .block-value {
-    color: #86efac !important;
-}
-
-.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-error .block-label,
-.positioned-widget.widget-status.widget-has-data .bypass-status-block.status-error .block-value {
-    color: #fca5a5 !important;
-}
 
 /* Заголовок страницы - стиль piano.io */
 .dynamic-blocks-title {

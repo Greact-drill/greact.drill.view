@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatNumber } from '../../utils/formatters';
 
 interface CompactTagDisplayProps {
     label: string;
@@ -15,6 +16,8 @@ const CompactTagDisplay: React.FC<CompactTagDisplayProps> = ({
     unit, 
     isOK 
 }) => {
+    const displayValue = typeof value === 'number' ? formatNumber(value) : (value ?? '--');
+
     return (
         <div className={`compact-tag-display ${isOK ? 'status-ok' : 'status-error'}`}>
             <div className="compact-tag-header">
@@ -26,7 +29,7 @@ const CompactTagDisplay: React.FC<CompactTagDisplayProps> = ({
                 </div>
             </div>
             <div className="compact-tag-value">
-                {String(value)}
+                {String(displayValue)}
                 {unit && <span className="compact-tag-unit">{unit}</span>}
             </div>
         </div>

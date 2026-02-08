@@ -1,0 +1,287 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { getMediaConfig, getMediaDownloadUrl } from "../../api/media";
+import "./DocumentsPage.css";
+
+interface MediaAsset {
+  id: string;
+  name?: string;
+  group?: string;
+  type: "image" | "video" | "document";
+  url?: string;
+  key?: string;
+  contentType?: string;
+}
+
+interface DocumentsConfigData {
+  assets?: MediaAsset[];
+}
+
+export default function DocumentsPage() {
+  const params = useParams();
+  const rigId = params.rigId || "14820";
+  const [assets, setAssets] = useState<MediaAsset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busyDocId, setBusyDocId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+    const loadDocuments = async () => {
+      setLoading(true);
+      setErrorMessage(null);
+      try {
+        const config = await getMediaConfig<DocumentsConfigData>("documents", rigId);
+        const normalized = (config.data?.assets ?? [])
+          .map(asset => ({
+            id: String(asset.id || "").trim(),
+            name: asset.name?.trim() || "",
+            group: asset.group?.trim() || "",
+            type: asset.type || "document",
+            url: asset.url?.trim() || "",
+            key: asset.key,
+            contentType: asset.contentType
+          }))
+          .filter(asset => asset.id && (asset.url || asset.key) && asset.type === "document");
+        if (isActive) {
+          setAssets(normalized);
+        }
+      } catch {
+        if (isActive) {
+          setErrorMessage("Не удалось загрузить документы для выбранной буровой.");
+          setAssets([]);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDocuments();
+    return () => {
+      isActive = false;
+    };
+  }, [rigId]);
+
+  useEffect(() => {
+    let isActive = true;
+    const normalizeUrls = () => {
+      if (assets.length === 0) return;
+      const updated = assets.map(asset => {
+        if (asset.key) {
+          return { ...asset, url: getMediaDownloadUrl(asset.key) };
+        }
+        return asset;
+      });
+      const hasUpdates = updated.some((asset, index) => asset.url !== assets[index]?.url);
+      if (isActive && hasUpdates) {
+        setAssets(updated);
+      }
+    };
+
+    normalizeUrls();
+    return () => {
+      isActive = false;
+    };
+  }, [assets]);
+
+  const groupedDocuments = useMemo(() => {
+    return assets.reduce<Record<string, MediaAsset[]>>((acc, asset) => {
+      const groupName = asset.group || "Основные документы";
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(asset);
+      return acc;
+    }, {});
+  }, [assets]);
+
+  const totalDocuments = assets.length;
+  const resolveFileName = (doc: MediaAsset) => {
+    if (doc.name?.trim()) return doc.name.trim();
+    if (doc.key) {
+      const keyPart = doc.key.split("/").pop() || "document";
+      return decodeURIComponent(keyPart);
+    }
+    if (doc.url) {
+      try {
+        const url = new URL(doc.url);
+        const name = url.pathname.split("/").pop() || "document";
+        return decodeURIComponent(name);
+      } catch {
+        return "document";
+      }
+    }
+    return "document";
+  };
+
+  const fetchDocumentBlob = async (doc: MediaAsset) => {
+    const url = doc.key ? getMediaDownloadUrl(doc.key) : doc.url;
+    if (!url) throw new Error("missing-url");
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`failed-${response.status}`);
+    }
+    const blob = await response.blob();
+    return {
+      blob,
+      filename: resolveFileName(doc)
+    };
+  };
+
+  const handleOpen = async (doc: MediaAsset) => {
+    if (!doc.url || busyDocId === doc.id) return;
+    setBusyDocId(doc.id);
+    setActionError(null);
+    try {
+      const { blob } = await fetchDocumentBlob(doc);
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch {
+      setActionError("Не удалось открыть документ. Попробуйте позже.");
+    } finally {
+      setBusyDocId(null);
+    }
+  };
+
+  const handleDownload = async (doc: MediaAsset) => {
+    if (!doc.url || busyDocId === doc.id) return;
+    setBusyDocId(doc.id);
+    setActionError(null);
+    try {
+      const { blob, filename } = await fetchDocumentBlob(doc);
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch {
+      setActionError("Не удалось скачать документ. Попробуйте позже.");
+    } finally {
+      setBusyDocId(null);
+    }
+  };
+
+  return (
+    <div className="documents-page-container">
+      <div className="page-header">
+        <div className="page-header-content">
+          <h1 className="documents-page-title">Документы буровой</h1>
+          <p className="documents-page-subtitle">Единый архив технических материалов</p>
+        </div>
+      </div>
+
+      <div className="documents-page-nav">
+        <Link to={`/rigs/${rigId}`} className="documents-nav-link">
+          <i className="pi pi-arrow-left" />
+          <span>Назад к буровой</span>
+        </Link>
+      </div>
+
+      <div className="documents-layout">
+        <section className="documents-list-section">
+          <div className="documents-list-header">
+            <div>
+              <h3 className="documents-list-title">Каталог документов</h3>
+              <p className="documents-list-subtitle">Файлы относятся только к выбранной буровой</p>
+            </div>
+            <div className="documents-count">
+              <span className="documents-count-label">Всего</span>
+              <span className="documents-count-value">{totalDocuments}</span>
+            </div>
+          </div>
+
+          {loading && <div className="documents-empty">Загрузка документов...</div>}
+          {!loading && errorMessage && <div className="documents-error">{errorMessage}</div>}
+          {!loading && actionError && <div className="documents-error">{actionError}</div>}
+          {!loading && !errorMessage && totalDocuments === 0 && (
+            <div className="documents-empty">
+              Документы пока не добавлены. Загрузите их через админ-панель.
+            </div>
+          )}
+
+          {!loading && !errorMessage && totalDocuments > 0 && (
+            <div className="documents-groups">
+              {Object.entries(groupedDocuments).map(([group, items]) => (
+                <div className="documents-group" key={group}>
+                  <div className="documents-group-title">{group}</div>
+                  <div className="documents-grid">
+                    {items.map(doc => (
+                      <div className="document-card" key={doc.id}>
+                        <div className="document-card-icon">
+                          <i className="pi pi-file" />
+                        </div>
+                        <div className="document-card-content">
+                          <div className="document-card-title">{doc.name || doc.id}</div>
+                          <div className="document-card-meta">
+                            {doc.contentType || "Документ"}
+                          </div>
+                        </div>
+                        <div className="document-card-actions">
+                          {doc.url ? (
+                            <>
+                              <button
+                                type="button"
+                                className={`document-card-link${busyDocId === doc.id ? " disabled" : ""}`}
+                                onClick={() => handleOpen(doc)}
+                                disabled={busyDocId === doc.id}
+                              >
+                                {busyDocId === doc.id ? "Открытие..." : "Открыть"}
+                              </button>
+                              <button
+                                type="button"
+                                className={`document-card-link secondary${busyDocId === doc.id ? " disabled" : ""}`}
+                                onClick={() => handleDownload(doc)}
+                                disabled={busyDocId === doc.id}
+                              >
+                                Скачать
+                              </button>
+                            </>
+                          ) : (
+                            <span className="document-card-link disabled">Нет ссылки</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <aside className="documents-info-panel">
+          <div className="info-section">
+            <h3 className="info-title">Справка</h3>
+            <div className="documents-info-list">
+              <div className="info-row">
+                <span className="info-label">Буровая</span>
+                <span className="info-value">#{rigId}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Документов</span>
+                <span className="info-value">{totalDocuments || "—"}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Групп</span>
+                <span className="info-value">{Object.keys(groupedDocuments).length || "—"}</span>
+              </div>
+            </div>
+          </div>
+          <div className="info-section">
+            <h3 className="info-title">Совет</h3>
+            <div className="documents-tip">
+              Сортируйте документы по группам в админ-панели, чтобы быстро находить нужные файлы.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}

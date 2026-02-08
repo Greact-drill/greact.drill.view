@@ -1,7 +1,23 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import pumpBlockImage from "../../assets/pumpblock.png";
 import CompactTagDisplay from "../../components/CompactTagDisplay/CompactTagDisplay";
+import { getMediaConfig, presignDownload } from "../../api/media";
 import './PumpBlockPage.css';
+
+interface MediaAsset {
+  id: string;
+  name?: string;
+  group?: string;
+  type: 'image' | 'video' | 'document';
+  url?: string;
+  key?: string;
+  contentType?: string;
+}
+
+interface BlockMediaConfig {
+  assets?: MediaAsset[];
+}
 
 // Блоки насосного блока с их позициями на изображении и связями
 // Координаты в процентах относительно viewBox (1010x1024)
@@ -45,6 +61,68 @@ const PUMP_BLOCKS = [
 export default function PumpBlockPage() {
   const params = useParams();
   const rigId = params.rigId || "14820";
+  const [imageUrl, setImageUrl] = useState<string>(pumpBlockImage);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const normalizeAssets = (items?: MediaAsset[]) => {
+      if (!Array.isArray(items)) return [];
+      return items
+        .map(asset => ({
+          id: String(asset.id || '').trim(),
+          name: asset.name?.trim() || '',
+          group: asset.group?.trim() || '',
+          type: asset.type || 'document',
+          url: asset.url?.trim() || '',
+          key: asset.key,
+          contentType: asset.contentType
+        }))
+        .filter(asset => asset.id && asset.type === 'image' && (asset.url || asset.key));
+    };
+
+    const pickImage = (assets: MediaAsset[]) => {
+      const preferred = assets.find(asset => asset.group === 'main' || asset.group === 'default');
+      return preferred || assets[0];
+    };
+
+    const loadImage = async () => {
+      try {
+        const rigConfig = await getMediaConfig<BlockMediaConfig>('pump-block', rigId);
+        const rigAssets = normalizeAssets(rigConfig.data?.assets);
+        const selected = pickImage(rigAssets);
+        if (selected) {
+          if (selected.url) {
+            if (isActive) setImageUrl(selected.url);
+          } else if (selected.key) {
+            const presign = await presignDownload({ key: selected.key, expiresIn: 3600 });
+            if (isActive) setImageUrl(presign.url);
+          }
+          return;
+        }
+
+        const globalConfig = await getMediaConfig<BlockMediaConfig>('pump-block');
+        const globalAssets = normalizeAssets(globalConfig.data?.assets);
+        const globalSelected = pickImage(globalAssets);
+        if (globalSelected) {
+          if (globalSelected.url) {
+            if (isActive) setImageUrl(globalSelected.url);
+          } else if (globalSelected.key) {
+            const presign = await presignDownload({ key: globalSelected.key, expiresIn: 3600 });
+            if (isActive) setImageUrl(presign.url);
+          }
+        }
+      } catch {
+        // keep default image
+      }
+    };
+
+    loadImage();
+
+    return () => {
+      isActive = false;
+    };
+  }, [rigId]);
 
   return (
     <div className="pump-block-page-container">
@@ -198,7 +276,7 @@ export default function PumpBlockPage() {
           {/* Изображение со скругленными краями */}
           <g clipPath="url(#pumpBlockRoundedCorners)">
             <image 
-              xlinkHref={pumpBlockImage} 
+              xlinkHref={imageUrl} 
               x="0" 
               y="0" 
               width="1010" 

@@ -11,6 +11,7 @@ import WinchBlockPage from "./pages/WinchBlockPage/WinchBlockPage.tsx";
 import PumpBlockPage from "./pages/PumpBlockPage/PumpBlockPage.tsx";
 import VideoPage from "./pages/VideoPage/VideoPage.tsx";
 import PowerConsumptionPage from "./pages/PowerConsumptionPage/PowerConsumptionPage.tsx";
+import DocumentsPage from "./pages/DocumentsPage/DocumentsPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ export default function AppRouter() {
                 <Route path="/rigs/:rigId/winch-block" element={<WinchBlockPage />} />
                 <Route path="/rigs/:rigId/pump-block" element={<PumpBlockPage />} />
                 <Route path="/rigs/:rigId/video" element={<VideoPage />} />
+                <Route path="/rigs/:rigId/documents" element={<DocumentsPage />} />
                 <Route path="/rigs/:rigId/power-consumption" element={<PowerConsumptionPage />} />
               </Route>
 

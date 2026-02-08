@@ -3,15 +3,15 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { useWidgetConfigsByPage } from '../../hooks/useWidgetConfigs.ts';
 import { useTableConfigByPage } from '../../hooks/useTableConfig.ts';
-import { useCurrentDetails } from '../../hooks/useCurrentDetails.ts';
+import { formatNumber, formatNumberWithUnit } from '../../utils/formatters';
 import './DynamicWidgetPage.css';
 import VerticalBar from '../../components/VerticalBar/VerticalBar';
 import GaugeWidget from '../../components/Gauge/GaugeWidget';
 import NumberDisplay from '../../components/NumberDisplay/NumberDisplay';
-import BypassStatusBlock from '../../components/BypassStatusBlock/BypassStatusBlock';
 import CompactTagDisplay from '../../components/CompactTagDisplay/CompactTagDisplay';
 import WidgetPlaceholder from '../../components/WidgetPlaceholder/WidgetPlaceholder.tsx';
 import TableWidget from '../../components/TableWidget/TableWidget';
+import StatusTagWidget from '../../components/StatusTagWidget/StatusTagWidget';
 
 // Типы виджетов
 type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
@@ -49,6 +49,19 @@ const parseNumericValue = (value: number | string | boolean | null): number | nu
     return Number.isNaN(parsed) ? null : parsed;
   }
   return null;
+};
+
+const parseBooleanValue = (value: number | string | boolean | null): boolean => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value === 1;
+  }
+  return String(value).toLowerCase() === 'true' || String(value) === '1';
 };
 
 const isTagValueOK = (
@@ -105,66 +118,9 @@ export default function DynamicWidgetPage() {
   const { widgetConfigs, error } = useWidgetConfigsByPage(configPage);
   const { tableConfig: tableConfigData } = useTableConfigByPage(configPage);
   
-  // Опрашиваем /current/details по ключу главной буровой установки (rigId)
-  const { data: currentDetailsData } = useCurrentDetails(rigId || null);
-
-  // Обновляем данные таблицы на основе currentDetailsData
-  const updatedTableConfigData = useMemo(() => {
-    if (!tableConfigData || !currentDetailsData) {
-      return tableConfigData;
-    }
-
-    // Создаем Map для быстрого поиска значений тегов
-    const currentDetailsMap = new Map<string, number>();
-    currentDetailsData.forEach(tagData => {
-      currentDetailsMap.set(tagData.tag, tagData.value);
-    });
-
-    // Создаем обновленную копию config с обновленными данными
-    const updatedData: typeof tableConfigData.data = {};
-    
-    for (let row = 0; row < tableConfigData.rows; row++) {
-      updatedData[row] = {};
-      for (let col = 0; col < tableConfigData.cols; col++) {
-        const cell = tableConfigData.cells?.[row]?.[col];
-        const existingCellData = tableConfigData.data?.[row]?.[col];
-        
-        if (cell && (cell.type === 'tag-number' || cell.type === 'tag-text') && cell.value) {
-          const tagId = cell.value;
-          const updatedValue = currentDetailsMap.get(tagId);
-          
-          if (updatedValue !== undefined && existingCellData) {
-            // Обновляем значение, сохраняя остальные данные
-            updatedData[row][col] = {
-              ...existingCellData,
-              value: updatedValue
-            };
-          } else {
-            updatedData[row][col] = existingCellData || null;
-          }
-        } else {
-          updatedData[row][col] = existingCellData || null;
-        }
-      }
-    }
-
-    return {
-      ...tableConfigData,
-      data: updatedData
-    };
-  }, [tableConfigData, currentDetailsData]);
-
   const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
     if (!widgetConfigs || widgetConfigs.length === 0) {
       return [];
-    }
-    
-    // Создаем Map для быстрого поиска актуальных значений тегов
-    const currentDetailsMap = new Map<string, number>();
-    if (currentDetailsData) {
-      currentDetailsData.forEach(tagData => {
-        currentDetailsMap.set(tagData.tag, tagData.value);
-      });
     }
     
     return widgetConfigs.map(config => {
@@ -173,11 +129,7 @@ export default function DynamicWidgetPage() {
         rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
       const displayType = config.config.displayType || 'widget';
       
-      // Приоритет: используем данные из currentDetailsData, если есть, иначе из config.current
-      const currentValueFromDetails = currentDetailsMap.get(config.tag_id);
-      const currentValue = currentValueFromDetails !== undefined 
-        ? currentValueFromDetails 
-        : config.current?.value;
+      const currentValue = config.current?.value;
       
       const hasData = currentValue !== null && currentValue !== undefined;
       const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
@@ -208,11 +160,14 @@ export default function DynamicWidgetPage() {
         hasData
       };
     });
-  }, [widgetConfigs, currentDetailsData]);
+  }, [widgetConfigs]);
 
   const getMinMaxDisplay = (value: number | string | boolean | null | undefined) => {
     if (value === null || value === undefined) {
       return '—';
+    }
+    if (typeof value === 'number') {
+      return formatNumber(value);
     }
     return String(value);
   };
@@ -240,8 +195,7 @@ export default function DynamicWidgetPage() {
       left: `${config.position.x}px`,
       top: `${config.position.y}px`,
       width: `${dimensions.width}px`,
-      height: `${dimensions.height}px`,
-      zIndex: 10
+      height: `${dimensions.height}px`
     };
 
     // Если данных нет, показываем placeholder с анимацией загрузки
@@ -262,6 +216,10 @@ export default function DynamicWidgetPage() {
         </div>
       );
     }
+
+    const statusValue = config.type === 'status'
+      ? parseBooleanValue(config.value as number | string | boolean | null)
+      : false;
 
     const widgetContent = (() => {
       switch (config.type) {
@@ -284,10 +242,11 @@ export default function DynamicWidgetPage() {
               max={config.max} 
             />
           );
-        case 'number':
-          const displayValue = config.hasData 
-            ? `${config.value}${config.unit ? ` ${config.unit}` : ''}`
-            : `${config.defaultValue}${config.unit ? ` ${config.unit}` : ''}`;
+        case 'number': {
+          const numericValue = parseNumericValue(
+            config.hasData ? (config.value as number | string | boolean | null) : (config.defaultValue ?? null)
+          );
+          const displayValue = formatNumberWithUnit(numericValue, config.unit);
           return (
             <NumberDisplay 
               key={config.key} 
@@ -295,13 +254,13 @@ export default function DynamicWidgetPage() {
               value={displayValue}
             />
           );
+        }
         case 'status':
           return (
-            <BypassStatusBlock 
-              key={config.key} 
-              label={config.label} 
-              value={config.hasData ? (config.value as string) : 'Ожидание данных'} 
-              isOK={config.isOK ?? false} 
+            <StatusTagWidget
+              key={config.key}
+              label={config.label}
+              value={statusValue}
             />
           );
         case 'compact':
@@ -331,9 +290,19 @@ export default function DynamicWidgetPage() {
       }
     })();
 
+    const stateClassName = config.type === 'status'
+      ? ''
+      : `${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`;
+
+    const tooltipStateClass = config.hasData
+      ? (config.type === 'status'
+        ? (statusValue ? 'widget-tooltip--ok' : 'widget-tooltip--error')
+        : (config.isOK === true ? 'widget-tooltip--ok' : config.isOK === false ? 'widget-tooltip--error' : ''))
+      : '';
+
     return (
       <div 
-        className={`positioned-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`} 
+        className={`positioned-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${stateClassName}`} 
         key={config.key}
         style={positionStyle}
         data-widget-type={config.type}
@@ -341,7 +310,7 @@ export default function DynamicWidgetPage() {
         data-has-data={config.hasData}
       >
         {widgetContent}
-        <div className="widget-tooltip" role="tooltip">
+        <div className={`widget-tooltip ${tooltipStateClass}`} role="tooltip">
           <div className="widget-tooltip-title">{config.label}</div>
           <div className="widget-tooltip-row">
             <span className="widget-tooltip-label">Мин</span>
@@ -423,9 +392,9 @@ export default function DynamicWidgetPage() {
           ) : (
             <>
               {/* Отображение таблицы, если она настроена */}
-              {updatedTableConfigData && (
+              {tableConfigData && (
                 <div className="table-widget-section">
-                  <TableWidget config={updatedTableConfigData} />
+                  <TableWidget config={tableConfigData} />
                 </div>
               )}
               

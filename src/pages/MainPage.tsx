@@ -6,6 +6,7 @@ import { useEdgeWithAttributes, useEdgeChildren } from "../hooks/useEdges";
 import type { Rig } from "../types/rig";
 import { polygonPercentToSvgPoints } from "../utils/polygonUtils";
 import { transformRawAttributes } from "../utils/edgeUtils";
+import { formatNumberWithUnit } from "../utils/formatters";
 import type { EdgeAttribute, RawEdgeAttributes } from "../types/edge";
 import './MainPage.css';
 
@@ -13,18 +14,24 @@ import './MainPage.css';
 import GaugeWidget from "../components/Gauge/GaugeWidget.tsx";
 import VerticalBar from "../components/VerticalBar/VerticalBar";
 import NumberDisplay from "../components/NumberDisplay/NumberDisplay";
-import BypassStatusBlock from "../components/BypassStatusBlock/BypassStatusBlock";
 import CompactTagDisplay from "../components/CompactTagDisplay/CompactTagDisplay";
 import WidgetPlaceholder from "../components/WidgetPlaceholder/WidgetPlaceholder.tsx";
+import StatusTagWidget from "../components/StatusTagWidget/StatusTagWidget";
 
 // Используем хук для получения конфигураций по edge_id
 import { useWidgetConfigsByEdge } from "../hooks/useWidgetConfigs";
 import { useCurrentDetails } from "../hooks/useCurrentDetails";
+import { useScopedCurrent } from '../hooks/useScopedCurrent';
 
 // Типы виджетов (такие же как в DynamicWidgetPage)
 type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
 
+// Получаем значение переменной окружения для Vite
+const branch = import.meta.env.VITE_BRANCH || import.meta.env.BRANCH || 'main';
+const featureFlag = branch !== 'main';
+
 interface DynamicWidgetConfig {
+  edgeId?: string;
   key: string;
   type: WidgetType;
   label: string;
@@ -55,6 +62,19 @@ const parseNumericValue = (value: number | string | boolean | null): number | nu
     return Number.isNaN(parsed) ? null : parsed;
   }
   return null;
+};
+
+const parseBooleanValue = (value: number | string | boolean | null): boolean => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value === 1;
+  }
+  return String(value).toLowerCase() === 'true' || String(value) === '1';
 };
 
 const isTagValueOK = (
@@ -149,6 +169,75 @@ export default function MainPage() {
   // Получаем конфигурации виджетов для этого edge (корневого уровня)
   const { widgetConfigs, loading: widgetsLoading, error: widgetsError } = useWidgetConfigsByEdge(edgeKey);
   const { data: currentDetailsData } = useCurrentDetails(rigId || null);
+  const { data: scopedCurrentData } = useScopedCurrent(edgeKey, 1000); // Обновляем каждую секунду
+
+   // Обновляем dynamicWidgetConfigs для работы с обновляемыми данными блоков
+   const allWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
+    // Теги из виджетов edge (существующая логика)
+    const edgeWidgets = (widgetConfigs || []).map(config => {
+      const rawWidgetType = config.config.widgetType;
+      const widgetType: WidgetType =
+        rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
+      const displayType = config.config.displayType || 'widget';
+      
+      // Используем currentDetailsData для получения актуальных значений
+      const currentValue = currentDetailsData?.find(td => td.tag === config.tag_id)?.value;
+      const hasData = currentValue !== undefined && currentValue !== null;
+      const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
+      
+      const isOK = isTagValueOK(
+        value, 
+        config.tag.min || 0, 
+        config.tag.max || 100, 
+        config.tag.unit_of_measurement,
+        widgetType
+      );
+
+      return {
+        key: `${config.tag_id}-${config.config.page}`,
+        type: widgetType,
+        label: config.config.customLabel || config.tag.name || config.tag.comment,
+        value: value,
+        defaultValue: getDefaultValue(widgetType, config.tag.unit_of_measurement),
+        max: config.tag.max || 100,
+        unit: config.tag.unit_of_measurement || '',
+        isOK,
+        position: config.config.position || { x: 0, y: 0 },
+        displayType,
+        isLoading: false,
+        hasData
+      } as DynamicWidgetConfig;
+    });
+
+    // Теги из блоков (создаем как виджеты) с актуальными данными
+    const blockWidgets = (scopedCurrentData?.tags || [])
+      .filter(tag => tag.edge !== edgeKey) // Фильтруем теги, которые принадлежат дочерним элементам
+      .map((tag, index) => {
+        const hasData = tag.value !== null && tag.value !== undefined;
+        const displayType = 'compact' as const;
+        
+        return {
+          key: `block-${tag.edge}-${tag.tag}-${index}`,
+          type: 'number' as WidgetType,
+          label: tag.name || `Тег ${tag.tag}`,
+          value: tag.value,
+          defaultValue: 0,
+          max: tag.max || 100,
+          unit: tag.unit_of_measurement || '',
+          isOK: hasData && 
+                 (tag.min === undefined || tag.max === undefined || 
+                  (tag.value >= tag.min && tag.value <= tag.max)),
+          position: { x: 0, y: 0 }, // Не используется для статистики
+          displayType,
+          isLoading: false,
+          hasData,
+          source: 'block' as const,
+          edgeId: tag.edge
+        } as DynamicWidgetConfig;
+      });
+
+    return [...edgeWidgets, ...blockWidgets];
+  }, [widgetConfigs, scopedCurrentData, currentDetailsData, edgeKey]);
 
   // Преобразуем конфигурации в динамические виджеты (аналогично DynamicWidgetPage)
   const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
@@ -204,32 +293,62 @@ export default function MainPage() {
     });
   }, [widgetConfigs, currentDetailsData]);
 
-  // Статистика по тегам (после определения dynamicWidgetConfigs)
+  // Обновляем статистику тегов с автообновлением
   const tagsStats = useMemo(() => {
-    const totalTags = dynamicWidgetConfigs.length;
-    const tagsWithData = dynamicWidgetConfigs.filter(w => w.hasData).length;
-    const tagsWithErrors = dynamicWidgetConfigs.filter(w => w.hasData && !w.isOK).length;
-    const tagsOk = dynamicWidgetConfigs.filter(w => w.hasData && w.isOK).length;
+    const edgeTags = allWidgetConfigs.filter(w => !w.key.startsWith('block-'));
+    const blockTags = allWidgetConfigs.filter(w => w.key.startsWith('block-'));
     
+    const edgeTagsCount = edgeTags.length;
+    const blockTagsCount = blockTags.length;
+    const totalTags = allWidgetConfigs.length;
+    
+    const tagsWithData = allWidgetConfigs.filter(w => w.hasData).length;
+    const tagsWithErrors = allWidgetConfigs.filter(w => w.hasData && !w.isOK).length;
+    const tagsOk = allWidgetConfigs.filter(w => w.hasData && w.isOK).length;
+
+    // Подсчитываем количество уникальных блоков с тегами
+    const uniqueBlockEdges = [...new Set(blockTags.map(t => t.edgeId))].length;
+
     // Теги с ошибками для отображения
-    const errorTags = dynamicWidgetConfigs
+    const errorTags = allWidgetConfigs
       .filter(w => w.hasData && !w.isOK)
-      .map(w => ({
-        label: w.label,
-        value: w.value,
-        unit: w.unit,
-        max: w.max,
-        type: w.type
-      }));
+      .map(w => {
+        const source = w.key.startsWith('block-') ? 'block' : 'edge';
+        let edgeName = '';
+        
+        // Получаем название блока
+        if (source === 'block' && w.edgeId) {
+          // Ищем название блока среди дочерних элементов
+          const childEdge = childEdges.find(child => child.id === w.edgeId);
+          edgeName = childEdge?.name || `Блок ${w.edgeId}`;
+        } else if (source === 'edge') {
+          edgeName = 'Буровая установка';
+        }
+        
+        return {
+          label: w.label,
+          value: w.value,
+          unit: w.unit,
+          max: w.max,
+          type: w.type,
+          source,
+          edgeName // Добавляем название блока
+        };
+      });
 
     return {
       totalTags,
+      edgeTagsCount,
+      blockTagsCount,
       tagsWithData,
       tagsWithErrors,
       tagsOk,
-      errorTags
+      errorTags,
+      uniqueBlockEdges,
+      hasBlockData: blockTagsCount > 0,
+      lastUpdated: new Date().toLocaleTimeString() // Добавляем время последнего обновления
     };
-  }, [dynamicWidgetConfigs]);
+  }, [allWidgetConfigs, childEdges]);
 
   // Функция рендеринга виджета (аналогично DynamicWidgetPage)
   const renderWidget = (config: DynamicWidgetConfig) => {
@@ -274,10 +393,11 @@ export default function MainPage() {
               compact={true}
             />
           );
-        case 'number':
-          const displayValue = config.hasData 
-            ? `${config.value}${config.unit ? ` ${config.unit}` : ''}`
-            : `${config.defaultValue}${config.unit ? ` ${config.unit}` : ''}`;
+        case 'number': {
+          const numericValue = parseNumericValue(
+            config.hasData ? (config.value as number | string | boolean | null) : (config.defaultValue ?? null)
+          );
+          const displayValue = formatNumberWithUnit(numericValue, config.unit);
           return (
             <NumberDisplay 
               key={config.key} 
@@ -286,14 +406,13 @@ export default function MainPage() {
               compact={true}
             />
           );
+        }
         case 'status':
           return (
-            <BypassStatusBlock 
-              key={config.key} 
-              label={config.label} 
-              value={config.hasData ? (config.value as string) : 'Ожидание данных'} 
-              isOK={config.isOK ?? false}
-              compact={true}
+            <StatusTagWidget
+              key={config.key}
+              label={config.label}
+              value={parseBooleanValue(config.value as number | string | boolean | null)}
             />
           );
         case 'compact':
@@ -323,9 +442,13 @@ export default function MainPage() {
       }
     })();
 
+    const stateClassName = config.type === 'status'
+      ? ''
+      : `${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`;
+
     return (
       <div 
-        className={`main-page-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`} 
+        className={`main-page-widget widget-${config.type} display-${config.displayType} ${config.hasData ? 'widget-has-data' : 'widget-no-data'} ${stateClassName}`} 
         key={config.key}
         data-widget-type={config.type}
         data-display-type={config.displayType}
@@ -388,26 +511,41 @@ export default function MainPage() {
           ) : (
             <>
               {/* Статические кнопки */}
-              <Link to={`/rigs/${rigId}/electrical-diagram`} className="subsystem-menu-item">
-                <i className="pi pi-sitemap" />
-                <span className="subsystem-menu-name">Схема электроснабжения</span>
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/electrical-diagram`} className="subsystem-menu-item">
+                  <i className="pi pi-sitemap" />
+                  <span className="subsystem-menu-name">Схема электроснабжения</span>
+                </Link>
+              )}
+
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/winch-block`} className="subsystem-menu-item">
+                  <i className="pi pi-wrench" />
+                  <span className="subsystem-menu-name">Лебедочный блок</span>
+                </Link>
+              )}
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/pump-block`} className="subsystem-menu-item">
+                  <i className="pi pi-cog" />
+                  <span className="subsystem-menu-name">Насосный блок</span>
+                </Link>
+              )}
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/video`} className="subsystem-menu-item">
+                  <i className="pi pi-video" />
+                  <span className="subsystem-menu-name">Видеонаблюдение</span>
+                </Link>
+              )}
+              <Link to={`/rigs/${rigId}/documents`} className="subsystem-menu-item">
+                <i className="pi pi-file" />
+                <span className="subsystem-menu-name">Документы</span>
               </Link>
-              <Link to={`/rigs/${rigId}/winch-block`} className="subsystem-menu-item">
-                <i className="pi pi-wrench" />
-                <span className="subsystem-menu-name">Лебедочный блок</span>
-              </Link>
-              <Link to={`/rigs/${rigId}/pump-block`} className="subsystem-menu-item">
-                <i className="pi pi-cog" />
-                <span className="subsystem-menu-name">Насосный блок</span>
-              </Link>
-              <Link to={`/rigs/${rigId}/video`} className="subsystem-menu-item">
-                <i className="pi pi-video" />
-                <span className="subsystem-menu-name">Видеонаблюдение</span>
-              </Link>
-              <Link to={`/rigs/${rigId}/power-consumption`} className="subsystem-menu-item">
-                <i className="pi pi-chart-bar" />
-                <span className="subsystem-menu-name">Расход электроэнергии</span>
-              </Link>
+              {featureFlag && (
+                <Link to={`/rigs/${rigId}/power-consumption`} className="subsystem-menu-item">
+                  <i className="pi pi-chart-bar" />
+                  <span className="subsystem-menu-name">Расход электроэнергии</span>
+                </Link>
+              )}
               <Link to={`/rigs/${rigId}/archive`} className="subsystem-menu-item">
                 <i className="pi pi-chart-line" />
                 <span className="subsystem-menu-name">Архив</span>
@@ -440,11 +578,16 @@ export default function MainPage() {
         <aside className="left-panel">
           {/* Статистика тегов */}
           <div className="info-section">
-            <h3 className="info-title">Статистика</h3>
+            <h3 className="info-title">Статистика тегов
+            </h3>
             <div className="stats-grid">
               <div className="stat-item">
                 <div className="stat-label">Всего</div>
                 <div className="stat-value">{tagsStats.totalTags}</div>
+                <div className="stat-sub">
+                  <span className="stat-sub-item">Буровая: {tagsStats.edgeTagsCount}</span>
+                  <span className="stat-sub-item">Блоки: {tagsStats.blockTagsCount}</span>
+                </div>
               </div>
               <div className="stat-item">
                 <div className="stat-label">С данными</div>
@@ -458,6 +601,12 @@ export default function MainPage() {
                 <div className="stat-label">Ошибки</div>
                 <div className="stat-value error">{tagsStats.tagsWithErrors}</div>
               </div>
+              {tagsStats.hasBlockData && (
+                <div className="stat-item">
+                  <div className="stat-label">Активных блоков с тегами</div>
+                  <div className="stat-value">{tagsStats.uniqueBlockEdges}</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -629,6 +778,7 @@ export default function MainPage() {
               <div className="error-tags">
                 {tagsStats.errorTags.map((tag, index) => (
                   <div key={index} className="error-tag">
+                    <div className="error-tag-edge">{tag.edgeName}</div>
                     <div className="error-tag-name">{tag.label}</div>
                     <div className="error-tag-value">
                       {tag.value} {tag.unit}

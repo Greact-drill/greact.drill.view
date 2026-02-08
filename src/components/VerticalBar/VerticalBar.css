@@ -45,15 +45,13 @@
   position: relative;
   overflow: hidden; 
   background: linear-gradient(to top, #34D399, #F5CD19, #F87171);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  border: none;
 }
 
 .bar-cover {
   width: 100%;
-  /* background: var(--vertical-bar-bg); */
-  background: var(--color-bg-primary);
-  background-image:
-  linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+  background: var(--vertical-bar-bg);
   position: absolute; 
   top: 0;
   left: 0;

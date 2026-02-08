@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatNumber } from '../../utils/formatters';
 import './TagCard.css';
 
 interface TagCardProps {
@@ -9,6 +10,8 @@ interface TagCardProps {
 }
 
 const TagCard: React.FC<TagCardProps> = ({ label, value, unit, isOK }) => {
+  const displayValue = typeof value === 'number' ? formatNumber(value) : (value ?? '--');
+
   return (
     <div className={`tag-card ${isOK ? 'tag-card-ok' : 'tag-card-alarm'}`}>
       <div className="tag-card-header">
@@ -19,7 +22,7 @@ const TagCard: React.FC<TagCardProps> = ({ label, value, unit, isOK }) => {
       </div>
       <div className="tag-card-body">
         <div className="tag-card-value">
-          {value !== null && value !== undefined ? `${value}` : '--'}
+          {String(displayValue)}
         </div>
         <div className="tag-card-unit">
           {unit}

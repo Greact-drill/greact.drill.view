@@ -305,6 +305,22 @@
   transition: opacity 0.3s ease;
 }
 
+.video-player-error {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 4;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-size: 0.9rem;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+
 .video-player-wrapper:hover .video-player-overlay {
   opacity: 1;
 }
@@ -362,6 +378,100 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.video-assets-empty {
+  color: var(--color-text-tertiary);
+  font-size: 0.9rem;
+  padding: 4px 0;
+}
+
+.video-assets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.video-assets-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.video-assets-group-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.video-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.video-asset-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.video-asset-item--video {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.video-asset-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 165, 116, 0.25);
+}
+
+.video-asset-thumb.placeholder,
+.video-asset-video.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.video-asset-video {
+  width: 100%;
+  max-height: 160px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 165, 116, 0.25);
+  background: #000;
+}
+
+.video-asset-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.video-asset-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.video-asset-link {
+  font-size: 0.85rem;
+  color: var(--color-accent-secondary);
+  text-decoration: none;
+}
+
+.video-asset-link:hover {
+  text-decoration: underline;
 }
 
 .info-section {
