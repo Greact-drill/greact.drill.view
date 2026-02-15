@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
@@ -80,13 +80,16 @@ export default function MaintenancePage() {
     const [maintenanceData, setMaintenanceData] = useState<MaintenanceRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const isInitialLoadRef = useRef(true);
     
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchData = async (showLoader: boolean) => {
             if (!rigId || !maintenanceType) {
                 return;
             }
-            setLoading(true);
+            if (showLoader) {
+                setLoading(true);
+            }
             setErrorMessage(null);
             try {
                 const customizations = await getEdgeCustomizations(rigId);
@@ -98,7 +101,6 @@ export default function MaintenancePage() {
 
                 if (!tagIds.length) {
                     setMaintenanceData([]);
-                    setLoading(false);
                     return;
                 }
 
@@ -146,11 +148,20 @@ export default function MaintenancePage() {
             } catch (error) {
                 setErrorMessage('Не удалось загрузить данные ТО.');
             } finally {
-                setLoading(false);
+                if (showLoader) {
+                    setLoading(false);
+                }
+                isInitialLoadRef.current = false;
             }
         };
 
-        fetchData();
+        fetchData(isInitialLoadRef.current);
+
+        const intervalId = window.setInterval(() => {
+            fetchData(false);
+        }, 1000);
+
+        return () => window.clearInterval(intervalId);
     }, [rigId, maintenanceType]);
 
 
