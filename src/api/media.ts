@@ -22,6 +22,11 @@ export interface PresignDownloadResponse {
   publicUrl?: string | null;
 }
 
+export interface UploadMediaResponse {
+  key: string;
+  publicUrl?: string | null;
+}
+
 export async function getMediaConfig<T = Record<string, unknown>>(
   scope: string,
   rigId?: string
@@ -40,6 +45,38 @@ export async function presignDownload(params: {
   expiresIn?: number;
 }): Promise<PresignDownloadResponse> {
   const response = await mediaClient.post<PresignDownloadResponse>('/media/presign-download', params);
+  return response.data;
+}
+
+export async function putMediaConfig<T = Record<string, unknown>>(
+  scope: string,
+  rigId: string | undefined,
+  data: T
+): Promise<MediaConfigResponse<T>> {
+  const response = await mediaClient.put<MediaConfigResponse<T>>('/media/config', {
+    scope,
+    rigId,
+    data
+  });
+  return response.data;
+}
+
+export async function uploadMediaAsset(params: {
+  key: string;
+  file: File;
+  contentType?: string;
+  cacheControl?: string;
+}): Promise<UploadMediaResponse> {
+  const formData = new FormData();
+  formData.append('file', params.file);
+  formData.append('key', params.key);
+  if (params.contentType) {
+    formData.append('contentType', params.contentType);
+  }
+  if (params.cacheControl) {
+    formData.append('cacheControl', params.cacheControl);
+  }
+  const response = await mediaClient.post<UploadMediaResponse>('/media/upload', formData);
   return response.data;
 }
 
