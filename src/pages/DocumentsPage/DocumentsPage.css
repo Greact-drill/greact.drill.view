@@ -451,7 +451,7 @@
 
 .document-row {
   display: grid;
-  grid-template-columns: 36px 1.5fr 1fr auto;
+  grid-template-columns: 36px 1fr auto;
   gap: 10px;
   border: 1px solid rgba(212, 165, 116, 0.2);
   border-radius: 12px;
@@ -502,15 +502,10 @@
   margin-top: 2px;
 }
 
-.document-folder-input {
-  width: 100%;
-  border: 1px solid rgba(212, 165, 116, 0.24);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.24);
-  color: var(--color-text-primary);
-  padding: 8px 10px;
-  font-family: inherit;
-  font-size: 0.82rem;
+.document-row-meta.secondary {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.78rem;
 }
 
 .document-card-link {
@@ -619,6 +614,107 @@
   padding: 10px 12px;
   font-family: inherit;
   font-size: 0.9rem;
+}
+
+.documents-modal select {
+  width: 100%;
+  border: 1px solid rgba(212, 165, 116, 0.28);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--color-text-primary);
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.documents-upload-mode {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.documents-upload-mode label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.documents-upload-field {
+  margin-bottom: 12px;
+}
+
+.documents-upload-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.documents-upload-recent {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.documents-upload-recent > span {
+  font-size: 0.78rem;
+  color: var(--color-text-tertiary);
+}
+
+.documents-upload-chip {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--color-text-secondary);
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.documents-upload-chip:hover {
+  background: rgba(201, 122, 61, 0.12);
+  border-color: rgba(212, 165, 116, 0.45);
+  color: var(--color-text-primary);
+}
+
+.documents-upload-chip.active {
+  background: rgba(201, 122, 61, 0.18);
+  border-color: rgba(212, 165, 116, 0.55);
+  color: var(--color-text-primary);
+}
+
+.documents-upload-files {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.documents-upload-files-info {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.documents-upload-files-list {
+  margin-top: 10px;
+  border: 1px solid rgba(212, 165, 116, 0.24);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  max-height: 120px;
+  overflow: auto;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .documents-modal-actions {

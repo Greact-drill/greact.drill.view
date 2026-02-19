@@ -16,6 +16,7 @@ interface MediaAsset {
   url?: string;
   key?: string;
   contentType?: string;
+  uploadedAt?: string;
 }
 
 interface DocumentsConfigData {
@@ -47,6 +48,26 @@ const sanitizeFileName = (rawName: string) => {
   return prepared || "document";
 };
 
+const normalizeUploadedAt = (rawValue?: string, key?: string) => {
+  if (rawValue) {
+    const date = new Date(rawValue);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+  if (key) {
+    const filePart = key.split("/").pop() || "";
+    const timestampMatch = filePart.match(/^(\d{13})-\d+-/);
+    if (timestampMatch?.[1]) {
+      const date = new Date(Number(timestampMatch[1]));
+      if (!Number.isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+    }
+  }
+  return "";
+};
+
 const sanitizeAssets = (items: MediaAsset[]): MediaAsset[] => {
   return items
     .map(asset => ({
@@ -56,7 +77,8 @@ const sanitizeAssets = (items: MediaAsset[]): MediaAsset[] => {
       type: "document" as const,
       url: asset.url?.trim() || "",
       key: asset.key?.trim() || "",
-      contentType: asset.contentType?.trim() || ""
+      contentType: asset.contentType?.trim() || "",
+      uploadedAt: normalizeUploadedAt(asset.uploadedAt, asset.key)
     }))
     .filter(asset => asset.id && (asset.url || asset.key));
 };
@@ -94,7 +116,6 @@ export default function DocumentsPage() {
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [savingCatalog, setSavingCatalog] = useState(false);
-  const [uploadFolder, setUploadFolder] = useState("");
   const [selectedFolder, setSelectedFolder] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkMoveFolder, setBulkMoveFolder] = useState("");
@@ -110,6 +131,11 @@ export default function DocumentsPage() {
   const [renameFolderName, setRenameFolderName] = useState("");
   const [deleteFolderPath, setDeleteFolderPath] = useState<string | null>(null);
   const [deleteDocument, setDeleteDocument] = useState<MediaAsset | null>(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadFolderMode, setUploadFolderMode] = useState<"existing" | "new">("existing");
+  const [uploadExistingFolder, setUploadExistingFolder] = useState("");
+  const [uploadNewFolderName, setUploadNewFolderName] = useState("");
+  const [pendingUploadFiles, setPendingUploadFiles] = useState<File[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -315,6 +341,26 @@ export default function DocumentsPage() {
     return visibleDocuments.filter(doc => selectedDocIds[doc.id]).length;
   }, [selectedDocIds, visibleDocuments]);
 
+  const recentUploadFolders = useMemo(() => {
+    const ranked = [...assets]
+      .filter(asset => Boolean(normalizeFolderPath(asset.group)))
+      .sort((left, right) => {
+        const leftTime = left.uploadedAt ? new Date(left.uploadedAt).getTime() : 0;
+        const rightTime = right.uploadedAt ? new Date(right.uploadedAt).getTime() : 0;
+        return rightTime - leftTime;
+      });
+    const unique = new Set<string>();
+    const result: string[] = [];
+    for (const asset of ranked) {
+      const folder = normalizeFolderPath(asset.group);
+      if (!folder || unique.has(folder)) continue;
+      unique.add(folder);
+      result.push(folder);
+      if (result.length >= 5) break;
+    }
+    return result;
+  }, [assets]);
+
   const resolveDocumentUrl = (doc: MediaAsset) => {
     if (doc.key) {
       return getMediaDownloadUrl(doc.key);
@@ -338,6 +384,13 @@ export default function DocumentsPage() {
       }
     }
     return "document";
+  };
+
+  const formatUploadedAt = (value?: string) => {
+    if (!value) return "Дата загрузки: —";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Дата загрузки: —";
+    return `Загружен: ${date.toLocaleString("ru-RU")}`;
   };
 
   const fetchDocumentBlob = async (doc: MediaAsset) => {
@@ -436,12 +489,6 @@ export default function DocumentsPage() {
     }));
   };
 
-  const handleDocumentFolderChange = (docId: string, folder: string) => {
-    setAssets(prev =>
-      prev.map(asset => (asset.id === docId ? { ...asset, group: folder } : asset))
-    );
-  };
-
   const handleSaveCatalog = async () => {
     await persistCatalog(
       assets,
@@ -478,22 +525,34 @@ export default function DocumentsPage() {
   };
 
   const handleSelectFiles = () => {
-    fileInputRef.current?.click();
+    setUploadModalOpen(true);
+    setUploadFolderMode("existing");
+    const preselectFolder =
+      selectedFolder !== "all" && selectedFolder !== UNCATEGORIZED_FOLDER_KEY
+        ? selectedFolder
+        : "";
+    setUploadExistingFolder(preselectFolder);
+    setUploadNewFolderName("");
+    setPendingUploadFiles([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  const uploadFiles = async (files: FileList) => {
-    if (!files.length) return;
+  const uploadFiles = async (files: File[], targetFolder: string) => {
+    if (!files.length) return false;
     setUploading(true);
     setActionError(null);
     setSuccessMessage(null);
     try {
-      const normalizedFolder = normalizeFolderPath(uploadFolder);
+      const normalizedFolder = normalizeFolderPath(targetFolder);
       const basePrefix = `assets/documents/rigs/${rigId}`;
       const uploadedAssets: MediaAsset[] = [];
-      const uploadList = Array.from(files);
+      const uploadList = files;
 
       for (let index = 0; index < uploadList.length; index += 1) {
         const file = uploadList[index];
+        const uploadMoment = new Date().toISOString();
         const safeName = sanitizeFileName(file.name);
         const folderSuffix = normalizedFolder ? `${normalizedFolder}/` : "";
         const key = `${basePrefix}/${folderSuffix}${Date.now()}-${index}-${safeName}`;
@@ -511,7 +570,8 @@ export default function DocumentsPage() {
           type: "document",
           url: uploadResponse.publicUrl || "",
           key: uploadResponse.key,
-          contentType: file.type || "application/octet-stream"
+          contentType: file.type || "application/octet-stream",
+          uploadedAt: uploadMoment
         });
       }
 
@@ -526,23 +586,56 @@ export default function DocumentsPage() {
         `Файлов загружено: ${uploadedAssets.length}.`,
         "Не удалось загрузить файлы. Проверьте доступ к media/minio."
       );
-      if (!isSaved) return;
+      if (!isSaved) return false;
       if (normalizedFolder) {
         setSelectedFolder(normalizedFolder);
+      } else {
+        setSelectedFolder(UNCATEGORIZED_FOLDER_KEY);
       }
+      return true;
     } catch {
       setActionError("Не удалось загрузить файлы. Проверьте доступ к media/minio.");
+      return false;
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
   };
 
   const handleFilesChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      uploadFiles(event.target.files);
+      setPendingUploadFiles(Array.from(event.target.files));
+    }
+  };
+
+  const handleChooseUploadFiles = () => {
+    fileInputRef.current?.click();
+  };
+
+  const closeUploadModal = () => {
+    setUploadModalOpen(false);
+    setPendingUploadFiles([]);
+    setUploadNewFolderName("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const confirmUploadFromModal = async () => {
+    if (pendingUploadFiles.length === 0) {
+      setActionError("Сначала выберите хотя бы один файл для загрузки.");
+      return;
+    }
+    const targetFolder =
+      uploadFolderMode === "existing"
+        ? normalizeFolderPath(uploadExistingFolder)
+        : normalizeFolderPath(uploadNewFolderName);
+    if (uploadFolderMode === "new" && !targetFolder) {
+      setActionError("Введите имя новой папки.");
+      return;
+    }
+    const isUploaded = await uploadFiles(pendingUploadFiles, targetFolder);
+    if (isUploaded) {
+      closeUploadModal();
     }
   };
 
@@ -741,7 +834,11 @@ export default function DocumentsPage() {
   };
 
   const isAnyModalOpen =
-    createFolderModalOpen || Boolean(renameFolderPath) || Boolean(deleteFolderPath) || Boolean(deleteDocument);
+    createFolderModalOpen ||
+    Boolean(renameFolderPath) ||
+    Boolean(deleteFolderPath) ||
+    Boolean(deleteDocument) ||
+    uploadModalOpen;
 
   useEffect(() => {
     if (!isAnyModalOpen) return;
@@ -749,6 +846,10 @@ export default function DocumentsPage() {
       if (event.isComposing) return;
       if (event.key === "Escape") {
         event.preventDefault();
+        if (uploadModalOpen) {
+          closeUploadModal();
+          return;
+        }
         if (deleteDocument) {
           closeDeleteDocumentModal();
           return;
@@ -771,6 +872,10 @@ export default function DocumentsPage() {
         return;
       }
       event.preventDefault();
+      if (uploadModalOpen && !uploading) {
+        void confirmUploadFromModal();
+        return;
+      }
       if (deleteDocument && !deletingDocId) {
         void confirmDeleteDocument();
         return;
@@ -793,6 +898,7 @@ export default function DocumentsPage() {
   }, [
     isAnyModalOpen,
     createFolderModalOpen,
+    uploadModalOpen,
     renameFolderPath,
     deleteFolderPath,
     deleteDocument,
@@ -1045,16 +1151,6 @@ export default function DocumentsPage() {
               </div>
             </div>
             <div className="documents-toolbar-row">
-              <div className="documents-field">
-                <label htmlFor="documents-upload-folder">Папка для загрузки</label>
-                <input
-                  id="documents-upload-folder"
-                  type="text"
-                  value={uploadFolder}
-                  onChange={event => setUploadFolder(event.target.value)}
-                  placeholder="Напр. Техпаспорта/2026"
-                />
-              </div>
               <div className="documents-toolbar-actions">
                 <button
                   type="button"
@@ -1186,7 +1282,6 @@ export default function DocumentsPage() {
                         />
                       </div>
                       <div className="document-cell">Документ</div>
-                      <div className="document-cell">Папка</div>
                       <div className="document-cell actions">Действия</div>
                     </div>
                     {visibleDocuments.map(doc => (
@@ -1207,15 +1302,12 @@ export default function DocumentsPage() {
                         <div className="document-cell">
                           <div className="document-row-title">{doc.name || doc.id}</div>
                           <div className="document-row-meta">{doc.contentType || "Документ"}</div>
-                        </div>
-                        <div className="document-cell">
-                          <input
-                            type="text"
-                            value={doc.group || ""}
-                            onChange={event => handleDocumentFolderChange(doc.id, event.target.value)}
-                            placeholder="Без папки"
-                            className="document-folder-input"
-                          />
+                          <div className="document-row-meta secondary">
+                            Папка: {normalizeFolderPath(doc.group) || DEFAULT_FOLDER_NAME}
+                          </div>
+                          <div className="document-row-meta secondary">
+                            {formatUploadedAt(doc.uploadedAt)}
+                          </div>
                         </div>
                         <div className="document-cell actions">
                           {resolveDocumentUrl(doc) ? (
@@ -1279,12 +1371,122 @@ export default function DocumentsPage() {
           <div className="info-section">
             <h3 className="info-title">Совет</h3>
             <div className="documents-tip">
-              Используйте поле "Папка для загрузки" и формат вида "Раздел/Подраздел", чтобы
-              быстро структурировать документы.
+              Используйте модальное окно "Загрузить документы", чтобы выбрать существующую папку
+              или создать новую перед загрузкой.
             </div>
           </div>
         </aside>
       </div>
+      {uploadModalOpen && (
+        <div className="documents-modal-backdrop" onClick={closeUploadModal}>
+          <div className="documents-modal" onClick={event => event.stopPropagation()}>
+            <h3>Загрузка документов</h3>
+            <p>Выберите папку назначения и добавьте один или несколько файлов.</p>
+            <div className="documents-upload-mode">
+              <label>
+                <input
+                  type="radio"
+                  checked={uploadFolderMode === "existing"}
+                  onChange={() => setUploadFolderMode("existing")}
+                />
+                <span>В существующую папку</span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  checked={uploadFolderMode === "new"}
+                  onChange={() => setUploadFolderMode("new")}
+                />
+                <span>Создать новую папку</span>
+              </label>
+            </div>
+            {uploadFolderMode === "existing" ? (
+              <div className="documents-upload-field">
+                <label htmlFor="upload-existing-folder">Папка</label>
+                <select
+                  id="upload-existing-folder"
+                  value={uploadExistingFolder}
+                  onChange={event => setUploadExistingFolder(event.target.value)}
+                >
+                  <option value="">Без папки</option>
+                  {Object.keys(folderTree.nodes)
+                    .filter(path => path !== UNCATEGORIZED_FOLDER_KEY)
+                    .sort((left, right) => left.localeCompare(right, "ru"))
+                    .map(path => (
+                      <option key={path} value={path}>
+                        {path}
+                      </option>
+                    ))}
+                </select>
+                {recentUploadFolders.length > 0 && (
+                  <div className="documents-upload-recent">
+                    <span>Недавние:</span>
+                    {recentUploadFolders.map(folder => (
+                      <button
+                        key={folder}
+                        type="button"
+                        className={`documents-upload-chip${
+                          uploadExistingFolder === folder ? " active" : ""
+                        }`}
+                        onClick={() => setUploadExistingFolder(folder)}
+                      >
+                        {folder}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="documents-upload-field">
+                <label htmlFor="upload-new-folder">Имя новой папки</label>
+                <input
+                  id="upload-new-folder"
+                  type="text"
+                  value={uploadNewFolderName}
+                  onChange={event => setUploadNewFolderName(event.target.value)}
+                  placeholder="Например: Техпаспорта/2026"
+                  autoFocus
+                />
+              </div>
+            )}
+            <div className="documents-upload-files">
+              <button
+                type="button"
+                className="document-card-link secondary"
+                onClick={handleChooseUploadFiles}
+                disabled={uploading}
+              >
+                Выбрать файлы
+              </button>
+              <div className="documents-upload-files-info">
+                {pendingUploadFiles.length > 0
+                  ? `Выбрано файлов: ${pendingUploadFiles.length}`
+                  : "Файлы пока не выбраны"}
+              </div>
+            </div>
+            {pendingUploadFiles.length > 0 && (
+              <div className="documents-upload-files-list">
+                {pendingUploadFiles.map(file => (
+                  <div key={`${file.name}-${file.size}-${file.lastModified}`}>{file.name}</div>
+                ))}
+              </div>
+            )}
+            <div className="documents-modal-actions">
+              <button type="button" className="document-card-link secondary" onClick={closeUploadModal}>
+                Отмена
+              </button>
+              <button
+                type="button"
+                className="document-card-link"
+                onClick={confirmUploadFromModal}
+                disabled={uploading}
+              >
+                {uploading ? "Загрузка..." : "Загрузить"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {createFolderModalOpen && (
         <div className="documents-modal-backdrop" onClick={closeCreateFolderModal}>
           <div className="documents-modal" onClick={event => event.stopPropagation()}>
