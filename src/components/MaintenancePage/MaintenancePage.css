@@ -1,9 +1,9 @@
 /* Контейнер страницы - стиль piano.io с промышленной палитрой */
 .bypass-status-page {
-    background: #0a0d12 !important;
+    background: var(--surface-page) !important;
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%) !important;
+        radial-gradient(circle at 0% 0%, var(--page-radial-1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, var(--page-radial-2) 0%, transparent 50%) !important;
     min-height: 100vh !important;
     padding: 80px var(--spacing-xl) var(--spacing-2xl) !important;
     color: var(--color-text-primary) !important;
@@ -26,8 +26,8 @@
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+        radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
     pointer-events: none;
     z-index: 0;
 }
@@ -190,7 +190,7 @@
 
 /* Общий стиль для таблицы - премиальный стиль с промышленной палитрой */
 .maintenance-table-custom {
-    background: rgba(26, 29, 36, 0.4) !important;
+    background: color-mix(in srgb, var(--surface-elevated) 75%, transparent) !important;
     border: 1px solid rgba(212, 165, 116, 0.15) !important;
     border-radius: 0 !important;
     backdrop-filter: blur(8px) !important;
@@ -244,7 +244,7 @@
 
 /* Заголовки таблицы - элегантные с промышленной палитрой */
 .maintenance-table-custom .p-datatable-thead > tr {
-    background: rgba(201, 122, 61, 0.03) !important;
+    background: color-mix(in srgb, var(--surface-card) 70%, transparent) !important;
     border-bottom: 1px solid rgba(212, 165, 116, 0.15) !important;
 }
 
@@ -325,12 +325,12 @@
 
 /* Альтернативные строки для лучшей читаемости */
 .maintenance-table-custom .p-datatable-tbody > tr:nth-child(even) {
-    background-color: rgba(212, 165, 116, 0.02) !important;
+    background-color: color-mix(in srgb, var(--surface-card) 55%, transparent) !important;
 }
 
 /* Стиль для активной (наведенной) строки - элегантный */
 .maintenance-table-custom .p-datatable-tbody > tr:hover {
-    background-color: rgba(201, 122, 61, 0.06) !important;
+    background-color: color-mix(in srgb, var(--surface-card) 95%, transparent) !important;
 }
 
 /* Вертикальная линия слева при hover через первую ячейку */
@@ -340,7 +340,7 @@
 }
 
 .maintenance-table-custom .p-datatable-tbody > tr:nth-child(even):hover {
-    background-color: rgba(201, 122, 61, 0.08) !important;
+    background-color: color-mix(in srgb, var(--surface-card) 100%, transparent) !important;
 }
 
 /* Стили для времени в таблице - использование промышленной палитры */
@@ -422,4 +422,26 @@
 
 .loading-container .p-progress-spinner {
     margin-bottom: 24px;
+}
+
+:root[data-theme="light"] .bypass-status-page .bypass-blocks-title {
+  font-weight: 390;
+}
+
+:root[data-theme="light"] .bypass-status-page .maintenance-table-custom {
+  background: color-mix(in srgb, var(--surface-elevated) 86%, white 14%) !important;
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 24%, transparent) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+:root[data-theme="light"] .bypass-status-page .maintenance-table-custom .p-datatable-thead > tr > th {
+  color: var(--color-text-secondary) !important;
+}
+
+:root[data-theme="light"] .bypass-status-page .maintenance-table-custom .p-datatable-tbody > tr > td {
+  color: var(--color-text-primary) !important;
+}
+
+:root[data-theme="light"] .bypass-status-page .maintenance-table-custom .p-datatable-tbody > tr:hover {
+  background-color: rgba(182, 130, 81, 0.08) !important;
 }

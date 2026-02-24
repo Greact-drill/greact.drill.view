@@ -1,0 +1,11 @@
+.empty-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  background: var(--surface-elevated);
+  color: var(--text-muted);
+}

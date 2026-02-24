@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { mediaConfigSchema } from "./schemas/criticalSchemas";
+import { parseWithSchema } from "./schemas/validators";
 
 const mediaBaseUrl =
   import.meta.env.VITE_MEDIA_API_URL ||
@@ -37,7 +39,12 @@ export async function getMediaConfig<T = Record<string, unknown>>(
       rigId: rigId || undefined
     }
   });
-  return response.data;
+  return parseWithSchema(
+    mediaConfigSchema,
+    response.data,
+    "getMediaConfig",
+    { key: scope, data: null }
+  ) as MediaConfigResponse<T>;
 }
 
 export async function presignDownload(params: {
@@ -58,7 +65,12 @@ export async function putMediaConfig<T = Record<string, unknown>>(
     rigId,
     data
   });
-  return response.data;
+  return parseWithSchema(
+    mediaConfigSchema,
+    response.data,
+    "putMediaConfig",
+    { key: scope, data: null }
+  ) as MediaConfigResponse<T>;
 }
 
 export async function uploadMediaAsset(params: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TableConfigWithData, TableCell } from '../../api/tableConfigs';
+import type { TableConfigWithData, TableCell, TableCellData } from '../../api/tableConfigs';
 import './TableWidget.css';
 
 interface TableWidgetProps {
@@ -7,8 +7,10 @@ interface TableWidgetProps {
 }
 
 const TableWidget: React.FC<TableWidgetProps> = ({ config }) => {
+  type TableTagData = TableCellData["tag"];
+
   // Определяем, является ли значение статусным (текстовым)
-  const isStatusValue = (value: number | null, tag: any): boolean => {
+  const isStatusValue = (value: number | null, tag: TableTagData): boolean => {
     if (value === null || value === undefined) return false;
     if (!tag) return false;
     // Если unit_of_measurement === 'bool', то это статус
@@ -16,14 +18,18 @@ const TableWidget: React.FC<TableWidgetProps> = ({ config }) => {
   };
 
   // Проверяем, находится ли значение в допустимом диапазоне
-  const isValueInRange = (value: number | null, tag: any): boolean => {
+  const isValueInRange = (value: number | null, tag: TableTagData): boolean => {
     if (value === null || value === undefined || !tag) return false;
     if (typeof value !== 'number') return false;
     return value >= tag.min && value <= tag.max;
   };
 
   // Определяем цвет ячейки на основе значения и типа ячейки
-  const getCellClassName = (value: number | null, tag: any, cellType: string): string => {
+  const getCellClassName = (
+    value: number | null,
+    tag: TableTagData,
+    cellType: string
+  ): string => {
     if (value === null || value === undefined) return 'table-cell-empty';
     
     // Для типа tag-text используем логику окраски по диапазону
@@ -45,7 +51,7 @@ const TableWidget: React.FC<TableWidgetProps> = ({ config }) => {
   };
 
   // Форматируем значение для отображения
-  const formatValue = (value: number | null, tag: any, cellType: string): string => {
+  const formatValue = (value: number | null, tag: TableTagData, cellType: string): string => {
     if (value === null || value === undefined) return '--';
 
     // Для типа tag-text показываем наименование тега

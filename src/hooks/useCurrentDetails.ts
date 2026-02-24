@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { getCurrentDetails, type CurrentDetailsData } from '../api/current';
+import { useQuery } from "@tanstack/react-query";
+import { getCurrentDetails, type CurrentDetailsData } from "../api/current";
+import { queryKeys } from "../api/queryKeys";
 
 /**
  * Хук для получения текущих данных тегов через /current/details с polling каждую секунду
@@ -7,53 +8,21 @@ import { getCurrentDetails, type CurrentDetailsData } from '../api/current';
  * @returns Объект с данными тегов, статусом загрузки и ошибкой
  */
 export function useCurrentDetails(edgeKey: string | null) {
-  const [data, setData] = useState<CurrentDetailsData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const isFirstLoadRef = useRef(true);
+  const query = useQuery({
+    queryKey: edgeKey ? queryKeys.current.details(edgeKey) : ["current", "details", "empty"],
+    enabled: Boolean(edgeKey),
+    queryFn: () => getCurrentDetails(edgeKey as string),
+    refetchInterval: 1000,
+  });
 
-  useEffect(() => {
-    if (!edgeKey) {
-      setData(null);
-      isFirstLoadRef.current = true;
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        // Показываем loading только при первой загрузке
-        if (isFirstLoadRef.current) {
-          setLoading(true);
-        }
-        setError(null);
-        
-        const result = await getCurrentDetails(edgeKey);
-        setData(result);
-        
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Ошибка загрузки данных тегов');
-      } finally {
-        if (isFirstLoadRef.current) {
-          setLoading(false);
-          isFirstLoadRef.current = false;
-        }
-      }
-    };
-
-    // Сбрасываем флаг первой загрузки при смене edgeKey
-    isFirstLoadRef.current = true;
-
-    // Первая загрузка
-    fetchData();
-
-    // Polling каждую секунду
-    const intervalId = setInterval(fetchData, 1000);
-
-    // Очистка интервала при размонтировании или изменении edgeKey
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [edgeKey]);
-
-  return { data, loading, error };
+  return {
+    data: (query.data as CurrentDetailsData | undefined) ?? null,
+    loading: query.isPending,
+    error:
+      query.error instanceof Error
+        ? query.error.message
+        : query.error
+          ? "Ошибка загрузки данных тегов"
+          : null,
+  };
 }

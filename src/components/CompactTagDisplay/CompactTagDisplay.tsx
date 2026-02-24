@@ -1,9 +1,10 @@
 import React from 'react';
 import { formatNumber } from '../../utils/formatters';
+import type { WidgetValue } from '../../utils/widgetValue';
 
 interface CompactTagDisplayProps {
     label: string;
-    value: any;
+    value: WidgetValue;
     unit?: string;
     isOK: boolean;
     compact?: boolean;
@@ -14,12 +15,15 @@ const CompactTagDisplay: React.FC<CompactTagDisplayProps> = ({
     label, 
     value, 
     unit, 
-    isOK 
+    isOK,
+    compact = false,
+    cardMode = false,
 }) => {
     const displayValue = typeof value === 'number' ? formatNumber(value) : (value ?? '--');
+    const modeClassName = cardMode ? 'widget-card' : compact ? 'widget-compact' : '';
 
     return (
-        <div className={`compact-tag-display ${isOK ? 'status-ok' : 'status-error'}`}>
+        <div className={`${modeClassName} compact-tag-display ${isOK ? 'status-ok' : 'status-error'}`.trim()}>
             <div className="compact-tag-header">
                 <div className="compact-tag-label" title={label}>
                     {label}

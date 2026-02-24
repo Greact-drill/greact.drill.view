@@ -1,354 +1,52 @@
-import { useMemo, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import drillSvg from "../assets/drillOld.png";
-import { getRigById } from "../api/rigs";
-import { useEdgeWithAttributes, useEdgeChildren } from "../hooks/useEdges";
-import type { Rig } from "../types/rig";
-import { polygonPercentToSvgPoints } from "../utils/polygonUtils";
-import { transformRawAttributes } from "../utils/edgeUtils";
 import { formatNumberWithUnit } from "../utils/formatters";
-import type { EdgeAttribute, RawEdgeAttributes } from "../types/edge";
+import {
+  parseBooleanValue,
+  parseNumericValue,
+} from "../utils/widgetValue";
 import './MainPage.css';
 
 // Импортируем компоненты виджетов как в DynamicWidgetPage
-import GaugeWidget from "../components/Gauge/GaugeWidget.tsx";
-import VerticalBar from "../components/VerticalBar/VerticalBar";
-import NumberDisplay from "../components/NumberDisplay/NumberDisplay";
-import CompactTagDisplay from "../components/CompactTagDisplay/CompactTagDisplay";
 import WidgetPlaceholder from "../components/WidgetPlaceholder/WidgetPlaceholder.tsx";
-import StatusTagWidget from "../components/StatusTagWidget/StatusTagWidget";
+const GaugeWidget = lazy(() => import("../components/Gauge/GaugeWidget.tsx"));
+const VerticalBar = lazy(() => import("../components/VerticalBar/VerticalBar"));
+const NumberDisplay = lazy(() => import("../components/NumberDisplay/NumberDisplay"));
+const CompactTagDisplay = lazy(() => import("../components/CompactTagDisplay/CompactTagDisplay"));
+const StatusTagWidget = lazy(() => import("../components/StatusTagWidget/StatusTagWidget"));
 
-// Используем хук для получения конфигураций по edge_id
-import { useWidgetConfigsByEdge } from "../hooks/useWidgetConfigs";
-import { useCurrentDetails } from "../hooks/useCurrentDetails";
-import { useScopedCurrent } from '../hooks/useScopedCurrent';
-
-// Типы виджетов (такие же как в DynamicWidgetPage)
-type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
+import ErrorView from "../components/ErrorView/ErrorView";
+import EmptyState from "../components/EmptyState/EmptyState";
+import LoadingState from "../components/LoadingState/LoadingState";
+import { useMainPageViewModel, type DynamicWidgetConfig } from "./useMainPageViewModel";
+import { useTheme } from "../theme/useTheme";
+import rigLightTheme from "../assets/rig_light_theme_without_background.png";
 
 // Получаем значение переменной окружения для Vite
 const branch = import.meta.env.VITE_BRANCH || import.meta.env.BRANCH || 'main';
 const featureFlag = branch !== 'main';
 
-interface DynamicWidgetConfig {
-  edgeId?: string;
-  key: string;
-  type: WidgetType;
-  label: string;
-  value: number | string | boolean | null;
-  defaultValue?: number | string | boolean;
-  max: number;
-  unit: string;
-  isOK?: boolean;
-  position: { x: number; y: number };
-  displayType: 'widget' | 'compact' | 'card';
-  isLoading?: boolean;
-  hasData?: boolean;
-}
-
-const parseNumericValue = (value: number | string | boolean | null): number | null => {
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'boolean') {
-    return value ? 1 : 0;
-  }
-  if (typeof value === 'string') {
-    const normalized = value.replace(',', '.').trim();
-    if (!normalized) {
-      return null;
-    }
-    const parsed = Number(normalized);
-    return Number.isNaN(parsed) ? null : parsed;
-  }
-  return null;
-};
-
-const parseBooleanValue = (value: number | string | boolean | null): boolean => {
-  if (value === null || value === undefined) {
-    return false;
-  }
-  if (typeof value === 'boolean') {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return value === 1;
-  }
-  return String(value).toLowerCase() === 'true' || String(value) === '1';
-};
-
-const isTagValueOK = (
-  value: number | string | boolean | null,
-  min: number,
-  max: number,
-  unit: string,
-  widgetType?: WidgetType
-): boolean => {
-  if (value === null || value === undefined) {
-    return true; // Если данных нет, считаем OK
-  }
-
-  const numericValue = parseNumericValue(value);
-  if (widgetType === 'status' && numericValue !== null) {
-    return numericValue >= min && numericValue <= max;
-  }
-
-  if (unit !== 'bool' && numericValue !== null) {
-    return numericValue >= min && numericValue <= max;
-  }
-
-  if (unit === 'bool') {
-    return value === 1 || value === true || String(value).toLowerCase() === 'true';
-  }
-
-  return true;
-};
-
-const getDefaultValue = (widgetType: WidgetType, unit: string): any => {
-  switch (widgetType) {
-    case 'gauge':
-    case 'bar':
-      return 0;
-    case 'number':
-      return unit === 'bool' ? false : 0;
-    case 'status':
-      return 'Ожидание данных';
-    default:
-      return '--';
-  }
-};
-
-// Сегменты заданы в процентах относительно размера изображения
-const SEGMENTS = [
-  { 
-    id: "1", 
-    name: "КТУ/КРУ", 
-    href: "/ktu/:rigId", 
-    polygon: "14.2% 73.1%, 25% 70.67%, 32.7% 73.99%, 32.9% 80.2%, 21.5% 83.2%, 14.5% 79.5%" 
-  },
-  { 
-    id: "2",
-    name: "Насосный блок",
-    href: "/pumpblock/:rigId",
-    polygon: "26.55% 70.4%, 35.999% 68.4%, 43.7% 71.1%, 43.8% 77%, 34.5% 79.6%, 34.2% 73.7%"
-  },
-  { 
-    id: "3",
-    name: "Циркуляционная система",
-    href: "/",
-    polygon: "37.2% 68.1%, 45% 66.4%, 53.3% 68.7%, 53.3% 74.3%, 45.1% 76.8%, 44.9% 70.8%"
-  },
-  { 
-    id: "4",
-    name: "Лебедочный блок",
-    href: "/",
-    polygon: "41.5% 64.99%, 60.5% 60.9%, 73.5% 63.7%, 79.2% 64.8%, 84.5% 66%, 66.5% 71.5%"
-  }
-];
-
 export default function MainPage() {
+  const { isLight } = useTheme();
   const params = useParams();
   const navigate = useNavigate();
   const rigId = params.rigId || "14820";
-  const [rig, setRig] = useState<Rig | null>(null);
-  const [hovered, setHovered] = useState<string | null>(null);
-
-  // Используем rigId как edge_key для получения данных
-  const edgeKey = `${rigId}`;
-  const { edgeData } = useEdgeWithAttributes(edgeKey);
-  
-  // Получаем дочерние элементы текущей буровой
-  const { children: childEdges, loading: childrenLoading, error: childrenError } = useEdgeChildren(edgeKey);
-
-  // Получаем атрибуты для отображения статистики
-  const edgeAttributes: EdgeAttribute | null = useMemo(() => {
-    if (!edgeData?.attributes) return null;
-    return transformRawAttributes(edgeData.attributes as RawEdgeAttributes, edgeKey);
-  }, [edgeData, edgeKey]);
-
-  // Получаем конфигурации виджетов для этого edge (корневого уровня)
-  const { widgetConfigs, loading: widgetsLoading, error: widgetsError } = useWidgetConfigsByEdge(edgeKey);
-  const { data: currentDetailsData } = useCurrentDetails(rigId || null);
-  const { data: scopedCurrentData } = useScopedCurrent(edgeKey, 1000); // Обновляем каждую секунду
-
-   // Обновляем dynamicWidgetConfigs для работы с обновляемыми данными блоков
-   const allWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
-    // Теги из виджетов edge (существующая логика)
-    const edgeWidgets = (widgetConfigs || []).map(config => {
-      const rawWidgetType = config.config.widgetType;
-      const widgetType: WidgetType =
-        rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
-      const displayType = config.config.displayType || 'widget';
-      
-      // Используем currentDetailsData для получения актуальных значений
-      const currentValue = currentDetailsData?.find(td => td.tag === config.tag_id)?.value;
-      const hasData = currentValue !== undefined && currentValue !== null;
-      const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
-      
-      const isOK = isTagValueOK(
-        value, 
-        config.tag.min || 0, 
-        config.tag.max || 100, 
-        config.tag.unit_of_measurement,
-        widgetType
-      );
-
-      return {
-        key: `${config.tag_id}-${config.config.page}`,
-        type: widgetType,
-        label: config.config.customLabel || config.tag.name || config.tag.comment,
-        value: value,
-        defaultValue: getDefaultValue(widgetType, config.tag.unit_of_measurement),
-        max: config.tag.max || 100,
-        unit: config.tag.unit_of_measurement || '',
-        isOK,
-        position: config.config.position || { x: 0, y: 0 },
-        displayType,
-        isLoading: false,
-        hasData
-      } as DynamicWidgetConfig;
-    });
-
-    // Теги из блоков (создаем как виджеты) с актуальными данными
-    const blockWidgets = (scopedCurrentData?.tags || [])
-      .filter(tag => tag.edge !== edgeKey) // Фильтруем теги, которые принадлежат дочерним элементам
-      .map((tag, index) => {
-        const hasData = tag.value !== null && tag.value !== undefined;
-        const displayType = 'compact' as const;
-        
-        return {
-          key: `block-${tag.edge}-${tag.tag}-${index}`,
-          type: 'number' as WidgetType,
-          label: tag.name || `Тег ${tag.tag}`,
-          value: tag.value,
-          defaultValue: 0,
-          max: tag.max || 100,
-          unit: tag.unit_of_measurement || '',
-          isOK: hasData && 
-                 (tag.min === undefined || tag.max === undefined || 
-                  (tag.value >= tag.min && tag.value <= tag.max)),
-          position: { x: 0, y: 0 }, // Не используется для статистики
-          displayType,
-          isLoading: false,
-          hasData,
-          source: 'block' as const,
-          edgeId: tag.edge
-        } as DynamicWidgetConfig;
-      });
-
-    return [...edgeWidgets, ...blockWidgets];
-  }, [widgetConfigs, scopedCurrentData, currentDetailsData, edgeKey]);
-
-  // Преобразуем конфигурации в динамические виджеты (аналогично DynamicWidgetPage)
-  const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
-    if (!widgetConfigs || widgetConfigs.length === 0) {
-      return [];
-    }
-
-    const currentDetailsMap = new Map<string, number>();
-    if (currentDetailsData) {
-      currentDetailsData.forEach(tagData => {
-        currentDetailsMap.set(tagData.tag, tagData.value);
-      });
-    }
-
-    return widgetConfigs.map(config => {
-      const rawWidgetType = config.config.widgetType;
-      const widgetType: WidgetType =
-        rawWidgetType === 'compact' || rawWidgetType === 'card' ? 'number' : rawWidgetType;
-      const displayType = config.config.displayType || 'widget';
-      
-      // Приоритет: currentDetailsData, затем config.current
-      const currentValueFromDetails = currentDetailsMap.get(config.tag_id);
-      const currentValue = currentValueFromDetails !== undefined
-        ? currentValueFromDetails
-        : config.current?.value;
-      const hasData = currentValue !== null && currentValue !== undefined;
-      const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
-      const defaultValue = config.tag.unit_of_measurement === 'bool' ? false : 0;
-      
-      const isOK = isTagValueOK(
-        value, 
-        config.tag.min || 0, 
-        config.tag.max || 100, 
-        config.tag.unit_of_measurement,
-        widgetType
-      );
-
-      // Для главной страницы используем фиксированную позицию или grid
-      return {
-        key: `${config.tag_id}-${config.config.page}`,
-        type: widgetType,
-        label: config.config.customLabel || config.tag.name || config.tag.comment,
-        value: value,
-        defaultValue: defaultValue,
-        max: config.tag.max || 100,
-        unit: config.tag.unit_of_measurement || '',
-        isOK,
-        position: config.config.position || { x: 0, y: 0 }, // Позиция из конфига или по умолчанию
-        displayType,
-        isLoading: false,
-        hasData
-      };
-    });
-  }, [widgetConfigs, currentDetailsData]);
-
-  // Обновляем статистику тегов с автообновлением
-  const tagsStats = useMemo(() => {
-    const edgeTags = allWidgetConfigs.filter(w => !w.key.startsWith('block-'));
-    const blockTags = allWidgetConfigs.filter(w => w.key.startsWith('block-'));
-    
-    const edgeTagsCount = edgeTags.length;
-    const blockTagsCount = blockTags.length;
-    const totalTags = allWidgetConfigs.length;
-    
-    const tagsWithData = allWidgetConfigs.filter(w => w.hasData).length;
-    const tagsWithErrors = allWidgetConfigs.filter(w => w.hasData && !w.isOK).length;
-    const tagsOk = allWidgetConfigs.filter(w => w.hasData && w.isOK).length;
-
-    // Подсчитываем количество уникальных блоков с тегами
-    const uniqueBlockEdges = [...new Set(blockTags.map(t => t.edgeId))].length;
-
-    // Теги с ошибками для отображения
-    const errorTags = allWidgetConfigs
-      .filter(w => w.hasData && !w.isOK)
-      .map(w => {
-        const source = w.key.startsWith('block-') ? 'block' : 'edge';
-        let edgeName = '';
-        
-        // Получаем название блока
-        if (source === 'block' && w.edgeId) {
-          // Ищем название блока среди дочерних элементов
-          const childEdge = childEdges.find(child => child.id === w.edgeId);
-          edgeName = childEdge?.name || `Блок ${w.edgeId}`;
-        } else if (source === 'edge') {
-          edgeName = 'Буровая установка';
-        }
-        
-        return {
-          label: w.label,
-          value: w.value,
-          unit: w.unit,
-          max: w.max,
-          type: w.type,
-          source,
-          edgeName // Добавляем название блока
-        };
-      });
-
-    return {
-      totalTags,
-      edgeTagsCount,
-      blockTagsCount,
-      tagsWithData,
-      tagsWithErrors,
-      tagsOk,
-      errorTags,
-      uniqueBlockEdges,
-      hasBlockData: blockTagsCount > 0,
-      lastUpdated: new Date().toLocaleTimeString() // Добавляем время последнего обновления
-    };
-  }, [allWidgetConfigs, childEdges]);
+  const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
+  const {
+    rig,
+    edgeData,
+    childEdges,
+    childrenLoading,
+    childrenError,
+    edgeAttributes,
+    widgetsLoading,
+    widgetsError,
+    dynamicWidgetConfigs,
+    tagsStats,
+    staticSegmentsWithStatus,
+  } = useMainPageViewModel(rigId);
+  const mapImage = isLight ? rigLightTheme : drillSvg;
 
   // Функция рендеринга виджета (аналогично DynamicWidgetPage)
   const renderWidget = (config: DynamicWidgetConfig) => {
@@ -454,40 +152,17 @@ export default function MainPage() {
         data-display-type={config.displayType}
         data-has-data={config.hasData}
       >
-        {widgetContent}
+        <Suspense fallback={<WidgetPlaceholder type={config.type} label={config.label} unit={config.unit} />}>
+          {widgetContent}
+        </Suspense>
       </div>
     );
   };
 
-  const staticSegmentsWithStatus = useMemo(() => {
-    return SEGMENTS.map(segment => {
-      let status: 'ok' | 'error' | 'warning' = 'ok';
-      if (segment.id === '2') {
-        status = 'error';
-      } else if (segment.id === '3') {
-        status = 'warning';
-      } else if (segment.id === '1') {
-        status = 'ok';
-      }
-      return {
-        ...segment,
-        status,
-        svgPoints: polygonPercentToSvgPoints(segment.polygon, 1010, 1024) 
-      };
-    }).filter(segment => segment.polygon);
-  }, []);
-
-  useEffect(() => {
-    getRigById(rigId).then((r) => setRig(r ?? null));
-  }, [rigId]);
-
   if (widgetsLoading) {
     return (
       <div className="main-page-container">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Загрузка виджетов...</p>
-        </div>
+        <LoadingState message="Загрузка виджетов..." />
       </div>
     );
   }
@@ -505,9 +180,9 @@ export default function MainPage() {
       <div className="subsystems-menu-top">
         <div className="subsystems-menu-content">
           {childrenLoading ? (
-            <div className="loading-message">Загрузка подсистем...</div>
+            <LoadingState message="Загрузка подсистем..." />
           ) : childrenError ? (
-            <div className="error-message">{childrenError}</div>
+            <ErrorView message={childrenError} onRetry={() => window.location.reload()} />
           ) : (
             <>
               {/* Статические кнопки */}
@@ -709,7 +384,7 @@ export default function MainPage() {
             {/* Изображение со скругленными краями */}
             <g clipPath="url(#roundedCorners)">
               <image 
-                xlinkHref={drillSvg}
+                xlinkHref={mapImage}
                 x="0" 
                 y="0" 
                 width="1010" 
@@ -724,9 +399,9 @@ export default function MainPage() {
                 <polygon
                   key={`static-${segment.id}`}
                   points={segment.svgPoints} 
-                  className={`seg-polygon status-${segment.status} ${hovered === segment.id ? 'hovered' : ''}`}
-                  onMouseEnter={() => setHovered(segment.id)}
-                  onMouseLeave={() => setHovered(null)}
+                  className={`seg-polygon status-${segment.status} ${hoveredSegment === segment.id ? 'hovered' : ''}`}
+                  onMouseEnter={() => setHoveredSegment(segment.id)}
+                  onMouseLeave={() => setHoveredSegment(null)}
                 />
               )
             ))}
@@ -751,13 +426,10 @@ export default function MainPage() {
 
         {/* Правая панель - Параметры */}
         <aside className="right-panel">
-          <div className="parameters-section">
-            <h2 className="section-title">Параметры</h2>
+          <div className="info-section">
+            <h3 className="info-title">Параметры</h3>
             {widgetsError && (
-              <div className="error-message">
-                <i className="pi pi-exclamation-triangle" />
-                {widgetsError}
-              </div>
+              <ErrorView message={widgetsError} onRetry={() => window.location.reload()} />
             )}
             {dynamicWidgetConfigs.length > 0 ? (
               <div className="widgets-grid">
@@ -765,8 +437,7 @@ export default function MainPage() {
               </div>
             ) : (
               <div className="empty-widgets">
-                <i className="pi pi-info-circle" />
-                <p>Нет настроенных виджетов</p>
+                <EmptyState message="Нет настроенных виджетов" />
               </div>
             )}
           </div>

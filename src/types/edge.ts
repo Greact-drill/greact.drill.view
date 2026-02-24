@@ -1,5 +1,5 @@
 export interface Edge {
-  parent_id: any;
+  parent_id: string | null;
   id: string;
   name: string | null;
 }

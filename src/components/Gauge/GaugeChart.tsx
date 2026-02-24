@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Doughnut } from 'react-chartjs-2'; 
 import { 
     Chart as ChartJS, 
@@ -22,8 +22,6 @@ type DoughnutContext = ScriptableContext<'doughnut'>;
 
 // 1. Добавляем React.memo для предотвращения мерцания
 const GaugeChart: React.FC<GaugeChartProps> = React.memo(({ label, value, max }) => {
-    const chartRef = useRef<ChartJS<'doughnut', number[], string> | null>(null);
-    
     // Функция создания ГРАДИЕНТА (как в вашем старом коде, но с явными типами)
     const getGradient = (chart: ChartJS) => {
         const { ctx, chartArea } = chart;
@@ -76,7 +74,6 @@ const GaugeChart: React.FC<GaugeChartProps> = React.memo(({ label, value, max })
         // Контейнер размера задается через CSS для разных контекстов
         <div className="gauge-chart-container"> 
             <Doughnut 
-                ref={chartRef as React.LegacyRef<any>} 
                 data={data} 
                 options={options} 
             />

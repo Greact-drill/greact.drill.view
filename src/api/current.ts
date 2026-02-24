@@ -1,8 +1,10 @@
 import { apiClient } from './client';
+import { currentDetailsSchema } from "./schemas/criticalSchemas";
+import { parseWithSchema } from "./schemas/validators";
 
 export interface CurrentTagData {
   tag: string;
-  value: number;
+  value: number | string | boolean | null;
   name?: string;
   min?: number;
   max?: number;
@@ -21,5 +23,5 @@ export async function getCurrentDetails(edge: string): Promise<CurrentDetailsDat
   const response = await apiClient.get<CurrentDetailsData>(`/current/details`, {
     params: { edge }
   });
-  return response.data;
+  return parseWithSchema(currentDetailsSchema, response.data, "getCurrentDetails", []);
 }

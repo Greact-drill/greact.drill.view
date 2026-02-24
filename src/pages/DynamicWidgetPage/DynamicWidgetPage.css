@@ -45,7 +45,7 @@
     pointer-events: none;
     min-width: 220px;
     max-width: 320px;
-    background: rgba(10, 13, 18, 0.92);
+    background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
     border: 1px solid rgba(212, 165, 116, 0.25);
     border-radius: 12px;
     padding: 12px 14px;
@@ -67,7 +67,7 @@
     bottom: -6px;
     width: 12px;
     height: 12px;
-    background: rgba(10, 13, 18, 0.92);
+    background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
     border-right: 1px solid rgba(212, 165, 116, 0.25);
     border-bottom: 1px solid rgba(212, 165, 116, 0.25);
     transform: translateX(-50%) rotate(45deg);
@@ -179,12 +179,12 @@
 
 .positioned-widget.widget-in-range,
 .positioned-widget.widget-in-range * {
-    color: #86efac !important;
+    color: var(--color-success-light) !important;
 }
 
 .positioned-widget.widget-out-of-range,
 .positioned-widget.widget-out-of-range * {
-    color: #fca5a5 !important;
+    color: var(--color-error-light) !important;
 }
 
 .positioned-widget.widget-in-range:hover {
@@ -311,7 +311,7 @@
     align-items: center;
     justify-content: center;
     min-height: 60vh;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-secondary);
 }
 
 .loading-spinner {
@@ -362,7 +362,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-secondary);
     font-size: 0.9em;
 }
 
@@ -445,7 +445,7 @@
 .display-card .widget-content {
     padding: 15px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
+    background: color-mix(in srgb, var(--surface-card) 35%, white 65%);
 }
 
 /* Улучшенное состояние при наведении для разных типов */
@@ -463,16 +463,16 @@
 
 /* Группировка виджетов на главной странице */
 .main-page .compact-widget {
-    background: rgba(31, 0, 58, 0.6);
+    background: color-mix(in srgb, var(--surface-card) 70%, transparent);
     border: 1px solid rgba(175, 82, 237, 0.2);
 }
 
 /* Контейнер страницы - стиль piano.io с промышленной палитрой */
 .dynamic-widget-page-container {
-    background: #0a0d12;
+    background: var(--surface-page);
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+        radial-gradient(circle at 0% 0%, var(--page-radial-1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, var(--page-radial-2) 0%, transparent 50%);
     min-height: 100vh;
     padding: 80px var(--spacing-xl) var(--spacing-2xl);
     color: var(--color-text-primary);
@@ -488,8 +488,8 @@
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+        radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
     pointer-events: none;
     z-index: 0;
 }
@@ -687,7 +687,7 @@
     justify-content: center;
     height: 100%;
     padding: 20px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-tertiary);
 }
 
 .widget-no-data .widget-placeholder i {
@@ -695,4 +695,35 @@
     margin-bottom: var(--spacing-sm);
     color: var(--color-accent-secondary);
     opacity: 0.5;
+}
+
+:root[data-theme="light"] .dynamic-widget-page-container .positioned-widget,
+:root[data-theme="light"] .dynamic-widget-page-container .compact-widget,
+:root[data-theme="light"] .dynamic-widget-page-container .page-info {
+  background: color-mix(in srgb, var(--surface-elevated) 88%, white 12%);
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 34%, transparent);
+  box-shadow: var(--shadow-md);
+}
+
+:root[data-theme="light"] .dynamic-widget-page-container .positioned-widget .widget-tooltip {
+  background: color-mix(in srgb, var(--surface-elevated) 92%, white 8%);
+  box-shadow: var(--shadow-md);
+}
+
+:root[data-theme="light"] .dynamic-widget-page-container .positioned-widget.widget-in-range {
+  border-color: rgba(22, 101, 52, 0.42);
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px rgba(22, 163, 74, 0.24),
+    0 0 24px rgba(34, 197, 94, 0.24),
+    0 0 42px rgba(34, 197, 94, 0.18);
+}
+
+:root[data-theme="light"] .dynamic-widget-page-container .positioned-widget.widget-out-of-range {
+  border-color: rgba(153, 27, 27, 0.44);
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px rgba(220, 38, 38, 0.22),
+    0 0 24px rgba(239, 68, 68, 0.24),
+    0 0 44px rgba(239, 68, 68, 0.18);
 }

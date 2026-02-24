@@ -22,18 +22,24 @@
 .gauge-widget-title {
   margin: 0;
   font-size: 1.1em;
-  color: #ffffff;
-  font-weight: bold;
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 
 .gauge-widget-value {
-  font-weight: bold;
+  font-weight: 700;
   font-size: 1.6em;
   margin-top: -20px;
-  color: #34D399;
+  color: var(--color-success);
 }
 
 .gauge-chart-container {
   width: 200px;
   height: 200px;
+}
+
+:root[data-theme="light"] .gauge-widget-container {
+  background: color-mix(in srgb, var(--surface-elevated) 84%, white 16%);
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 26%, transparent);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(120, 90, 60, 0.06) inset;
 }

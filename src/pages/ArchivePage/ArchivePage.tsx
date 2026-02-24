@@ -1,13 +1,17 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReactECharts from 'echarts-for-react'; 
 import { useTagHistory } from '../../hooks/useTagHistory';
 import type { TagHistoryList, TagHistoryData } from '../../types/tag'; 
 
 import ActionLogTable from '../../components/ActionLogTable/ActionLogTable'; 
 import { MOCK_ACTION_LOG } from '../../types/tag';
 import { useEdgeWithAttributes } from '../../hooks/useEdges';
+import ErrorView from '../../components/ErrorView/ErrorView';
+import EmptyState from '../../components/EmptyState/EmptyState';
+import LoadingState from '../../components/LoadingState/LoadingState';
 import './ArchivePage.css';
+
+const ReactECharts = lazy(() => import('echarts-for-react'));
 
 // Цвета промышленной палитры
 const ACCENT_COLOR_1 = '#c97a3d'; // Оранжево-коричневый
@@ -89,11 +93,16 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                     }
                 },
                 // Форматирование подсказки для отображения времени и значения
-                formatter: function (params: any) {
-                    const time = new Date(params[0].value[0]).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                formatter: function (params: unknown) {
+                    const tooltipItems = Array.isArray(params)
+                        ? (params as Array<{ value: [number, number]; color: string; seriesName: string }>)
+                        : [];
+                    const time = tooltipItems[0]
+                        ? new Date(tooltipItems[0].value[0]).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        : '';
                     let result = `<div style="color: #fff; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; margin-bottom: 5px;">${time}</div>`;
                     
-                    params.forEach((item: any) => {
+                    tooltipItems.forEach((item) => {
                         // item.seriesName - имя тега, item.value[1] - значение
                         result += `<div style="color: ${item.color};">
                             ${item.seriesName}: 
@@ -217,12 +226,14 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
 
     return (
         <div className="archive-chart-container">
-            <ReactECharts 
-                option={chartOption} 
-                style={{ height: '100%', width: '100%', minHeight: '600px' }}
-                notMerge={true}
-                opts={{ renderer: 'canvas' }}
-            />
+            <Suspense fallback={<EmptyState message="Загрузка графика..." />}>
+                <ReactECharts 
+                    option={chartOption} 
+                    style={{ height: '100%', width: '100%', minHeight: '600px' }}
+                    notMerge={true}
+                    opts={{ renderer: 'canvas' }}
+                />
+            </Suspense>
         </div>
     );
 };
@@ -353,17 +364,11 @@ export default function ArchivePage() {
                 {/* Контент */}
                 <div>
                     {error && (
-                        <div className="archive-error-message">
-                            <i className="pi pi-exclamation-triangle" style={{ marginRight: '8px' }} />
-                            Ошибка загрузки данных: {error}
-                        </div>
+                        <ErrorView message={`Ошибка загрузки данных: ${error}`} onRetry={toggleRealTime} />
                     )}
                     
                     {loading && !tagHistoryData && (
-                        <div className="archive-empty-message">
-                            <i className="pi pi-spin pi-spinner" style={{ marginRight: '8px' }} />
-                            Загрузка данных...
-                        </div>
+                        <LoadingState message="Загрузка данных..." />
                     )}
                     
                     {/* График */}

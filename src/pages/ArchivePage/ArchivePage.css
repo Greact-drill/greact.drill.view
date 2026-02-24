@@ -1,9 +1,9 @@
 /* Контейнер страницы архива - стиль piano.io с промышленной палитрой */
 .archive-page-container {
-    background: #0a0d12;
+    background: var(--surface-page);
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+        radial-gradient(circle at 0% 0%, var(--page-radial-1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, var(--page-radial-2) 0%, transparent 50%);
     min-height: 100vh;
     padding: 80px var(--spacing-xl) var(--spacing-2xl);
     color: var(--color-text-primary);
@@ -19,8 +19,8 @@
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+        radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
     pointer-events: none;
     z-index: 0;
 }
@@ -350,7 +350,7 @@
 
 /* Стили для dataZoom slider ECharts */
 .archive-chart-container :global(.echarts-slider) {
-    background: rgba(10, 13, 18, 0.9) !important;
+    background: color-mix(in srgb, var(--surface-elevated) 90%, transparent) !important;
     
     border: 1px solid rgba(212, 165, 116, 0.3) !important;
     border-radius: 4px !important;
@@ -427,5 +427,16 @@
         padding: 24px;
         min-height: 500px;
     }
+}
+
+:root[data-theme="light"] .archive-page-container .archive-chart-container {
+  background: color-mix(in srgb, var(--surface-elevated) 88%, white 12%);
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 34%, transparent);
+  box-shadow: var(--shadow-md);
+}
+
+:root[data-theme="light"] .archive-page-container .archive-error-message,
+:root[data-theme="light"] .archive-page-container .archive-empty-message {
+  background: color-mix(in srgb, var(--surface-card) 50%, white 50%);
 }
 

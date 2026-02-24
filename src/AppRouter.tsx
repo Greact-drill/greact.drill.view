@@ -1,37 +1,48 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import MainPage from "./pages/MainPage";
-import RigsListPage from "./pages/RigsListPage/RigsListPage.tsx";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PrimeReactProvider } from 'primereact/api';
-import DynamicWidgetPage from './pages/DynamicWidgetPage/DynamicWidgetPage.tsx'; // Универсальный компонент
-import MaintenancePage from "./components/MaintenancePage/MaintenancePage.tsx";
-import ArchivePage from "./pages/ArchivePage/ArchivePage.tsx";
-import ElectricalDiagramPage from "./pages/ElectricalDiagramPage/ElectricalDiagramPage.tsx";
-import WinchBlockPage from "./pages/WinchBlockPage/WinchBlockPage.tsx";
-import PumpBlockPage from "./pages/PumpBlockPage/PumpBlockPage.tsx";
-import VideoPage from "./pages/VideoPage/VideoPage.tsx";
-import PowerConsumptionPage from "./pages/PowerConsumptionPage/PowerConsumptionPage.tsx";
-import DocumentsPage from "./pages/DocumentsPage/DocumentsPage.tsx";
+import { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PrimeReactProvider } from "primereact/api";
+import Loader from "./components/Loader";
+import AppLayout from "./components/Layout/AppLayout";
 
-const queryClient = new QueryClient();
-
-const Layout = () => (
-  <>
-    <Outlet />
-  </>
+const MainPage = lazy(() => import("./pages/MainPage"));
+const RigsListPage = lazy(() => import("./pages/RigsListPage/RigsListPage.tsx"));
+const DynamicWidgetPage = lazy(() => import("./pages/DynamicWidgetPage/DynamicWidgetPage.tsx"));
+const MaintenancePage = lazy(() => import("./components/MaintenancePage/MaintenancePage.tsx"));
+const ArchivePage = lazy(() => import("./pages/ArchivePage/ArchivePage.tsx"));
+const ElectricalDiagramPage = lazy(
+  () => import("./pages/ElectricalDiagramPage/ElectricalDiagramPage.tsx")
 );
+const WinchBlockPage = lazy(() => import("./pages/WinchBlockPage/WinchBlockPage.tsx"));
+const PumpBlockPage = lazy(() => import("./pages/PumpBlockPage/PumpBlockPage.tsx"));
+const VideoPage = lazy(() => import("./pages/VideoPage/VideoPage.tsx"));
+const PowerConsumptionPage = lazy(
+  () => import("./pages/PowerConsumptionPage/PowerConsumptionPage.tsx")
+);
+const DocumentsPage = lazy(() => import("./pages/DocumentsPage/DocumentsPage.tsx"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 15_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function AppRouter() {
   return (
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <PrimeReactProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <PrimeReactProvider>
+          <Suspense fallback={<Loader variant="fullscreen" message="Загрузка страницы..." />}>
             <Routes>
               {/* Главная страница со списком буровых */}
               <Route path="/" element={<RigsListPage />} />
 
               {/* Детальная страница буровой - USES LAYOUT */}
-              <Route element={<Layout />}>
+              <Route element={<AppLayout />}>
                 <Route path="/rigs/:rigId" element={<MainPage />} />
                 <Route path="/rigs/:rigId/archive" element={<ArchivePage />} />
                 <Route path="/rigs/:rigId/electrical-diagram" element={<ElectricalDiagramPage />} />
@@ -57,8 +68,9 @@ export default function AppRouter() {
               {/* 404 */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </PrimeReactProvider>
-        </QueryClientProvider>
-      </BrowserRouter>
+          </Suspense>
+        </PrimeReactProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }

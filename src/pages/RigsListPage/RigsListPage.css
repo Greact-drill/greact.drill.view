@@ -14,10 +14,10 @@
     position: relative;
     overflow: hidden;
     min-height: 100vh;
-    background: #0a0d12;
+    background: var(--rigs-page-bg);
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+        radial-gradient(circle at 0% 0%, var(--rigs-page-radial-1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, var(--rigs-page-radial-2) 0%, transparent 50%);
 }
 
 .rigs-list-page::before {
@@ -28,8 +28,8 @@
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+        radial-gradient(circle at 15% 20%, var(--rigs-page-overlay-1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, var(--rigs-page-overlay-2) 0%, transparent 40%);
     z-index: 0;
     pointer-events: none;
 }
@@ -79,6 +79,47 @@
     text-align: center;
 }
 
+.page-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--color-text-primary);
+    border-radius: 50%;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.theme-toggle-btn i {
+    font-size: 1rem;
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--color-accent-secondary);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+    transform: translateY(-1px);
+}
+
+.theme-toggle-floating {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 5;
+}
+
 .page-title {
     font-size: clamp(2.5rem, 5vw, 4rem);
     font-weight: 300;
@@ -99,7 +140,7 @@
 /* Отдельный класс для заголовка на странице списка буровых */
 .rigs-page-title {
     font-size: clamp(3rem, 7vw, 5rem);
-    font-weight: 300;
+    font-weight: 320;
     margin: 0 auto 16px auto;
     color: var(--color-text-primary);
     letter-spacing: -0.03em;
@@ -699,7 +740,7 @@
 
 .rig-name {
     font-size: 1.5rem !important;
-    font-weight: 300 !important;
+    font-weight: 340 !important;
     color: var(--color-text-primary) !important;
     letter-spacing: -0.02em;
     margin: 0 !important;
@@ -954,7 +995,7 @@
 
 /* Боковая панель - стиль piano.io */
 .rig-status-panel {
-    background: #0a0d12 !important;
+    background: var(--surface-page) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border-left: 1px solid rgba(212, 165, 116, 0.15) !important;
@@ -1103,6 +1144,17 @@
     to {
         opacity: 0;
         transform: translateY(-15px);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 /* Стили для заголовка-ссылки (название буровой) */
@@ -2022,7 +2074,7 @@
     padding: 14px 18px;
     border-radius: 16px;
     border: 1px solid rgba(212, 165, 116, 0.18);
-    background: rgba(10, 13, 18, 0.6);
+    background: var(--surface-elevated);
     box-shadow: var(--shadow-md);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
@@ -2470,6 +2522,11 @@
   .page-header {
     margin-bottom: var(--spacing-lg);
   }
+
+  .theme-toggle-floating {
+    top: 12px;
+    right: 12px;
+  }
   
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2561,4 +2618,49 @@
   .rig-status-details {
     font-size: 0.8rem;
   }
+}
+
+/* Светлая схема для страницы буровых */
+:root[data-theme="light"] .rigs-list-page .rig-card,
+:root[data-theme="light"] .rigs-list-page .rigs-stat-card,
+:root[data-theme="light"] .rigs-list-page .status-button,
+:root[data-theme="light"] .rigs-list-page .maintenance-button {
+    background: rgba(255, 251, 245, 0.86) !important;
+    border-color: rgba(120, 90, 60, 0.2) !important;
+    box-shadow: 0 10px 24px -18px rgba(60, 42, 28, 0.24) !important;
+}
+
+:root[data-theme="light"] .rigs-list-page .rig-card:hover,
+:root[data-theme="light"] .rigs-list-page .rigs-stat-card:hover {
+    background: rgba(255, 248, 240, 0.92) !important;
+    border-color: rgba(120, 90, 60, 0.28) !important;
+}
+
+:root[data-theme="light"] .rigs-list-page .theme-toggle-btn {
+    background: rgba(255, 251, 246, 0.92);
+    border-color: rgba(120, 90, 60, 0.24);
+}
+
+:root[data-theme="light"] .rigs-list-page .rigs-page-title {
+    font-weight: 390;
+    letter-spacing: -0.02em;
+}
+
+:root[data-theme="light"] .rigs-list-page .page-subtitle {
+    color: var(--color-text-secondary);
+}
+
+:root[data-theme="light"] .rigs-list-page .rig-status-panel {
+    border-left-color: rgba(120, 90, 60, 0.2) !important;
+}
+
+:root[data-theme="light"] .rigs-list-page .status-button.neutral,
+:root[data-theme="light"] .rigs-list-page .status-icon.neutral,
+:root[data-theme="light"] .rigs-list-page .status-button.neutral .status-value {
+    color: var(--color-text-secondary) !important;
+    border-color: rgba(120, 90, 60, 0.22) !important;
+}
+
+:root[data-theme="light"] .rigs-list-page .rig-status-placeholder i {
+    color: rgba(120, 90, 60, 0.35);
 }

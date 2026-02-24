@@ -1,0 +1,10 @@
+.loading-state-ui {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--surface-card);
+  color: var(--text-muted);
+}

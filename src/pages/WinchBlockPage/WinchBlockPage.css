@@ -1,9 +1,9 @@
 /* --- Контейнер страницы лебедочного блока - стиль piano.io --- */
-.winch-block-page-container {
-    background: #0a0d12;
+:is(.winch-block-page-container, .pump-block-page-container) {
+    background: var(--surface-page);
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+        radial-gradient(circle at 0% 0%, var(--page-radial-1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, var(--page-radial-2) 0%, transparent 50%);
     min-height: 100vh;
     padding: 80px var(--spacing-xl) var(--spacing-2xl);
     color: var(--color-text-primary);
@@ -11,7 +11,7 @@
     overflow-x: hidden;
 }
 
-.winch-block-page-container::before {
+:is(.winch-block-page-container, .pump-block-page-container)::before {
     content: '';
     position: fixed;
     top: 0;
@@ -19,13 +19,13 @@
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+        radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
     pointer-events: none;
     z-index: 0;
 }
 
-.winch-block-page-container > * {
+:is(.winch-block-page-container, .pump-block-page-container) > * {
     position: relative;
     z-index: 1;
 }
@@ -330,11 +330,11 @@
 }
 
 .stat-value.success {
-    color: #22c55e;
+    color: var(--color-success);
 }
 
 .stat-value.error {
-    color: #ef4444;
+    color: var(--color-error);
 }
 
 /* Информация о блоке */
@@ -368,7 +368,7 @@
 }
 
 .info-value.success {
-    color: #22c55e;
+    color: var(--color-success);
 }
 
 /* Статусы оборудования */
@@ -393,11 +393,11 @@
 }
 
 .status-row.ok {
-    color: #22c55e;
+    color: var(--color-success);
 }
 
 .status-row.error {
-    color: #ef4444;
+    color: var(--color-error);
 }
 
 .status-row i {
@@ -466,7 +466,15 @@
 }
 
 .component-status.ok {
-    color: #22c55e;
+    color: var(--color-success);
+}
+
+:root[data-theme="light"] :is(.winch-block-page-container, .pump-block-page-container) .info-section,
+:root[data-theme="light"] :is(.winch-block-page-container, .pump-block-page-container) .stat-item,
+:root[data-theme="light"] :is(.winch-block-page-container, .pump-block-page-container) .map-section {
+  background: color-mix(in srgb, var(--surface-elevated) 88%, white 12%);
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 34%, transparent);
+  box-shadow: var(--shadow-md);
 }
 
 .component-status i {
@@ -532,7 +540,7 @@
 }
 
 /* Связи от блоков к параметрам */
-.winch-connection-line {
+:is(.winch-connection-line, .pump-connection-line) {
     stroke: rgba(212, 165, 116, 0.6);
     stroke-width: 2;
     stroke-dasharray: 5, 5;
@@ -550,7 +558,7 @@
 }
 
 /* Точки соединения на блоках */
-.winch-connection-point {
+:is(.winch-connection-point, .pump-connection-point) {
     fill: var(--color-accent-secondary);
     stroke: rgba(212, 165, 116, 0.8);
     stroke-width: 2;
@@ -559,17 +567,17 @@
 }
 
 /* Блоки параметров внутри SVG */
-.winch-param-block {
+:is(.winch-param-block, .pump-param-block) {
     overflow: visible;
 }
 
-.winch-param-block > div {
+:is(.winch-param-block, .pump-param-block) > div {
     width: 100%;
     height: 100%;
 }
 
 /* Точки соединения на концах связей */
-.winch-param-point {
+:is(.winch-param-point, .pump-param-point) {
     fill: rgba(212, 165, 116, 0.8);
     stroke: var(--color-accent-secondary);
     stroke-width: 2;

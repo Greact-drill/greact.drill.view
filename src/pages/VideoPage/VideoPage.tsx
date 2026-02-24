@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Hls from "hls.js";
-import { getMediaConfig, presignDownload } from "../../api/media";
+import { getMediaConfig } from "../../api/media";
+import { normalizeMediaAssets, resolveMediaAssetUrl, type MediaAsset } from "../../utils/mediaAssets";
 import './VideoPage.css';
 
 interface CameraConfig {
@@ -13,16 +14,6 @@ interface CameraConfig {
 interface VideoConfigData {
   cameras?: CameraConfig[];
   assets?: MediaAsset[];
-}
-
-interface MediaAsset {
-  id: string;
-  name?: string;
-  group?: string;
-  type: 'image' | 'video' | 'document';
-  url?: string;
-  key?: string;
-  contentType?: string;
 }
 
 export default function VideoPage() {
@@ -50,26 +41,11 @@ export default function VideoPage() {
         .filter(camera => camera.id && camera.streamUrl);
     };
 
-    const normalizeAssets = (items?: MediaAsset[]) => {
-      if (!Array.isArray(items)) return [];
-      return items
-        .map(asset => ({
-          id: String(asset.id || '').trim(),
-          name: asset.name?.trim() || '',
-          group: asset.group?.trim() || '',
-          type: asset.type || 'document',
-          url: asset.url?.trim() || '',
-          key: asset.key,
-          contentType: asset.contentType
-        }))
-        .filter(asset => asset.id && (asset.url || asset.key));
-    };
-
     const loadConfig = async () => {
       try {
         const rigConfig = await getMediaConfig<VideoConfigData>('video', rigId);
         const rigCameras = normalizeCameras(rigConfig.data?.cameras);
-        const rigAssets = normalizeAssets(rigConfig.data?.assets);
+        const rigAssets = normalizeMediaAssets(rigConfig.data?.assets);
         if (rigCameras.length > 0) {
           if (isActive) {
             setCameras(rigCameras);
@@ -79,7 +55,7 @@ export default function VideoPage() {
         }
         const globalConfig = await getMediaConfig<VideoConfigData>('video');
         const globalCameras = normalizeCameras(globalConfig.data?.cameras);
-        const globalAssets = normalizeAssets(globalConfig.data?.assets);
+        const globalAssets = normalizeMediaAssets(globalConfig.data?.assets);
         if (isActive) {
           setCameras(globalCameras);
           setAssets(globalAssets);
@@ -113,15 +89,14 @@ export default function VideoPage() {
       const updated = await Promise.all(
         assets.map(async (asset) => {
           if (asset.url || !asset.key) return asset;
-          try {
-            const presign = await presignDownload({ key: asset.key, expiresIn: 3600 });
-            return {
-              ...asset,
-              url: presign.url
-            };
-          } catch {
+          const resolvedUrl = await resolveMediaAssetUrl(asset);
+          if (!resolvedUrl) {
             return asset;
           }
+          return {
+            ...asset,
+            url: resolvedUrl,
+          };
         })
       );
       if (isActive) {

@@ -1,20 +1,24 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { useWidgetConfigsByPage } from '../../hooks/useWidgetConfigs.ts';
 import { useTableConfigByPage } from '../../hooks/useTableConfig.ts';
 import { formatNumber, formatNumberWithUnit } from '../../utils/formatters';
+import type { WidgetType } from '../../types/widget';
+import {
+  getDefaultWidgetValue,
+  isWidgetValueOK,
+  parseBooleanValue,
+  parseNumericValue,
+} from '../../utils/widgetValue';
 import './DynamicWidgetPage.css';
-import VerticalBar from '../../components/VerticalBar/VerticalBar';
-import GaugeWidget from '../../components/Gauge/GaugeWidget';
-import NumberDisplay from '../../components/NumberDisplay/NumberDisplay';
-import CompactTagDisplay from '../../components/CompactTagDisplay/CompactTagDisplay';
 import WidgetPlaceholder from '../../components/WidgetPlaceholder/WidgetPlaceholder.tsx';
-import TableWidget from '../../components/TableWidget/TableWidget';
-import StatusTagWidget from '../../components/StatusTagWidget/StatusTagWidget';
-
-// Типы виджетов
-type WidgetType = 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
+const VerticalBar = lazy(() => import('../../components/VerticalBar/VerticalBar'));
+const GaugeWidget = lazy(() => import('../../components/Gauge/GaugeWidget'));
+const NumberDisplay = lazy(() => import('../../components/NumberDisplay/NumberDisplay'));
+const CompactTagDisplay = lazy(() => import('../../components/CompactTagDisplay/CompactTagDisplay'));
+const TableWidget = lazy(() => import('../../components/TableWidget/TableWidget'));
+const StatusTagWidget = lazy(() => import('../../components/StatusTagWidget/StatusTagWidget'));
 
 interface DynamicWidgetConfig {
   key: string;
@@ -32,78 +36,6 @@ interface DynamicWidgetConfig {
   isLoading?: boolean;
   hasData?: boolean;
 }
-
-const parseNumericValue = (value: number | string | boolean | null): number | null => {
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'boolean') {
-    return value ? 1 : 0;
-  }
-  if (typeof value === 'string') {
-    const normalized = value.replace(',', '.').trim();
-    if (!normalized) {
-      return null;
-    }
-    const parsed = Number(normalized);
-    return Number.isNaN(parsed) ? null : parsed;
-  }
-  return null;
-};
-
-const parseBooleanValue = (value: number | string | boolean | null): boolean => {
-  if (value === null || value === undefined) {
-    return false;
-  }
-  if (typeof value === 'boolean') {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return value === 1;
-  }
-  return String(value).toLowerCase() === 'true' || String(value) === '1';
-};
-
-const isTagValueOK = (
-  value: number | string | boolean | null,
-  min: number,
-  max: number,
-  unit: string,
-  widgetType?: WidgetType
-): boolean => {
-  if (value === null || value === undefined) {
-    return true; // Если данных нет, считаем OK
-  }
-
-  const numericValue = parseNumericValue(value);
-  if (widgetType === 'status' && numericValue !== null) {
-    return numericValue >= min && numericValue <= max;
-  }
-
-  if (unit !== 'bool' && numericValue !== null) {
-    return numericValue >= min && numericValue <= max;
-  }
-
-  if (unit === 'bool') {
-    return value === 1 || value === true || String(value).toLowerCase() === 'true';
-  }
-
-  return true;
-};
-
-const getDefaultValue = (widgetType: WidgetType, unit: string): any => {
-  switch (widgetType) {
-    case 'gauge':
-    case 'bar':
-      return 0;
-    case 'number':
-      return unit === 'bool' ? false : 0;
-    case 'status':
-      return 'Ожидание данных';
-    default:
-      return '--';
-  }
-};
 
 export default function DynamicWidgetPage() {
   const navigate = useNavigate();
@@ -132,16 +64,16 @@ export default function DynamicWidgetPage() {
       const currentValue = config.current?.value;
       
       const hasData = currentValue !== null && currentValue !== undefined;
-      const value = hasData ? currentValue : getDefaultValue(widgetType, config.tag.unit_of_measurement);
+      const value = hasData ? currentValue : getDefaultWidgetValue(widgetType, config.tag.unit_of_measurement);
       const defaultValue = config.tag.unit_of_measurement === 'bool' ? false : 0;
       
-      const isOK = isTagValueOK(
-        value, 
-        config.tag.min || 0, 
-        config.tag.max || 100, 
-        config.tag.unit_of_measurement,
-        widgetType
-      );
+      const isOK = isWidgetValueOK({
+        value,
+        min: config.tag.min || 0,
+        max: config.tag.max || 100,
+        unit: config.tag.unit_of_measurement,
+        widgetType,
+      });
 
       return {
         key: `${config.tag_id}-${config.config.page}`,
@@ -309,7 +241,9 @@ export default function DynamicWidgetPage() {
         data-display-type={config.displayType}
         data-has-data={config.hasData}
       >
-        {widgetContent}
+        <Suspense fallback={<WidgetPlaceholder type={config.type} label={config.label} unit={config.unit} />}>
+          {widgetContent}
+        </Suspense>
         <div className={`widget-tooltip ${tooltipStateClass}`} role="tooltip">
           <div className="widget-tooltip-title">{config.label}</div>
           <div className="widget-tooltip-row">

@@ -1,5 +1,11 @@
 import { apiClient } from './client';
 import type { Edge, RawEdgeAttributes } from '../types/edge';
+import {
+  edgeCustomizationListSchema,
+  edgeListSchema,
+  scopedCurrentSchema,
+} from "./schemas/criticalSchemas";
+import { parseWithSchema } from "./schemas/validators";
 
 export interface EdgeGetRequest {
   key?: string;
@@ -13,7 +19,7 @@ export interface EdgeAttributesGetRequest {
 
 export async function getEdges(params: EdgeGetRequest = {}): Promise<Edge[]> {
   const response = await apiClient.get<Edge[]>('/edge', { params }); 
-  return response.data;
+  return parseWithSchema(edgeListSchema, response.data, "getEdges", []);
 }
 
 export async function getEdgeAttributes(params: { edge: string }): Promise<RawEdgeAttributes> {
@@ -35,13 +41,13 @@ export async function getEdgeWithAttributes(edgeKey: string): Promise<RawEdgeAtt
 
 export async function getRootEdges(): Promise<Edge[]> {
   const response = await apiClient.get<Edge[]>('/edge/roots');
-  return response.data;
+  return parseWithSchema(edgeListSchema, response.data, "getRootEdges", []);
 }
 
 export interface ScopedCurrentTag {
   edge: string;
   tag: string;
-  value: number;
+  value: number | string | boolean | null;
   name?: string;
   min?: number;
   max?: number;
@@ -62,7 +68,7 @@ export async function getScopedCurrent(edgeId: string, includeChildren: boolean 
   const response = await apiClient.get<{ edgeIds: string[]; tags: ScopedCurrentTag[]; tagMeta?: ScopedTagMeta[] }>(`/edge/${edgeId}/scoped-current`, {
     params: { includeChildren }
   });
-  return response.data;
+  return parseWithSchema(scopedCurrentSchema, response.data, "getScopedCurrent", { edgeIds: [], tags: [] });
 }
 
 export async function getCurrentByTags(edgeId: string, tagIds: string[], includeChildren: boolean = true): Promise<{ edgeIds: string[]; tags: ScopedCurrentTag[]; tagMeta?: ScopedTagMeta[] }> {
@@ -70,7 +76,7 @@ export async function getCurrentByTags(edgeId: string, tagIds: string[], include
     tagIds,
     includeChildren
   });
-  return response.data;
+  return parseWithSchema(scopedCurrentSchema, response.data, "getCurrentByTags", { edgeIds: [], tags: [] });
 }
 
 export interface EdgeCustomization {
@@ -81,5 +87,5 @@ export interface EdgeCustomization {
 
 export async function getEdgeCustomizations(edgeId: string): Promise<EdgeCustomization[]> {
   const response = await apiClient.get<EdgeCustomization[]>(`/edge-customization/${edgeId}`);
-  return response.data;
+  return parseWithSchema(edgeCustomizationListSchema, response.data, "getEdgeCustomizations", []);
 }

@@ -31,7 +31,7 @@ const ActionLogTable: React.FC<ActionLogTableProps> = ({ data }) => {
                     {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                 </span>
             );
-        } catch (e) {
+        } catch {
             return <span className="action-log-time">{rowData.time}</span>;
         }
     };

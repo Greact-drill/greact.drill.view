@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getScopedCurrent } from '../api/edges';
+import { useCallback } from "react";
+import { getScopedCurrent } from "../api/edges";
+import { queryKeys } from "../api/queryKeys";
+import { usePollingQuery } from "./usePollingQuery";
 
 interface ScopedCurrentData {
   edgeIds: string[];
   tags: Array<{
     edge: string;
     tag: string;
-    value: number;
+    value: number | string | boolean | null;
     name?: string;
     min?: number;
     max?: number;
@@ -24,46 +26,24 @@ interface ScopedCurrentData {
 }
 
 export const useScopedCurrent = (edgeId: string | null, refreshInterval = 1000) => {
-  const [data, setData] = useState<ScopedCurrentData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = usePollingQuery<ScopedCurrentData | null>({
+    queryKey: edgeId ? queryKeys.current.scoped(edgeId) : ["current", "scoped", "empty"],
+    enabled: Boolean(edgeId),
+    queryFn: async () => {
+      if (!edgeId) return null;
+      return getScopedCurrent(edgeId, true);
+    },
+    baseRefetchIntervalMs: refreshInterval,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (!edgeId) {
-      setData(null);
-      return;
-    }
+  const refresh = useCallback(async () => {
+    await query.refetch();
+  }, [query]);
 
-    try {
-      setLoading(true);
-      const result = await getScopedCurrent(edgeId, true);
-      setData(result);
-      setError(null);
-    } catch (err) {
-      console.error('Ошибка загрузки scoped current:', err);
-      setError('Ошибка загрузки данных блоков');
-    } finally {
-      setLoading(false);
-    }
-  }, [edgeId]);
-
-  useEffect(() => {
-    if (!edgeId) {
-      setData(null);
-      return;
-    }
-
-    // Первоначальная загрузка
-    fetchData();
-
-    // Настраиваем интервал обновления
-    const intervalId = setInterval(fetchData, refreshInterval);
-
-    // Очистка интервала при размонтировании
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [edgeId, fetchData, refreshInterval]);
-
-  return { data, loading, error, refresh: fetchData };
+  return {
+    data: (query.data ?? null) as ScopedCurrentData | null,
+    loading: query.isPending,
+    error: query.error instanceof Error ? query.error.message : query.error ? "Ошибка загрузки данных блоков" : null,
+    refresh,
+  };
 };

@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { WidgetDisplayType, WidgetType } from '../types/widget';
 
 export interface WidgetConfigData {
   id: number;
@@ -6,10 +7,10 @@ export interface WidgetConfigData {
   tag_id: string;
   config: {
     page: string;
-    widgetType: 'gauge' | 'bar' | 'number' | 'status' | 'compact' | 'card';
+    widgetType: WidgetType;
     position: { x: number; y: number };
     customLabel?: string;
-    displayType?: 'widget' | 'compact' | 'card';
+    displayType?: WidgetDisplayType;
   };
   tag: {
     id: string;

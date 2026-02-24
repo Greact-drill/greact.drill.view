@@ -1,9 +1,9 @@
 .electrical-diagram-page {
   min-height: 100vh;
-  background: #0a0d12;
+  background: var(--surface-page);
   background-image: 
-    radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+    radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
   position: relative;
   overflow-x: auto;
   overflow-y: auto;
@@ -19,11 +19,11 @@
   height: 100%;
   background: 
     linear-gradient(-45deg, 
-      rgba(10, 13, 18, 0.95) 0%, 
+      color-mix(in srgb, var(--surface-page) 95%, transparent) 0%, 
       rgba(201, 122, 61, 0.08) 25%, 
       rgba(139, 90, 43, 0.06) 50%, 
       rgba(201, 122, 61, 0.08) 75%, 
-      rgba(10, 13, 18, 0.95) 100%);
+      color-mix(in srgb, var(--surface-page) 95%, transparent) 100%);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
   pointer-events: none;
@@ -74,7 +74,7 @@
 }
 
 .diagram-content {
-  background: rgba(20, 25, 32, 0.4);
+  background: color-mix(in srgb, var(--surface-elevated) 40%, transparent);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(212, 165, 116, 0.2);
   border-radius: 16px;
@@ -185,7 +185,7 @@
 /* Current Particle */
 .current-particle {
   fill: rgba(255, 235, 59, 1);
-  stroke: rgba(255, 255, 255, 0.9);
+  stroke: color-mix(in srgb, var(--color-text-primary) 90%, transparent);
   stroke-width: 2;
   filter: drop-shadow(0 0 10px rgba(255, 235, 59, 1));
   r: 10;
@@ -907,7 +907,7 @@
 }
 
 .motor-label-xlarge {
-  fill: rgba(255, 255, 255, 1);
+  fill: var(--color-text-primary);
   font-size: 38px;
   font-weight: 800;
   font-family: 'Inter Variable', sans-serif;
@@ -1005,4 +1005,10 @@
   .electrical-diagram-svg {
     min-height: 1000px;
   }
+}
+
+:root[data-theme="light"] .electrical-diagram-page .diagram-content {
+  background: color-mix(in srgb, var(--surface-elevated) 88%, white 12%);
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 34%, transparent);
+  box-shadow: var(--shadow-md);
 }

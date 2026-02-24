@@ -1,9 +1,9 @@
 /* --- Контейнер страницы - стиль piano.io с промышленной палитрой --- */
 .main-page-container {
-    background: #0a0d12;
+    background: var(--surface-page);
     background-image: 
-        radial-gradient(circle at 0% 0%, rgba(201, 122, 61, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(139, 90, 43, 0.10) 0%, transparent 50%);
+        radial-gradient(circle at 0% 0%, var(--page-radial-1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, var(--page-radial-2) 0%, transparent 50%);
     min-height: 100vh;
     padding: 80px var(--spacing-xl) var(--spacing-2xl);
     color: var(--color-text-primary);
@@ -19,8 +19,8 @@
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 15% 20%, rgba(201, 122, 61, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(139, 90, 43, 0.12) 0%, transparent 40%);
+        radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
     pointer-events: none;
     z-index: 0;
 }
@@ -73,8 +73,8 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    border: 1px solid rgba(212, 165, 116, 0.2);
-    background: rgba(201, 122, 61, 0.04);
+    border: 1px solid var(--glass-border);
+    background: var(--surface-card);
     color: var(--color-text-primary);
     font-size: 0.875rem;
     font-weight: 500;
@@ -2474,4 +2474,61 @@
 .edge-error i,
 .error-message i {
     font-size: 1rem;
+}
+
+:root[data-theme="light"] .main-page-container .main-stat-card,
+:root[data-theme="light"] .main-page-container .info-section,
+:root[data-theme="light"] .main-page-container .main-page-widget,
+:root[data-theme="light"] .main-page-container .stat-item {
+  background: color-mix(in srgb, var(--surface-elevated) 88%, white 12%) !important;
+  border-color: color-mix(in srgb, var(--color-accent-secondary) 38%, transparent) !important;
+  box-shadow: var(--shadow-md), 0 0 24px rgba(182, 130, 81, 0.14) !important;
+}
+
+:root[data-theme="light"] .main-page-container .status-row,
+:root[data-theme="light"] .main-page-container .error-tag,
+:root[data-theme="light"] .main-page-container .seg-item,
+:root[data-theme="light"] .main-page-container .map-section,
+:root[data-theme="light"] .main-page-container .parameters-section {
+  background: color-mix(in srgb, var(--surface-elevated) 90%, white 10%) !important;
+}
+
+:root[data-theme="light"] .main-page-container .status-row.ok {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.12), rgba(255, 255, 255, 0.75));
+}
+
+:root[data-theme="light"] .main-page-container .status-row.error {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.11), rgba(255, 255, 255, 0.75));
+}
+
+:root[data-theme="light"] .main-page-container .main-page-widget.widget-in-range,
+:root[data-theme="light"] .main-page-container .main-page-widget.widget-in-range * {
+  color: #166534 !important;
+}
+
+:root[data-theme="light"] .main-page-container .main-page-widget.widget-out-of-range,
+:root[data-theme="light"] .main-page-container .main-page-widget.widget-out-of-range * {
+  color: #991b1b !important;
+}
+
+:root[data-theme="light"] .main-page-container .main-page-widget.widget-in-range {
+  border-color: rgba(22, 101, 52, 0.45) !important;
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px rgba(22, 163, 74, 0.26),
+    0 0 24px rgba(34, 197, 94, 0.26),
+    0 0 44px rgba(34, 197, 94, 0.2) !important;
+}
+
+:root[data-theme="light"] .main-page-container .main-page-widget.widget-out-of-range {
+  border-color: rgba(153, 27, 27, 0.46) !important;
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px rgba(220, 38, 38, 0.24),
+    0 0 24px rgba(239, 68, 68, 0.24),
+    0 0 46px rgba(239, 68, 68, 0.2) !important;
+}
+
+:root[data-theme="light"] .main-page-container .loading-container {
+  color: var(--color-text-secondary);
 }

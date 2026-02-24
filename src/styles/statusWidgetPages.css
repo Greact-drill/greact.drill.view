@@ -1,0 +1,102 @@
+/* Shared styles for KTU / BYPASS / ACCIDENT positioned widget pages */
+
+:is(.ktu-page-container, .bypass-page-container, .accident-page-container) {
+  background: var(--status-page-gradient);
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+:is(.ktu-page-inner, .bypass-page-inner, .accident-page-inner) {
+  margin: 0 auto;
+  padding: 20px;
+}
+
+:is(.bypass-controls-header, .accident-controls-header) {
+  margin-bottom: 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
+  padding-bottom: 20px;
+}
+
+:is(.bypass-content-block, .accident-content-block) {
+  width: 100%;
+  background-color: transparent;
+  color: var(--text-primary, #f1f5f9);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+:is(.ktu-blocks-title, .bypass-blocks-title, .accident-blocks-title) {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 2.2em;
+  margin-bottom: 30px;
+  text-align: center;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+:is(.ktu-blocks-grid, .bypass-blocks-grid, .accident-blocks-grid) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  padding: 20px;
+  position: relative;
+}
+
+.positioned-grid {
+  position: relative;
+  min-height: 600px;
+}
+
+:is(.ktu-blocks-grid, .bypass-blocks-grid, .accident-blocks-grid).positioned-grid {
+  min-height: 800px;
+  width: 100%;
+}
+
+.back-button-custom .p-button {
+  background-color: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 25%, transparent);
+  color: var(--color-text-primary);
+}
+
+.back-button-custom .p-button:hover {
+  background-color: color-mix(in srgb, var(--surface-card) 70%, var(--color-accent-secondary) 30%);
+}
+
+.positioned-widget {
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.positioned-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+}
+
+.empty-grid-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: color-mix(in srgb, var(--color-text-secondary) 78%, transparent);
+  font-size: 1.1em;
+}
+
+.empty-grid-message .text-sm {
+  font-size: 0.9em;
+  margin-top: 8px;
+  color: color-mix(in srgb, var(--color-text-tertiary) 78%, transparent);
+}
+
+@media (max-width: 768px) {
+  .positioned-grid {
+    position: static;
+    background: none;
+  }
+
+  .positioned-widget {
+    position: static !important;
+    margin-bottom: 20px;
+  }
+}
+

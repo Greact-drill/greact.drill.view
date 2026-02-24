@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
@@ -6,6 +6,10 @@ import { Column } from 'primereact/column';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tag } from 'primereact/tag';
 import { getCurrentByTags, getEdgeCustomizations } from '../../api/edges';
+import { usePollingQuery } from '../../hooks/usePollingQuery';
+import { queryKeys } from '../../api/queryKeys';
+import ErrorView from '../ErrorView/ErrorView';
+import EmptyState from '../EmptyState/EmptyState';
 import './MaintenancePage.css';
 
 const maintenanceTypeMap: { [key: string]: string } = {
@@ -20,7 +24,7 @@ interface MaintenanceRow {
     tagId: string;
     device: string;
     status: string;
-    value: number | string;
+    value: number | string | boolean | null;
     severity: 'success' | 'danger' | 'warning';
 }
 
@@ -77,92 +81,88 @@ export default function MaintenancePage() {
     const { maintenanceType, rigId } = useParams<{ maintenanceType: string; rigId: string }>(); 
     
     const title = maintenanceType ? maintenanceTypeMap[maintenanceType] : 'Обслуживание';
-    const [maintenanceData, setMaintenanceData] = useState<MaintenanceRow[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const isInitialLoadRef = useRef(true);
-    
-    useEffect(() => {
-        const fetchData = async (showLoader: boolean) => {
+    const tagConfigQuery = usePollingQuery<string[]>({
+        queryKey: rigId
+            ? [...queryKeys.customizations.byEdge(rigId), "maintenanceConfig", maintenanceType ?? ""] as const
+            : ["customizations", "byEdge", "empty", "maintenanceConfig", ""] as const,
+        enabled: Boolean(rigId && maintenanceType),
+        baseRefetchIntervalMs: 10_000,
+        queryFn: async () => {
             if (!rigId || !maintenanceType) {
-                return;
+                return [];
             }
-            if (showLoader) {
-                setLoading(true);
-            }
-            setErrorMessage(null);
-            try {
-                const customizations = await getEdgeCustomizations(rigId);
-                const maintenanceConfig = customizations.find(item => item.key === 'maintenanceConfig');
-                const parsedConfig = maintenanceConfig ? JSON.parse(maintenanceConfig.value) : {};
-                const tagIds: string[] = Array.isArray(parsedConfig[maintenanceType])
-                    ? parsedConfig[maintenanceType]
-                    : [];
+            const customizations = await getEdgeCustomizations(rigId);
+            const maintenanceConfig = customizations.find(item => item.key === 'maintenanceConfig');
+            const parsedConfig = maintenanceConfig ? JSON.parse(maintenanceConfig.value) : {};
+            return Array.isArray(parsedConfig[maintenanceType]) ? parsedConfig[maintenanceType] : [];
+        }
+    });
 
-                if (!tagIds.length) {
-                    setMaintenanceData([]);
-                    return;
+    const maintenanceDataQuery = usePollingQuery<MaintenanceRow[]>({
+        queryKey: rigId
+            ? [...queryKeys.current.byTags(rigId, tagConfigQuery.data ?? []), "maintenanceRows"] as const
+            : ["current", "byTags", "empty", "maintenanceRows"] as const,
+        enabled: Boolean(rigId && maintenanceType) && !tagConfigQuery.isPending,
+        baseRefetchIntervalMs: 1_000,
+        queryFn: async () => {
+            if (!rigId || !maintenanceType) {
+                return [];
+            }
+            const tagIds = tagConfigQuery.data ?? [];
+            if (!tagIds.length) {
+                return [];
+            }
+
+            const scoped = await getCurrentByTags(rigId, tagIds, true);
+            const tagMap = new Map(scoped.tags.map(tag => [tag.tag, tag]));
+            const tagNameMap = new Map(scoped.tags.map(tag => [tag.tag, tag.name || tag.tag]));
+            scoped.tagMeta?.forEach(tag => {
+                if (!tagNameMap.has(tag.id)) {
+                    tagNameMap.set(tag.id, tag.name || tag.id);
                 }
+            });
 
-                const scoped = await getCurrentByTags(rigId, tagIds, true);
-                const tagMap = new Map(scoped.tags.map(tag => [tag.tag, tag]));
-                const tagNameMap = new Map(scoped.tags.map(tag => [tag.tag, tag.name || tag.tag]));
-                scoped.tagMeta?.forEach(tag => {
-                    if (!tagNameMap.has(tag.id)) {
-                        tagNameMap.set(tag.id, tag.name || tag.id);
-                    }
-                });
-
-                const rows = tagIds.map(tagId => {
-                    const data = tagMap.get(tagId);
-                    if (!data) {
-                        return {
-                            tagId,
-                            device: tagNameMap.get(tagId) ?? tagId,
-                            status: 'Нет данных',
-                            value: '-',
-                            severity: 'warning' as const
-                        };
-                    }
-
-                    const numericValue = parseValue(data.value);
-                    const hasMin = typeof data.min === 'number' && !Number.isNaN(data.min);
-                    const hasMax = typeof data.max === 'number' && !Number.isNaN(data.max);
-                    const minValue = hasMin ? (data.min as number) : null;
-                    const maxValue = hasMax ? (data.max as number) : null;
-                    let isOutOfRange = false;
-                    if (numericValue !== null && minValue !== null && maxValue !== null && maxValue > minValue) {
-                        isOutOfRange = numericValue < minValue || numericValue > maxValue;
-                    }
-
+            return tagIds.map(tagId => {
+                const data = tagMap.get(tagId);
+                if (!data) {
                     return {
                         tagId,
-                        device: tagNameMap.get(tagId) ?? (data.name || data.tag),
-                        status: isOutOfRange ? 'Требует внимания' : 'В норме',
-                        value: data.value,
-                        severity: isOutOfRange ? 'danger' as const : 'success' as const
+                        device: tagNameMap.get(tagId) ?? tagId,
+                        status: 'Нет данных',
+                        value: '-',
+                        severity: 'warning' as const
                     };
-                });
-
-                setMaintenanceData(rows);
-            } catch (error) {
-                setErrorMessage('Не удалось загрузить данные ТО.');
-            } finally {
-                if (showLoader) {
-                    setLoading(false);
                 }
-                isInitialLoadRef.current = false;
-            }
-        };
 
-        fetchData(isInitialLoadRef.current);
+                const numericValue = parseValue(data.value);
+                const hasMin = typeof data.min === 'number' && !Number.isNaN(data.min);
+                const hasMax = typeof data.max === 'number' && !Number.isNaN(data.max);
+                const minValue = hasMin ? (data.min as number) : null;
+                const maxValue = hasMax ? (data.max as number) : null;
+                let isOutOfRange = false;
+                if (numericValue !== null && minValue !== null && maxValue !== null && maxValue > minValue) {
+                    isOutOfRange = numericValue < minValue || numericValue > maxValue;
+                }
 
-        const intervalId = window.setInterval(() => {
-            fetchData(false);
-        }, 1000);
+                return {
+                    tagId,
+                    device: tagNameMap.get(tagId) ?? (data.name || data.tag),
+                    status: isOutOfRange ? 'Требует внимания' : 'В норме',
+                    value: data.value,
+                    severity: isOutOfRange ? 'danger' as const : 'success' as const
+                };
+            });
+        }
+    });
 
-        return () => window.clearInterval(intervalId);
-    }, [rigId, maintenanceType]);
+    const maintenanceData = (maintenanceDataQuery.data ?? []) as MaintenanceRow[];
+    const loading = useMemo(
+        () => tagConfigQuery.isPending || maintenanceDataQuery.isPending,
+        [tagConfigQuery.isPending, maintenanceDataQuery.isPending]
+    );
+    const errorMessage = (tagConfigQuery.error || maintenanceDataQuery.error)
+        ? 'Не удалось загрузить данные ТО.'
+        : null;
 
 
     if (loading) {
@@ -195,12 +195,12 @@ export default function MaintenancePage() {
                         
                         {errorMessage && (
                             <div className="maintenance-table-container">
-                                <Tag severity="danger" value={errorMessage} />
+                                <ErrorView message={errorMessage} onRetry={() => maintenanceDataQuery.refetch()} />
                             </div>
                         )}
                         {!errorMessage && maintenanceData.length === 0 && (
                             <div className="maintenance-table-container">
-                                <Tag severity="warning" value="Нет данных для данного ТО." />
+                                <EmptyState message="Нет данных для данного ТО." />
                             </div>
                         )}
                         {!errorMessage && maintenanceData.length > 0 && (
