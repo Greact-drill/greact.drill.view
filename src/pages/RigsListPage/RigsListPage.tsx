@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import drillSvg from "../../assets/drill.svg";
 import { useEdgeWithAttributes, useRootEdgesWithAttributes } from "../../hooks/useEdges";
@@ -20,6 +20,8 @@ interface RigCompatible extends EdgeWithAttributes {
   id: string;
   ok: boolean;
 }
+
+const PANEL_CLOSE_ANIMATION_MS = 900;
 
 // Компонент для кнопок статусов
 const RigStatusButtons = ({
@@ -150,9 +152,25 @@ const RigStatusButtons = ({
 export default function RigsListPage() {
   const { isLight, toggleTheme } = useTheme();
   const [selectedRigId, setSelectedRigId] = useState<string | null>(null);
+  const [displayedRigId, setDisplayedRigId] = useState<string | null>(null);
+  const isRigStatusPanelOpen = Boolean(selectedRigId);
   const { edgesWithAttributes: rootEdges, loading: rootEdgesLoading, error: rootEdgesError } = useRootEdgesWithAttributes();
 
-  const selectedEdgeKey = selectedRigId ? `${selectedRigId}` : null;
+  useEffect(() => {
+    if (selectedRigId) {
+      setDisplayedRigId(selectedRigId);
+      return;
+    }
+    if (!displayedRigId) {
+      return;
+    }
+    const timeoutId = window.setTimeout(() => {
+      setDisplayedRigId(null);
+    }, PANEL_CLOSE_ANIMATION_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedRigId, displayedRigId]);
+
+  const selectedEdgeKey = displayedRigId ? `${displayedRigId}` : null;
   const { edgeData: selectedEdgeData } = useEdgeWithAttributes(selectedEdgeKey);
   const { widgetConfigs: selectedWidgetConfigs } = useWidgetConfigsByEdge(selectedEdgeKey);
   const { data: selectedRigDetails } = useCurrentDetails(selectedEdgeKey);
@@ -183,7 +201,7 @@ export default function RigsListPage() {
   }, [selectedRigDetails]);
 
   const sectionStatus = useMemo<Record<string, SectionStatus>>(() => {
-    if (!selectedRigId) {
+    if (!displayedRigId) {
       return { BYPASS: 'empty', ACCIDENT: 'empty' };
     }
 
@@ -218,10 +236,10 @@ export default function RigsListPage() {
     };
 
     return {
-      BYPASS: resolveStatus([`BYPASS_${selectedRigId}`, 'BYPASS', 'Состояние байпасов']),
-      ACCIDENT: resolveStatus([`ACCIDENT_${selectedRigId}`, 'ACCIDENT', 'Аварии приводов'])
+      BYPASS: resolveStatus([`BYPASS_${displayedRigId}`, 'BYPASS', 'Состояние байпасов']),
+      ACCIDENT: resolveStatus([`ACCIDENT_${displayedRigId}`, 'ACCIDENT', 'Аварии приводов'])
     };
-  }, [selectedRigId, selectedWidgetConfigs, selectedRigTagMap]);
+  }, [displayedRigId, selectedWidgetConfigs, selectedRigTagMap]);
 
   // Статистика по всем буровым
   const stats = useMemo(() => {
@@ -246,7 +264,7 @@ export default function RigsListPage() {
       bad: 0,
       empty: 0
     };
-    const currentStatuses = maintenanceStatusMap[selectedRigId || ''];
+    const currentStatuses = maintenanceStatusMap[displayedRigId || ''];
     if (!currentStatuses) {
       summary.empty = summary.total;
       return summary;
@@ -258,17 +276,17 @@ export default function RigsListPage() {
       if (status === 'empty') summary.empty += 1;
     });
     return summary;
-  }, [maintenanceStatusMap, selectedRigId]);
+  }, [maintenanceStatusMap, displayedRigId]);
 
   const currentRig: RigCompatible | undefined = useMemo(() => {
-    return rigs.find(r => r.id === selectedRigId);
-  }, [rigs, selectedRigId]);
+    return rigs.find(r => r.id === displayedRigId);
+  }, [rigs, displayedRigId]);
 
   const extendedAttributes: ExtendedEdgeAttribute = useMemo(() => {
-    if (!selectedEdgeData?.attributes || !selectedRigId) {
+    if (!selectedEdgeData?.attributes || !displayedRigId) {
       return {
         id: 0,
-        edge_key: selectedRigId || 'static',
+        edge_key: displayedRigId || 'static',
         ...STATIC_STATUS_DATA,
         _lastUpdated: new Date().toISOString(),
         _isStaticData: true,
@@ -277,7 +295,7 @@ export default function RigsListPage() {
     }
     
     try {
-      const realAttributes = transformRawAttributes(selectedEdgeData.attributes as RawEdgeAttributes, selectedRigId);
+      const realAttributes = transformRawAttributes(selectedEdgeData.attributes as RawEdgeAttributes, displayedRigId);
       
       const merged: ExtendedEdgeAttribute = {
         ...realAttributes,
@@ -299,14 +317,14 @@ export default function RigsListPage() {
       console.warn('Ошибка преобразования атрибутов, используем статические данные:', error);
       return {
         id: 0,
-        edge_key: selectedRigId || 'static',
+        edge_key: displayedRigId || 'static',
         ...STATIC_STATUS_DATA,
         _lastUpdated: new Date().toISOString(),
         _isStaticData: true,
         _hasRealData: false
       };
     }
-  }, [selectedEdgeData, selectedRigId]);
+  }, [selectedEdgeData, displayedRigId]);
 
   const getLastUpdatedTime = () => {
     if (!extendedAttributes._lastUpdated) return 'Неизвестно';
@@ -511,7 +529,7 @@ export default function RigsListPage() {
               })
             )}
           </div>
-          <aside className={`rig-status-panel ${selectedRigId ? 'open' : ''}`} aria-live="polite">
+          <aside className={`rig-status-panel ${isRigStatusPanelOpen ? 'open' : ''}`} aria-live="polite">
               
               {rootEdgesLoading ? (
                   <div style={{ minHeight: 256, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -591,24 +609,7 @@ export default function RigsListPage() {
                           </div>
                       </div>
                   </>
-              ) : (
-                  <div className="rig-status-placeholder">
-                    <i className="pi pi-info-circle" />
-                    <h3>Выберите буровую</h3>
-                    <p>
-                      Нажмите на любую буровую установку, чтобы увидеть детальную информацию о статусах
-                    </p>
-                    <div>
-                      <p><strong>Информация всегда доступна:</strong></p>
-                      <ul>
-                        <li>Состояние байпасов</li>
-                        <li>Аварийные статусы</li>
-                        <li>График ТО</li>
-                        <li>Основные параметры</li>
-                      </ul>
-                    </div>
-                  </div>
-              )}
+              ) : null}
           </aside>
         </div>
       </div>
