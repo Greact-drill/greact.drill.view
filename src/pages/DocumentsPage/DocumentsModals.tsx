@@ -1,4 +1,4 @@
-import type { ChangeEvent, RefObject } from "react";
+import { useState, type ChangeEvent, type DragEvent, type RefObject } from "react";
 import type { FolderTreeNode, MediaAsset } from "./useDocumentsCatalog";
 
 interface DocumentsModalsVm {
@@ -38,6 +38,7 @@ interface DocumentsModalsVm {
   onCloseDeleteDocumentModal: () => void;
   onConfirmDeleteDocument: () => Promise<void>;
   onFilesChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onDropUploadFiles: (files: File[]) => void;
 }
 
 interface DocumentsModalsProps {
@@ -81,8 +82,31 @@ export default function DocumentsModals({ vm }: DocumentsModalsProps) {
     onConfirmDeleteFolder,
     onCloseDeleteDocumentModal,
     onConfirmDeleteDocument,
-    onFilesChange
+    onFilesChange,
+    onDropUploadFiles
   } = vm;
+  const [isDropZoneActive, setIsDropZoneActive] = useState(false);
+
+  const handleUploadDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setIsDropZoneActive(true);
+  };
+
+  const handleUploadDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setIsDropZoneActive(false);
+    }
+  };
+
+  const handleUploadDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDropZoneActive(false);
+    const files = Array.from(event.dataTransfer.files || []);
+    if (files.length > 0) {
+      onDropUploadFiles(files);
+    }
+  };
 
   return (
     <>
@@ -156,7 +180,12 @@ export default function DocumentsModals({ vm }: DocumentsModalsProps) {
                 />
               </div>
             )}
-            <div className="documents-upload-files">
+            <div
+              className={`documents-upload-files${isDropZoneActive ? " drag-active" : ""}`}
+              onDragOver={handleUploadDragOver}
+              onDragLeave={handleUploadDragLeave}
+              onDrop={handleUploadDrop}
+            >
               <button
                 type="button"
                 className="document-card-link secondary"
@@ -168,7 +197,7 @@ export default function DocumentsModals({ vm }: DocumentsModalsProps) {
               <div className="documents-upload-files-info">
                 {pendingUploadFiles.length > 0
                   ? `Выбрано файлов: ${pendingUploadFiles.length}`
-                  : "Файлы пока не выбраны"}
+                  : "Файлы пока не выбраны. Можно перетащить их сюда с рабочего стола."}
               </div>
             </div>
             {pendingUploadFiles.length > 0 && (

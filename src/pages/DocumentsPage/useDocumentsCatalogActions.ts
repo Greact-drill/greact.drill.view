@@ -203,6 +203,13 @@ export function useDocumentsCatalogActions(params: UseDocumentsCatalogActionsPar
     }
   };
 
+  const handleDroppedUploadFiles = (files: File[]) => {
+    setPendingUploadFiles(files);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleChooseUploadFiles = () => {
     fileInputRef.current?.click();
   };
@@ -554,6 +561,7 @@ export function useDocumentsCatalogActions(params: UseDocumentsCatalogActionsPar
     handleDeleteDocument,
     handleSelectFiles,
     handleFilesChange,
+    handleDroppedUploadFiles,
     handleChooseUploadFiles,
     closeUploadModal,
     confirmUploadFromModal,

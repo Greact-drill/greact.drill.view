@@ -185,6 +185,7 @@ export default function DocumentsPage() {
     handleDeleteDocument,
     handleSelectFiles,
     handleFilesChange,
+    handleDroppedUploadFiles,
     handleChooseUploadFiles,
     closeUploadModal,
     confirmUploadFromModal,
@@ -312,7 +313,8 @@ export default function DocumentsPage() {
     onConfirmDeleteFolder: confirmDeleteFolder,
     onCloseDeleteDocumentModal: closeDeleteDocumentModal,
     onConfirmDeleteDocument: confirmDeleteDocument,
-    onFilesChange: handleFilesChange
+    onFilesChange: handleFilesChange,
+    onDropUploadFiles: handleDroppedUploadFiles
   };
 
   return (
