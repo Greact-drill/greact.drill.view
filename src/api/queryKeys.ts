@@ -11,6 +11,8 @@ export const queryKeys = {
     details: (edgeKey: string) => ["current", "details", edgeKey] as const,
     tagsData: (edgeKey: string) => ["current", "tagsData", edgeKey] as const,
     scoped: (edgeId: string) => ["current", "scoped", edgeId] as const,
+    scopedByEdgeBlock: (edgeId: string, blockId: string) =>
+      ["current", "scopedByEdgeBlock", edgeId, blockId] as const,
     byTags: (edgeId: string, tagIds: string[]) =>
       ["current", "byTags", edgeId, ...tagIds] as const,
   },

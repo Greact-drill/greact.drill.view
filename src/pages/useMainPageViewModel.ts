@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { getScopedCurrentByEdgeBlock } from "../api/edges";
 import { getRigById } from "../api/rigs";
 import { useEdgeChildren, useEdgeWithAttributes } from "../hooks/useEdges";
 import { useCurrentDetails } from "../hooks/useCurrentDetails";
-import { useScopedCurrent } from "../hooks/useScopedCurrent";
 import { useWidgetConfigsByEdge } from "../hooks/useWidgetConfigs";
+import { queryKeys } from "../api/queryKeys";
 import type { EdgeAttribute, RawEdgeAttributes } from "../types/edge";
 import type { Rig } from "../types/rig";
 import type { WidgetType } from "../types/widget";
@@ -67,7 +69,14 @@ export function useMainPageViewModel(rigId: string) {
   const { children: childEdges, loading: childrenLoading, error: childrenError } = useEdgeChildren(edgeKey);
   const { widgetConfigs, loading: widgetsLoading, error: widgetsError } = useWidgetConfigsByEdge(edgeKey);
   const { data: currentDetailsData } = useCurrentDetails(rigId || null);
-  const { data: scopedCurrentData } = useScopedCurrent(edgeKey, 1000);
+  const scopedByBlockQueries = useQueries({
+    queries: childEdges.map((child) => ({
+      queryKey: queryKeys.current.scopedByEdgeBlock(edgeKey, child.id),
+      queryFn: () => getScopedCurrentByEdgeBlock(edgeKey, child.id),
+      enabled: Boolean(edgeKey && child.id),
+      refetchInterval: 1000,
+    })),
+  });
 
   const edgeAttributes: EdgeAttribute | null = useMemo(() => {
     if (!edgeData?.attributes) return null;
@@ -107,36 +116,36 @@ export function useMainPageViewModel(rigId: string) {
       } as DynamicWidgetConfig;
     });
 
-    const blockWidgets = (scopedCurrentData?.tags || [])
-      .filter((tag) => tag.edge !== edgeKey)
-      .map((tag, index) => {
-        const hasData = tag.value !== null && tag.value !== undefined;
-        return {
-          key: `block-${tag.edge}-${tag.tag}-${index}`,
-          type: "number" as WidgetType,
-          label: tag.name || `Тег ${tag.tag}`,
-          value: tag.value,
-          defaultValue: 0,
-          max: tag.max || 100,
-          unit: tag.unit_of_measurement || "",
-          isOK:
-            hasData &&
-            (() => {
-              const numericValue = parseNumericValue(tag.value);
-              if (numericValue === null || tag.min === undefined || tag.max === undefined) return true;
-              return numericValue >= tag.min && numericValue <= tag.max;
-            })(),
-          position: { x: 0, y: 0 },
-          displayType: "compact" as const,
-          isLoading: false,
-          hasData,
-          source: "block" as const,
-          edgeId: tag.edge,
-        } as DynamicWidgetConfig;
-      });
+    const blockWidgets = childEdges.flatMap((block, blockIndex) =>
+      (scopedByBlockQueries[blockIndex]?.data?.tags || []).map((tag, index) => {
+          const hasData = tag.value !== null && tag.value !== undefined;
+          return {
+            key: `block-${block.id}-${tag.tag}-${index}`,
+            type: "number" as WidgetType,
+            label: tag.name || `Тег ${tag.tag}`,
+            value: tag.value,
+            defaultValue: 0,
+            max: tag.max || 100,
+            unit: tag.unit_of_measurement || "",
+            isOK:
+              hasData &&
+              (() => {
+                const numericValue = parseNumericValue(tag.value);
+                if (numericValue === null || tag.min === undefined || tag.max === undefined) return true;
+                return numericValue >= tag.min && numericValue <= tag.max;
+              })(),
+            position: { x: 0, y: 0 },
+            displayType: "compact" as const,
+            isLoading: false,
+            hasData,
+            source: "block" as const,
+            edgeId: block.id,
+          } as DynamicWidgetConfig;
+        })
+    );
 
     return [...edgeWidgets, ...blockWidgets];
-  }, [widgetConfigs, scopedCurrentData, currentDetailsData, edgeKey]);
+  }, [widgetConfigs, scopedByBlockQueries, currentDetailsData, edgeKey, childEdges]);
 
   const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
     if (!widgetConfigs || widgetConfigs.length === 0) return [];

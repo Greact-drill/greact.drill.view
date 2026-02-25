@@ -71,6 +71,16 @@ export async function getScopedCurrent(edgeId: string, includeChildren: boolean 
   return parseWithSchema(scopedCurrentSchema, response.data, "getScopedCurrent", { edgeIds: [], tags: [] });
 }
 
+export async function getScopedCurrentByEdgeBlock(
+  edgeId: string,
+  blockId: string
+): Promise<{ edgeIds: string[]; tags: ScopedCurrentTag[]; tagMeta?: ScopedTagMeta[] }> {
+  const response = await apiClient.get<{ edgeIds: string[]; tags: ScopedCurrentTag[]; tagMeta?: ScopedTagMeta[] }>(
+    `/edge/${edgeId}/block/${blockId}/scoped-current`
+  );
+  return parseWithSchema(scopedCurrentSchema, response.data, "getScopedCurrentByEdgeBlock", { edgeIds: [], tags: [] });
+}
+
 export async function getCurrentByTags(edgeId: string, tagIds: string[], includeChildren: boolean = true): Promise<{ edgeIds: string[]; tags: ScopedCurrentTag[]; tagMeta?: ScopedTagMeta[] }> {
   const response = await apiClient.post<{ edgeIds: string[]; tags: ScopedCurrentTag[]; tagMeta?: ScopedTagMeta[] }>(`/edge/${edgeId}/current-by-tags`, {
     tagIds,

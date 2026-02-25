@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { getScopedCurrent } from "../api/edges";
+import { getScopedCurrent, getScopedCurrentByEdgeBlock } from "../api/edges";
 import { queryKeys } from "../api/queryKeys";
 import { usePollingQuery } from "./usePollingQuery";
 
@@ -25,12 +25,24 @@ interface ScopedCurrentData {
   }>;
 }
 
-export const useScopedCurrent = (edgeId: string | null, refreshInterval = 1000) => {
+export const useScopedCurrent = (
+  edgeId: string | null,
+  refreshInterval = 1000,
+  blockId?: string | null
+) => {
+  const useEdgeBlockQuery = Boolean(edgeId && blockId);
   const query = usePollingQuery<ScopedCurrentData | null>({
-    queryKey: edgeId ? queryKeys.current.scoped(edgeId) : ["current", "scoped", "empty"],
+    queryKey: useEdgeBlockQuery
+      ? queryKeys.current.scopedByEdgeBlock(edgeId as string, blockId as string)
+      : edgeId
+        ? queryKeys.current.scoped(edgeId)
+        : ["current", "scoped", "empty"],
     enabled: Boolean(edgeId),
     queryFn: async () => {
       if (!edgeId) return null;
+      if (blockId) {
+        return getScopedCurrentByEdgeBlock(edgeId, blockId);
+      }
       return getScopedCurrent(edgeId, true);
     },
     baseRefetchIntervalMs: refreshInterval,
