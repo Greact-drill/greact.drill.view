@@ -1,5 +1,6 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import * as echarts from 'echarts';
 import { useTagHistory } from '../../hooks/useTagHistory';
 import type { TagHistoryList, TagHistoryData } from '../../types/tag'; 
 
@@ -7,11 +8,8 @@ import ActionLogTable from '../../components/ActionLogTable/ActionLogTable';
 import { MOCK_ACTION_LOG } from '../../types/tag';
 import { useEdgeWithAttributes } from '../../hooks/useEdges';
 import ErrorView from '../../components/ErrorView/ErrorView';
-import EmptyState from '../../components/EmptyState/EmptyState';
 import LoadingState from '../../components/LoadingState/LoadingState';
 import './ArchivePage.css';
-
-const ReactECharts = lazy(() => import('echarts-for-react'));
 
 // Цвета промышленной палитры
 const ACCENT_COLOR_1 = '#c97a3d'; // Оранжево-коричневый
@@ -20,6 +18,8 @@ const ACCENT_COLOR_3 = '#e8c9a0'; // Светлый беж
 const ACCENT_COLOR_4 = '#8b5a2b'; // Темно-коричневый
 
 const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
+    const chartContainerRef = useRef<HTMLDivElement | null>(null);
+    const chartInstanceRef = useRef<echarts.ECharts | null>(null);
 
     const chartOption = useMemo(() => {
         if (tagsData.length === 0) return {};
@@ -224,16 +224,40 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
         };
     }, [tagsData]);
 
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        if (!chartInstanceRef.current) {
+            chartInstanceRef.current = echarts.init(container, undefined, { renderer: 'canvas' });
+        }
+
+        chartInstanceRef.current.setOption(chartOption, true);
+
+        const resizeObserver = new ResizeObserver(() => {
+            chartInstanceRef.current?.resize();
+        });
+        resizeObserver.observe(container);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [chartOption]);
+
+    useEffect(() => {
+        return () => {
+            chartInstanceRef.current?.dispose();
+            chartInstanceRef.current = null;
+        };
+    }, []);
+
     return (
         <div className="archive-chart-container">
-            <Suspense fallback={<EmptyState message="Загрузка графика..." />}>
-                <ReactECharts 
-                    option={chartOption} 
-                    style={{ height: '100%', width: '100%', minHeight: '600px' }}
-                    notMerge={true}
-                    opts={{ renderer: 'canvas' }}
-                />
-            </Suspense>
+            <div
+                ref={chartContainerRef}
+                className="echarts-for-react"
+                style={{ height: '100%', width: '100%', minHeight: '600px' }}
+            />
         </div>
     );
 };
