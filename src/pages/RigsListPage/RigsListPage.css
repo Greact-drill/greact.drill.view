@@ -1173,9 +1173,8 @@
 
 /* Стили для кнопки закрытия - стиль piano.io */
 .rig-status-panel .close-panel-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: static;
+    margin-left: 16px;
     z-index: 20;
     color: var(--color-text-primary) !important;
     background: transparent !important;
@@ -1422,7 +1421,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-right: 60px; /* Отступ для кнопки закрытия (36px ширина + 20px right + 4px запас) */
+  padding-right: 0;
   min-width: 0; /* Позволяет контенту сжиматься */
   overflow: hidden; /* Предотвращает выход за границы */
 }

@@ -241,9 +241,11 @@ export default function DynamicWidgetPage() {
         data-display-type={config.displayType}
         data-has-data={config.hasData}
       >
-        <Suspense fallback={<WidgetPlaceholder type={config.type} label={config.label} unit={config.unit} />}>
-          {widgetContent}
-        </Suspense>
+        <div className="positioned-widget-body">
+          <Suspense fallback={<WidgetPlaceholder type={config.type} label={config.label} unit={config.unit} />}>
+            {widgetContent}
+          </Suspense>
+        </div>
         <div className={`widget-tooltip ${tooltipStateClass}`} role="tooltip">
           <div className="widget-tooltip-title">{config.label}</div>
           <div className="widget-tooltip-row">

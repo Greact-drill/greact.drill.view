@@ -17,6 +17,8 @@
 /* Стили для позиционированных виджетов (страница оборудования) */
 .positioned-widget {
     position: absolute;
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-lg);
     border-radius: var(--radius-xl);
     overflow: visible;
@@ -26,6 +28,21 @@
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     z-index: 10;
+}
+
+/* Обёртка контента — обеспечивает передачу высоты для vertical-bar и др. */
+.positioned-widget-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.positioned-widget-body > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .positioned-widget:hover {
@@ -610,6 +627,8 @@
 
 .widget-page .positioned-widget .vertical-bar-container {
     gap: 6px;
+    flex: 1;
+    min-height: 0;
 }
 
 .widget-page .positioned-widget .bar-label {
@@ -618,9 +637,9 @@
 }
 
 .widget-page .positioned-widget .bar-wrapper {
-    width: 48px;
-    height: auto;
-    flex: 1;
+  width: 48px;
+  flex: 1;
+  min-height: 60px;
 }
 
 .widget-page .positioned-widget .bar-value {

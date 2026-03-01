@@ -55,8 +55,9 @@ export const isWidgetValueOK = ({
   }
 
   const numericValue = parseNumericValue(value);
+  // Для status: 1 = OK (зелёный), 0 = ошибка (красный)
   if (widgetType === "status" && numericValue !== null) {
-    return numericValue >= min && numericValue <= max;
+    return numericValue === 1;
   }
 
   if (unit !== "bool" && numericValue !== null) {

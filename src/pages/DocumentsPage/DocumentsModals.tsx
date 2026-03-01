@@ -112,26 +112,30 @@ export default function DocumentsModals({ vm }: DocumentsModalsProps) {
     <>
       {uploadModalOpen && (
         <div className="documents-modal-backdrop" onClick={onCloseUploadModal}>
-          <div className="documents-modal" onClick={event => event.stopPropagation()}>
+          <div className="documents-modal documents-modal--upload" onClick={event => event.stopPropagation()}>
             <h3>Загрузка документов</h3>
             <p>Выберите папку назначения и добавьте один или несколько файлов.</p>
             <div className="documents-upload-mode">
-              <label>
-                <input
-                  type="radio"
-                  checked={uploadFolderMode === "existing"}
-                  onChange={() => onSetUploadFolderMode("existing")}
-                />
+              <button
+                type="button"
+                role="radio"
+                aria-checked={uploadFolderMode === "existing"}
+                className={`documents-upload-mode-option${uploadFolderMode === "existing" ? " active" : ""}`}
+                onClick={() => onSetUploadFolderMode("existing")}
+              >
+                <i className="pi pi-folder" aria-hidden />
                 <span>В существующую папку</span>
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  checked={uploadFolderMode === "new"}
-                  onChange={() => onSetUploadFolderMode("new")}
-                />
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={uploadFolderMode === "new"}
+                className={`documents-upload-mode-option${uploadFolderMode === "new" ? " active" : ""}`}
+                onClick={() => onSetUploadFolderMode("new")}
+              >
+                <i className="pi pi-folder-plus" aria-hidden />
                 <span>Создать новую папку</span>
-              </label>
+              </button>
             </div>
             {uploadFolderMode === "existing" ? (
               <div className="documents-upload-field">

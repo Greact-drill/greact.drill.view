@@ -193,6 +193,7 @@ export function useMainPageViewModel(rigId: string) {
   const tagsStats = useMemo(() => {
     const edgeTags = allWidgetConfigs.filter((w) => !w.key.startsWith("block-"));
     const blockTags = allWidgetConfigs.filter((w) => w.key.startsWith("block-"));
+    const rootOrRigTagsCount = edgeTags.length;
     const errorTags = allWidgetConfigs
       .filter((w) => w.hasData && !w.isOK)
       .map((w) => {
@@ -206,7 +207,7 @@ export function useMainPageViewModel(rigId: string) {
 
     return {
       totalTags: allWidgetConfigs.length,
-      edgeTagsCount: edgeTags.length,
+      edgeTagsCount: rootOrRigTagsCount,
       blockTagsCount: blockTags.length,
       tagsWithData: allWidgetConfigs.filter((w) => w.hasData).length,
       tagsWithErrors: allWidgetConfigs.filter((w) => w.hasData && !w.isOK).length,

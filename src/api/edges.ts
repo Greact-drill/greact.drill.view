@@ -99,3 +99,20 @@ export async function getEdgeCustomizations(edgeId: string): Promise<EdgeCustomi
   const response = await apiClient.get<EdgeCustomization[]>(`/edge-customization/${edgeId}`);
   return parseWithSchema(edgeCustomizationListSchema, response.data, "getEdgeCustomizations", []);
 }
+
+export interface EdgeTagCustomizationItem {
+  tag_id: string;
+  key: string;
+  value: string;
+}
+
+export interface EdgeTagCustomizationsResponse {
+  edge: { id: string; name: string; tag_ids: string[] };
+  tags: Array<{ id: string; name: string; min: number; max: number; comment: string; unit_of_measurement: string }>;
+  customizations: EdgeTagCustomizationItem[];
+}
+
+export async function getEdgeTagCustomizations(edgeId: string): Promise<EdgeTagCustomizationsResponse> {
+  const response = await apiClient.get<EdgeTagCustomizationsResponse>(`/edge/${edgeId}/tag-customizations`);
+  return response.data;
+}

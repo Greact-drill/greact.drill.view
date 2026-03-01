@@ -10,11 +10,11 @@ interface VerticalBarProps {
 }
 
 const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {
-  // Обеспечиваем, что значение не выходит за пределы [0, max]
-  const clampedValue = Math.min(Math.max(value, 0), max);
-  const safeMax = max > 0 ? max : 0;
-  const fillPercent = safeMax > 0 ? (clampedValue / safeMax) * 100 : 0;
-  // Расчет, сколько процентов "закрывает" бар
+  const numValue = Number(value);
+  const numMax = Number(max);
+  const clampedValue = Math.min(Math.max(Number.isNaN(numValue) ? 0 : numValue, 0), Math.max(0, numMax));
+  const safeMax = numMax > 0 ? numMax : 1;
+  const fillPercent = safeMax > 0 ? Math.min(100, Math.max(0, (clampedValue / safeMax) * 100)) : 0;
   const coverHeight = 100 - fillPercent;
 
   const displayValue = formatNumber(value);
@@ -23,12 +23,12 @@ const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {
     <div className="vertical-bar-container">
       <div className="bar-label">{label}</div>
       <div className="bar-wrapper">
-        <div 
+        <div
           className="bar-cover"
-          style={{ 
-            height: `${coverHeight}%`
-          }}>
-        </div>
+          style={{ height: `${coverHeight}%` }}
+          role="presentation"
+          aria-hidden="true"
+        />
       </div>
       <div className="bar-value">{displayValue}</div>
     </div>

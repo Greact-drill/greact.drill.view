@@ -140,9 +140,11 @@ export default function MainPage() {
       }
     })();
 
-    const stateClassName = config.type === 'status'
-      ? ''
-      : `${config.hasData && config.isOK === false ? 'widget-out-of-range' : ''} ${config.hasData && config.isOK === true ? 'widget-in-range' : ''}`;
+    const stateClassName = config.hasData && config.isOK === false
+      ? 'widget-out-of-range'
+      : config.hasData && config.isOK === true
+        ? 'widget-in-range'
+        : '';
 
     return (
       <div 
@@ -325,7 +327,7 @@ export default function MainPage() {
         </aside>
 
         {/* Центральная часть - Карта */}
-        <div className="map-section">
+        <div className="map-section map-section-animated">
           <svg
             className="map-svg"
             viewBox="0 0 1010 1024"
