@@ -18,14 +18,15 @@ const ACCENT_COLOR_3 = '#e8c9a0'; // Светлый беж
 const ACCENT_COLOR_4 = '#8b5a2b'; // Темно-коричневый
 
 // Сохраняем выбранные теги при обновлении данных: новые — показывать, существующие — сохранять
+// Используем tag.tag (уникальный ID), т.к. tag.name может дублироваться (напр. "Потребление энергии")
 function mergeLegendSelected(
     prev: Record<string, boolean>,
-    tagNames: string[],
+    tagIds: string[],
     defaultVisible = true
 ): Record<string, boolean> {
     const next: Record<string, boolean> = {};
-    tagNames.forEach((name) => {
-        next[name] = prev[name] !== undefined ? prev[name] : defaultVisible;
+    tagIds.forEach((id) => {
+        next[id] = prev[id] !== undefined ? prev[id] : defaultVisible;
     });
     return next;
 }
@@ -39,17 +40,21 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
 
     // При поступлении новых данных не сбрасываем выбор тегов
     useEffect(() => {
-        const tagNames = tagsData.map((t) => t.name);
-        setLegendSelected((prev) => mergeLegendSelected(prev, tagNames));
+        const tagIds = tagsData.map((t) => t.tag);
+        setLegendSelected((prev) => mergeLegendSelected(prev, tagIds));
     }, [tagsData]);
 
     const chartOption = useMemo(() => {
         if (tagsData.length === 0) return {};
         
+        // Карта tag.tag -> tag.name для отображения в tooltip (серии именуются по tag.tag)
+        const tagNameMap = Object.fromEntries(tagsData.map((t) => [t.tag, t.name]));
+        
         // Цветовая палитра для серий - промышленная гамма
         const colors = [ACCENT_COLOR_1, ACCENT_COLOR_2, ACCENT_COLOR_3, ACCENT_COLOR_4];
 
         // --- 2. Создание серий данных ---
+        // Используем tag.tag как уникальное имя серии (tag.name может дублироваться)
         const transformedSeriesData = tagsData.map((tag, index) => {
             const color = colors[index % colors.length];
 
@@ -61,7 +66,7 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
             }).reverse(); // Данные должны идти от старых к новым (left-to-right)
 
             return {
-                name: tag.name,
+                name: tag.tag,
                 type: 'line',
                 smooth: true,
                 data: data,
@@ -86,11 +91,25 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
         });
 
         // --- 2. Настройка диапазона Y-оси ---
-        let globalMin = Math.min(...tagsData.map(tag => tag.min));
-        let globalMax = Math.max(...tagsData.map(tag => tag.max));
-        const padding = (globalMax - globalMin) * 0.1;
-        globalMin = Math.floor(globalMin - padding);
-        globalMax = Math.ceil(globalMax + padding);
+        // Используем фактические значения из history, т.к. tag.min/max в метаданных
+        // часто не соответствуют реальным данным (напр. 0-100 при значениях 50000+)
+        let dataMin = Infinity;
+        let dataMax = -Infinity;
+        tagsData.forEach((tag) => {
+            tag.history.forEach((item) => {
+                const v = typeof item.value === 'number' ? item.value : Number(item.value);
+                if (!isNaN(v)) {
+                    dataMin = Math.min(dataMin, v);
+                    dataMax = Math.max(dataMax, v);
+                }
+            });
+        });
+        if (dataMin === Infinity) dataMin = 0;
+        if (dataMax === -Infinity) dataMax = 100;
+        const range = dataMax - dataMin || 1;
+        const padding = range * 0.1;
+        const globalMin = Math.floor(dataMin - padding);
+        const globalMax = Math.ceil(dataMax + padding);
 
         // --- 3. Финальная опция ECharts ---
         return {
@@ -125,9 +144,10 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                     let result = `<div style="color: #fff; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; margin-bottom: 5px;">${time}</div>`;
                     
                     tooltipItems.forEach((item) => {
-                        // item.seriesName - имя тега, item.value[1] - значение
+                        // item.seriesName = tag.tag; отображаем tag.name из карты
+                        const displayName = tagNameMap[item.seriesName] ?? item.seriesName;
                         result += `<div style="color: ${item.color};">
-                            ${item.seriesName}: 
+                            ${displayName}: 
                             <strong>${item.value[1].toFixed(2)}</strong>
                         </div>`;
                     });
@@ -264,14 +284,14 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
         };
     }, []);
 
-    const toggleTag = (name: string) => {
-        setLegendSelected((prev) => ({ ...prev, [name]: !prev[name] }));
+    const toggleTag = (tagId: string) => {
+        setLegendSelected((prev) => ({ ...prev, [tagId]: !prev[tagId] }));
     };
 
     const selectAllTags = () => {
         setLegendSelected((prev) => {
             const next = { ...prev };
-            tagsData.forEach((t) => { next[t.name] = true; });
+            tagsData.forEach((t) => { next[t.tag] = true; });
             return next;
         });
     };
@@ -279,7 +299,7 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
     const deselectAllTags = () => {
         setLegendSelected((prev) => {
             const next = { ...prev };
-            tagsData.forEach((t) => { next[t.name] = false; });
+            tagsData.forEach((t) => { next[t.tag] = false; });
             return next;
         });
     };
@@ -320,11 +340,11 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 {!legendCollapsed && (
                     <div className="archive-legend-items">
                         {tagsData.map((tag, index) => (
-                            <label key={tag.name} className="archive-legend-item">
+                            <label key={tag.tag} className="archive-legend-item">
                                 <input
                                     type="checkbox"
-                                    checked={legendSelected[tag.name] !== false}
-                                    onChange={() => toggleTag(tag.name)}
+                                    checked={legendSelected[tag.tag] !== false}
+                                    onChange={() => toggleTag(tag.tag)}
                                 />
                                 <span
                                     className="archive-legend-color"
