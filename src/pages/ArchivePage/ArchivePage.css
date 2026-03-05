@@ -272,6 +272,112 @@
     opacity: 1;
 }
 
+/* Обёртка графика и легенды */
+.archive-chart-with-legend {
+    margin-bottom: 32px;
+}
+
+/* Кастомная легенда — сворачиваемая */
+.archive-legend {
+    margin-top: 16px;
+    padding: 16px 24px;
+    border: 1px solid rgba(212, 165, 116, 0.15);
+    background: rgba(201, 122, 61, 0.03);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.archive-legend:hover {
+    border-color: rgba(212, 165, 116, 0.25);
+    background: rgba(201, 122, 61, 0.06);
+}
+
+.archive-legend.collapsed {
+    padding: 12px 24px;
+}
+
+.archive-legend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.archive-legend-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.archive-legend-toggle:hover {
+    color: var(--color-accent-secondary);
+}
+
+.archive-legend-bulk {
+    display: flex;
+    gap: 8px;
+}
+
+.archive-legend-bulk-btn {
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+    background: rgba(201, 122, 61, 0.1);
+    border: 1px solid rgba(212, 165, 116, 0.25);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.archive-legend-bulk-btn:hover {
+    background: rgba(201, 122, 61, 0.2);
+    border-color: rgba(212, 165, 116, 0.4);
+    color: var(--color-accent-secondary);
+}
+
+.archive-legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(212, 165, 116, 0.1);
+}
+
+.archive-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    user-select: none;
+}
+
+.archive-legend-item input {
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--color-accent-secondary);
+}
+
+.archive-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.archive-legend-label {
+    white-space: nowrap;
+}
+
 /* Контейнер таблицы действий */
 .archive-action-log-container {
     width: 100%;

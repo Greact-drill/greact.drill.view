@@ -17,9 +17,31 @@ const ACCENT_COLOR_2 = '#d4a574'; // Бежевый
 const ACCENT_COLOR_3 = '#e8c9a0'; // Светлый беж
 const ACCENT_COLOR_4 = '#8b5a2b'; // Темно-коричневый
 
+// Сохраняем выбранные теги при обновлении данных: новые — показывать, существующие — сохранять
+function mergeLegendSelected(
+    prev: Record<string, boolean>,
+    tagNames: string[],
+    defaultVisible = true
+): Record<string, boolean> {
+    const next: Record<string, boolean> = {};
+    tagNames.forEach((name) => {
+        next[name] = prev[name] !== undefined ? prev[name] : defaultVisible;
+    });
+    return next;
+}
+
 const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartInstanceRef = useRef<echarts.ECharts | null>(null);
+
+    const [legendSelected, setLegendSelected] = useState<Record<string, boolean>>({});
+    const [legendCollapsed, setLegendCollapsed] = useState(false);
+
+    // При поступлении новых данных не сбрасываем выбор тегов
+    useEffect(() => {
+        const tagNames = tagsData.map((t) => t.name);
+        setLegendSelected((prev) => mergeLegendSelected(prev, tagNames));
+    }, [tagsData]);
 
     const chartOption = useMemo(() => {
         if (tagsData.length === 0) return {};
@@ -113,19 +135,10 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 }
             },
             legend: {
-                data: tagsData.map(t => t.name),
-                bottom: '0',
-                left: 'center',
-                textStyle: { 
-                    color: 'var(--color-text-primary)',
-                    fontSize: 12,
-                    fontWeight: 400
-                },
-                itemGap: 24,
-                itemWidth: 14,
-                itemHeight: 14
+                show: false,
+                selected: legendSelected
             },
-            grid: { left: '3%', right: '10%', bottom: '20%', containLabel: true },
+            grid: { left: '3%', right: '10%', bottom: '12%', containLabel: true },
             // DATA ZOOM для эффекта скользящего окна
             dataZoom: [
                 // 1. Зуммирование по X (внутреннее: колесом мыши)
@@ -222,7 +235,7 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
             },
             series: transformedSeriesData
         };
-    }, [tagsData]);
+    }, [tagsData, legendSelected]);
 
     useEffect(() => {
         const container = chartContainerRef.current;
@@ -251,13 +264,78 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
         };
     }, []);
 
+    const toggleTag = (name: string) => {
+        setLegendSelected((prev) => ({ ...prev, [name]: !prev[name] }));
+    };
+
+    const selectAllTags = () => {
+        setLegendSelected((prev) => {
+            const next = { ...prev };
+            tagsData.forEach((t) => { next[t.name] = true; });
+            return next;
+        });
+    };
+
+    const deselectAllTags = () => {
+        setLegendSelected((prev) => {
+            const next = { ...prev };
+            tagsData.forEach((t) => { next[t.name] = false; });
+            return next;
+        });
+    };
+
+    const colors = [ACCENT_COLOR_1, ACCENT_COLOR_2, ACCENT_COLOR_3, ACCENT_COLOR_4];
+
     return (
-        <div className="archive-chart-container">
-            <div
-                ref={chartContainerRef}
-                className="echarts-for-react"
-                style={{ height: '100%', width: '100%', minHeight: '600px' }}
-            />
+        <div className="archive-chart-with-legend">
+            <div className="archive-chart-container">
+                <div
+                    ref={chartContainerRef}
+                    className="echarts-for-react"
+                    style={{ height: '100%', width: '100%', minHeight: '600px' }}
+                />
+            </div>
+            <div className={`archive-legend ${legendCollapsed ? 'collapsed' : ''}`}>
+                <div className="archive-legend-header">
+                    <button
+                        type="button"
+                        className="archive-legend-toggle"
+                        onClick={() => setLegendCollapsed((c) => !c)}
+                        title={legendCollapsed ? 'Развернуть легенду' : 'Свернуть легенду'}
+                    >
+                        <i className={`pi ${legendCollapsed ? 'pi-chevron-down' : 'pi-chevron-up'}`} />
+                        <span>Легенда</span>
+                    </button>
+                    {!legendCollapsed && (
+                        <div className="archive-legend-bulk">
+                            <button type="button" className="archive-legend-bulk-btn" onClick={selectAllTags}>
+                                Выбрать все
+                            </button>
+                            <button type="button" className="archive-legend-bulk-btn" onClick={deselectAllTags}>
+                                Снять все
+                            </button>
+                        </div>
+                    )}
+                </div>
+                {!legendCollapsed && (
+                    <div className="archive-legend-items">
+                        {tagsData.map((tag, index) => (
+                            <label key={tag.name} className="archive-legend-item">
+                                <input
+                                    type="checkbox"
+                                    checked={legendSelected[tag.name] !== false}
+                                    onChange={() => toggleTag(tag.name)}
+                                />
+                                <span
+                                    className="archive-legend-color"
+                                    style={{ backgroundColor: colors[index % colors.length] }}
+                                />
+                                <span className="archive-legend-label">{tag.name}</span>
+                            </label>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
