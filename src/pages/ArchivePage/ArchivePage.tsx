@@ -37,6 +37,8 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
 
     const [legendSelected, setLegendSelected] = useState<Record<string, boolean>>({});
     const [legendCollapsed, setLegendCollapsed] = useState(false);
+    // Сохраняем приближение (dataZoom) при обновлении данных
+    const [dataZoomRange, setDataZoomRange] = useState({ start: 80, end: 100 });
 
     // При поступлении новых данных не сбрасываем выбор тегов
     useEffect(() => {
@@ -159,14 +161,15 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 selected: legendSelected
             },
             grid: { left: '3%', right: '10%', bottom: '12%', containLabel: true },
-            // DATA ZOOM для эффекта скользящего окна
+            // DATA ZOOM для эффекта скользящего окна (start/end сохраняются при обновлении данных)
             dataZoom: [
                 // 1. Зуммирование по X (внутреннее: колесом мыши)
                 {
+                    id: 'xAxisZoomInside',
                     type: 'inside', 
                     xAxisIndex: [0],
-                    start: 80, 
-                    end: 100,
+                    start: dataZoomRange.start, 
+                    end: dataZoomRange.end,
                     filterMode: 'none',
                 },
                 // 2. Зуммирование по Y (внутреннее: колесом мыши)
@@ -178,9 +181,12 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
                 },
                 // 3. Слайдер по X (визуальный ползунок)
                 {
+                    id: 'xAxisZoomSlider',
                     type: 'slider', 
                     show: true,
                     xAxisIndex: [0],
+                    start: dataZoomRange.start,
+                    end: dataZoomRange.end,
                     height: 20, 
                     top: 10, 
                     textStyle: {
@@ -255,7 +261,7 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
             },
             series: transformedSeriesData
         };
-    }, [tagsData, legendSelected]);
+    }, [tagsData, legendSelected, dataZoomRange]);
 
     useEffect(() => {
         const container = chartContainerRef.current;
@@ -265,14 +271,32 @@ const TagHistoryChart = ({ tagsData }: { tagsData: TagHistoryList }) => {
             chartInstanceRef.current = echarts.init(container, undefined, { renderer: 'canvas' });
         }
 
-        chartInstanceRef.current.setOption(chartOption, true);
+        const chart = chartInstanceRef.current;
+
+        const handleDataZoom = (params: unknown) => {
+            const p = params as { start?: number; end?: number; batch?: Array<{ dataZoomId?: string; start?: number; end?: number }> };
+            // Обновляем только при изменении zoom по X, чтобы не сбрасывать при zoom по Y
+            const xZoomItem = p.batch?.find(
+                (b) => b.dataZoomId === 'xAxisZoomInside' || b.dataZoomId === 'xAxisZoomSlider'
+            );
+            const item = xZoomItem ?? p.batch?.[0] ?? p;
+            if (item?.start != null && item?.end != null) {
+                setDataZoomRange({ start: item.start, end: item.end });
+            }
+        };
+
+        chart.off('datazoom', handleDataZoom);
+        chart.on('datazoom', handleDataZoom);
+
+        chart.setOption(chartOption, true);
 
         const resizeObserver = new ResizeObserver(() => {
-            chartInstanceRef.current?.resize();
+            chart.resize();
         });
         resizeObserver.observe(container);
 
         return () => {
+            chart.off('datazoom', handleDataZoom);
             resizeObserver.disconnect();
         };
     }, [chartOption]);
