@@ -9,7 +9,9 @@ import {
 import './MainPage.css';
 
 // Импортируем компоненты виджетов как в DynamicWidgetPage
-import WidgetPlaceholder from "../components/WidgetPlaceholder/WidgetPlaceholder.tsx";
+import Loader from "../components/Loader/Loader";
+import NoDataWidget from "../components/NoDataWidget/NoDataWidget";
+import WidgetSkeleton from "../components/WidgetSkeleton/WidgetSkeleton";
 const GaugeWidget = lazy(() => import("../components/Gauge/GaugeWidget.tsx"));
 const VerticalBar = lazy(() => import("../components/VerticalBar/VerticalBar"));
 const NumberDisplay = lazy(() => import("../components/NumberDisplay/NumberDisplay"));
@@ -18,7 +20,6 @@ const StatusTagWidget = lazy(() => import("../components/StatusTagWidget/StatusT
 
 import ErrorView from "../components/ErrorView/ErrorView";
 import EmptyState from "../components/EmptyState/EmptyState";
-import LoadingState from "../components/LoadingState/LoadingState";
 import { useMainPageViewModel, type DynamicWidgetConfig } from "./useMainPageViewModel";
 import { useTheme } from "../theme/useTheme";
 import rigLightTheme from "../assets/rig_light_theme_without_background.png";
@@ -50,7 +51,7 @@ export default function MainPage() {
 
   // Функция рендеринга виджета (аналогично DynamicWidgetPage)
   const renderWidget = (config: DynamicWidgetConfig) => {
-    // Если данных нет, показываем placeholder
+    // Если данных нет — минимальное отображение без анимации
     if (!config.hasData) {
       return (
         <div 
@@ -59,11 +60,7 @@ export default function MainPage() {
           data-widget-type={config.type}
           data-display-type={config.displayType}
         >
-          <WidgetPlaceholder
-            type={config.type}
-            label={config.label}
-            unit={config.unit}
-          />
+          <NoDataWidget label={config.label} unit={config.unit} />
         </div>
       );
     }
@@ -158,7 +155,7 @@ export default function MainPage() {
         data-display-type={config.displayType}
         data-has-data={config.hasData}
       >
-        <Suspense fallback={<WidgetPlaceholder type={config.type} label={config.label} unit={config.unit} />}>
+        <Suspense fallback={<WidgetSkeleton width={200} height={200} />}>
           {widgetContent}
         </Suspense>
       </div>
@@ -168,7 +165,7 @@ export default function MainPage() {
   if (widgetsLoading) {
     return (
       <div className="main-page-container">
-        <LoadingState message="Загрузка виджетов..." />
+        <Loader variant="inline" message="Загрузка виджетов..." />
       </div>
     );
   }
@@ -186,7 +183,7 @@ export default function MainPage() {
       <div className="subsystems-menu-top">
         <div className="subsystems-menu-content">
           {childrenLoading ? (
-            <LoadingState message="Загрузка подсистем..." />
+            <Loader variant="inline" message="Загрузка подсистем..." compact />
           ) : childrenError ? (
             <ErrorView message={childrenError} onRetry={() => window.location.reload()} />
           ) : (

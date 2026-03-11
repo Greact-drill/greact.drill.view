@@ -12,7 +12,9 @@ import {
   parseNumericValue,
 } from '../../utils/widgetValue';
 import './DynamicWidgetPage.css';
-import WidgetPlaceholder from '../../components/WidgetPlaceholder/WidgetPlaceholder.tsx';
+import Loader from '../../components/Loader/Loader';
+import NoDataWidget from '../../components/NoDataWidget/NoDataWidget';
+import WidgetSkeleton from '../../components/WidgetSkeleton/WidgetSkeleton';
 const VerticalBar = lazy(() => import('../../components/VerticalBar/VerticalBar'));
 const GaugeWidget = lazy(() => import('../../components/Gauge/GaugeWidget'));
 const NumberDisplay = lazy(() => import('../../components/NumberDisplay/NumberDisplay'));
@@ -48,7 +50,7 @@ export default function DynamicWidgetPage() {
     ? `${pageType}_${rigId}`
     : pageType;
   
-  const { widgetConfigs, error } = useWidgetConfigsByPage(configPage);
+  const { widgetConfigs, loading: widgetsLoading, error } = useWidgetConfigsByPage(configPage);
   const { tableConfig: tableConfigData } = useTableConfigByPage(configPage);
   
   const dynamicWidgetConfigs: DynamicWidgetConfig[] = useMemo(() => {
@@ -132,7 +134,7 @@ export default function DynamicWidgetPage() {
       height: `${dimensions.height}px`
     };
 
-    // Если данных нет, показываем placeholder с анимацией загрузки
+    // Если данных нет — минимальное отображение без анимации
     if (!config.hasData) {
       return (
         <div 
@@ -142,11 +144,7 @@ export default function DynamicWidgetPage() {
           data-widget-type={config.type}
           data-display-type={config.displayType}
         >
-          <WidgetPlaceholder
-            type={config.type}
-            label={config.label}
-            unit={config.unit}
-          />
+          <NoDataWidget label={config.label} unit={config.unit} />
         </div>
       );
     }
@@ -248,7 +246,7 @@ export default function DynamicWidgetPage() {
         data-has-data={config.hasData}
       >
         <div className="positioned-widget-body">
-          <Suspense fallback={<WidgetPlaceholder type={config.type} label={config.label} unit={config.unit} />}>
+          <Suspense fallback={<WidgetSkeleton width={dimensions.width} height={dimensions.height} />}>
             {widgetContent}
           </Suspense>
         </div>
@@ -320,7 +318,11 @@ export default function DynamicWidgetPage() {
             {pageTitle}
           </h1>
           
-          {isMainPage ? (
+          {widgetsLoading ? (
+            <div className="dynamic-widgets-loading">
+              <Loader variant="inline" message="Загрузка виджетов..." />
+            </div>
+          ) : isMainPage ? (
             <div className="compact-tags-grid">
               {dynamicWidgetConfigs.map(renderWidget)}
               {dynamicWidgetConfigs.length === 0 && (

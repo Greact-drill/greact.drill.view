@@ -36,7 +36,7 @@ export default function AppRouter() {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <PrimeReactProvider>
-          <Suspense fallback={<Loader variant="fullscreen" message="Загрузка страницы..." />}>
+          <Suspense fallback={<Loader variant="fullscreen" message="" />}>
             <Routes>
               {/* Главная страница со списком буровых */}
               <Route path="/" element={<RigsListPage />} />

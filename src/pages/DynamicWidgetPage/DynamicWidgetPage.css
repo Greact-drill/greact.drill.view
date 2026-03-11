@@ -1,3 +1,12 @@
+/* Загрузка виджетов */
+.dynamic-widgets-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 48px;
+}
+
 /* Compact Tags Grid - для главной страницы */
 .compact-tags-grid {
     display: grid;
