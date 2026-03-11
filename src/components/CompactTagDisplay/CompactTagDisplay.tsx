@@ -6,6 +6,7 @@ interface CompactTagDisplayProps {
     label: string;
     value: WidgetValue;
     unit?: string;
+    precision?: number | null;
     isOK: boolean;
     compact?: boolean;
     cardMode?: boolean;
@@ -15,11 +16,12 @@ const CompactTagDisplay: React.FC<CompactTagDisplayProps> = ({
     label, 
     value, 
     unit, 
+    precision,
     isOK,
     compact = false,
     cardMode = false,
 }) => {
-    const displayValue = typeof value === 'number' ? formatNumber(value) : (value ?? '--');
+    const displayValue = typeof value === 'number' ? formatNumber(value, precision) : (value ?? '--');
     const modeClassName = cardMode ? 'widget-card' : compact ? 'widget-compact' : '';
 
     return (

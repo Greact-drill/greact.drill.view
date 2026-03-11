@@ -6,10 +6,11 @@ interface VerticalBarProps {
   label: string;
   value: number;
   max: number;
+  precision?: number | null;
   compact?: boolean;
 }
 
-const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {
+const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max, precision }) => {
   const numValue = Number(value);
   const numMax = Number(max);
   const clampedValue = Math.min(Math.max(Number.isNaN(numValue) ? 0 : numValue, 0), Math.max(0, numMax));
@@ -17,7 +18,7 @@ const VerticalBar: React.FC<VerticalBarProps> = ({ label, value, max }) => {
   const fillPercent = safeMax > 0 ? Math.min(100, Math.max(0, (clampedValue / safeMax) * 100)) : 0;
   const coverHeight = 100 - fillPercent;
 
-  const displayValue = formatNumber(value);
+  const displayValue = formatNumber(value, precision);
 
   return (
     <div className="vertical-bar-container">

@@ -77,7 +77,8 @@ export default function MainPage() {
               label={config.label} 
               value={config.value as number} 
               max={config.max} 
-              unit={config.unit} 
+              unit={config.unit}
+              precision={config.precision}
               compact={true} // Добавляем compact режим для главной страницы
             />
           );
@@ -87,7 +88,8 @@ export default function MainPage() {
               key={config.key} 
               label={config.label} 
               value={config.value as number} 
-              max={config.max} 
+              max={config.max}
+              precision={config.precision}
               compact={true}
             />
           );
@@ -95,7 +97,7 @@ export default function MainPage() {
           const numericValue = parseNumericValue(
             config.hasData ? (config.value as number | string | boolean | null) : (config.defaultValue ?? null)
           );
-          const displayValue = formatNumberWithUnit(numericValue, config.unit);
+          const displayValue = formatNumberWithUnit(numericValue, config.unit, config.precision);
           return (
             <NumberDisplay 
               key={config.key} 
@@ -120,6 +122,7 @@ export default function MainPage() {
               label={config.label}
               value={config.value}
               unit={config.unit}
+              precision={config.precision}
               isOK={config.isOK ?? false}
             />
           );
@@ -130,6 +133,7 @@ export default function MainPage() {
               label={config.label}
               value={config.value}
               unit={config.unit}
+              precision={config.precision}
               isOK={config.isOK ?? false}
               cardMode={true}
             />

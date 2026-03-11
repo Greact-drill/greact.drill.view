@@ -10,11 +10,12 @@ interface GaugeWidgetProps {
   value: number;
   max: number;
   unit?: string;
+  precision?: number | null;
   compact?: boolean;
 }
 
-const GaugeWidget: React.FC<GaugeWidgetProps> = React.memo(({ label, value, max, unit = '' }) => {
-  const displayValue = formatNumberWithUnit(value, unit);
+const GaugeWidget: React.FC<GaugeWidgetProps> = React.memo(({ label, value, max, unit = '', precision }) => {
+  const displayValue = formatNumberWithUnit(value, unit, precision);
 
   return (
     <div className="gauge-widget-container">

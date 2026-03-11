@@ -27,6 +27,7 @@ export interface DynamicWidgetConfig {
   defaultValue?: number | string | boolean;
   max: number;
   unit: string;
+  precision?: number | null;
   isOK?: boolean;
   position: { x: number; y: number };
   displayType: "widget" | "compact" | "card";
@@ -108,6 +109,7 @@ export function useMainPageViewModel(rigId: string) {
         defaultValue: getDefaultWidgetValue(widgetType, config.tag.unit_of_measurement),
         max: config.tag.max || 100,
         unit: config.tag.unit_of_measurement || "",
+        precision: config.tag.precision ?? null,
         isOK,
         position: config.config.position || { x: 0, y: 0 },
         displayType,
@@ -117,7 +119,7 @@ export function useMainPageViewModel(rigId: string) {
     });
 
     const blockWidgets = childEdges.flatMap((block, blockIndex) =>
-      (scopedByBlockQueries[blockIndex]?.data?.tags || []).map((tag, index) => {
+        (scopedByBlockQueries[blockIndex]?.data?.tags || []).map((tag, index) => {
           const hasData = tag.value !== null && tag.value !== undefined;
           return {
             key: `block-${block.id}-${tag.tag}-${index}`,
@@ -127,6 +129,7 @@ export function useMainPageViewModel(rigId: string) {
             defaultValue: 0,
             max: tag.max || 100,
             unit: tag.unit_of_measurement || "",
+            precision: tag.precision ?? null,
             isOK:
               hasData &&
               (() => {
@@ -181,6 +184,7 @@ export function useMainPageViewModel(rigId: string) {
         defaultValue,
         max: config.tag.max || 100,
         unit: config.tag.unit_of_measurement || "",
+        precision: config.tag.precision ?? null,
         isOK,
         position: config.config.position || { x: 0, y: 0 },
         displayType,

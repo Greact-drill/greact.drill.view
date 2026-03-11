@@ -19,6 +19,7 @@ export interface WidgetConfigData {
     unit_of_measurement: string;
     min: number;
     max: number;
+    precision?: number | null;
   };
   current: {
     value: number;

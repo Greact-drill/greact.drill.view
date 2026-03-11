@@ -30,6 +30,7 @@ interface DynamicWidgetConfig {
   max: number;
   unit: string;
   comment?: string | null;
+  precision?: number | null;
   isOK?: boolean;
   position: { x: number; y: number };
   displayType: 'widget' | 'compact' | 'card';
@@ -85,6 +86,7 @@ export default function DynamicWidgetPage() {
         max: config.tag.max || 100,
         unit: config.tag.unit_of_measurement || '',
         comment: config.tag.comment ?? null,
+        precision: config.tag.precision ?? null,
         isOK,
         position: config.config.position,
         displayType,
@@ -94,12 +96,12 @@ export default function DynamicWidgetPage() {
     });
   }, [widgetConfigs]);
 
-  const getMinMaxDisplay = (value: number | string | boolean | null | undefined) => {
+  const getMinMaxDisplay = (value: number | string | boolean | null | undefined, precision?: number | null) => {
     if (value === null || value === undefined) {
       return '—';
     }
     if (typeof value === 'number') {
-      return formatNumber(value);
+      return formatNumber(value, precision);
     }
     return String(value);
   };
@@ -162,7 +164,8 @@ export default function DynamicWidgetPage() {
               label={config.label} 
               value={config.value as number} 
               max={config.max} 
-              unit={config.unit} 
+              unit={config.unit}
+              precision={config.precision}
             />
           );
         case 'bar':
@@ -171,14 +174,15 @@ export default function DynamicWidgetPage() {
               key={config.key} 
               label={config.label} 
               value={config.value as number} 
-              max={config.max} 
+              max={config.max}
+              precision={config.precision}
             />
           );
         case 'number': {
           const numericValue = parseNumericValue(
             config.hasData ? (config.value as number | string | boolean | null) : (config.defaultValue ?? null)
           );
-          const displayValue = formatNumberWithUnit(numericValue, config.unit);
+          const displayValue = formatNumberWithUnit(numericValue, config.unit, config.precision);
           return (
             <NumberDisplay 
               key={config.key} 
@@ -202,6 +206,7 @@ export default function DynamicWidgetPage() {
               label={config.label}
               value={config.value}
               unit={config.unit}
+              precision={config.precision}
               isOK={config.isOK ?? false}
             />
           );
@@ -213,6 +218,7 @@ export default function DynamicWidgetPage() {
               label={config.label}
               value={config.value}
               unit={config.unit}
+              precision={config.precision}
               isOK={config.isOK ?? false}
             />
           );
@@ -251,13 +257,13 @@ export default function DynamicWidgetPage() {
           <div className="widget-tooltip-row">
             <span className="widget-tooltip-label">Мин</span>
             <span className="widget-tooltip-value">
-              {getMinMaxDisplay(config.min)}{config.unit ? ` ${config.unit}` : ''}
+              {getMinMaxDisplay(config.min, config.precision)}{config.unit ? ` ${config.unit}` : ''}
             </span>
           </div>
           <div className="widget-tooltip-row">
             <span className="widget-tooltip-label">Макс</span>
             <span className="widget-tooltip-value">
-              {getMinMaxDisplay(config.max)}{config.unit ? ` ${config.unit}` : ''}
+              {getMinMaxDisplay(config.max, config.precision)}{config.unit ? ` ${config.unit}` : ''}
             </span>
           </div>
           {config.comment && (
