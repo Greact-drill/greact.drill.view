@@ -53,6 +53,7 @@ export interface ScopedCurrentTag {
   max?: number;
   comment?: string;
   unit_of_measurement?: string;
+  precision?: number | null;
 }
 
 export interface ScopedTagMeta {

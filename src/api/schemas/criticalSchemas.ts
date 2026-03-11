@@ -17,6 +17,7 @@ export const scopedTagSchema = z.object({
   max: z.number().optional(),
   comment: z.string().optional(),
   unit_of_measurement: z.string().optional(),
+  precision: z.number().nullable().optional(),
 });
 
 export const scopedTagMetaSchema = z.object({
