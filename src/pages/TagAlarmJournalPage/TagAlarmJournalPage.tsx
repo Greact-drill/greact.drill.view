@@ -1,3 +1,4 @@
+import { useState, useCallback, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import BackButton from "../../components/BackButton/BackButton";
 import Loader from "../../components/Loader/Loader";
@@ -5,6 +6,8 @@ import ErrorView from "../../components/ErrorView/ErrorView";
 import { useTagAlarmLog } from "../../hooks/useTagAlarmLog";
 import type { TagAlarmLogItem } from "../../api/tagAlarmLog";
 import "./TagAlarmJournalPage.css";
+
+const PAGE_SIZE = 20;
 
 function formatDateTime(ts: string) {
   const d = new Date(ts);
@@ -33,10 +36,34 @@ function AlarmBadge({ type }: { type: "min" | "max" }) {
 
 export default function TagAlarmJournalPage() {
   const { rigId } = useParams<{ rigId: string }>();
-  const { data, loading, error, refetch } = useTagAlarmLog(rigId);
+  const [page, setPage] = useState(1);
+  const [filterTagInput, setFilterTagInput] = useState("");
+  const [filterTag, setFilterTag] = useState("");
+  const [filterType, setFilterType] = useState<"" | "min" | "max">("");
+
+  // Debounce фильтра по тегу (300ms)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setFilterTag(filterTagInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [filterTagInput]);
+
+  const { data, loading, error, refetch } = useTagAlarmLog(rigId, {
+    page,
+    limit: PAGE_SIZE,
+    tag_name: filterTag || undefined,
+    alarm_type: filterType || undefined,
+  });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return (
     <div className="tag-alarm-journal-page">
@@ -47,6 +74,16 @@ export default function TagAlarmJournalPage() {
 
         <div className="tag-alarm-journal-controls">
           <BackButton to={rigId ? `/rigs/${rigId}` : "/"} />
+          <button
+            type="button"
+            className="tag-alarm-journal-refresh-btn"
+            onClick={handleRefresh}
+            disabled={loading}
+            title="Обновить данные"
+          >
+            <i className={`pi pi-refresh ${loading ? "pi-spin" : ""}`} />
+            <span>Обновить</span>
+          </button>
         </div>
 
         <div className="tag-alarm-journal-body">
@@ -76,6 +113,38 @@ export default function TagAlarmJournalPage() {
                 <h3 className="tag-alarm-journal-table-title">Записи журнала</h3>
                 <span className="tag-alarm-journal-table-count">{total} записей</span>
               </div>
+
+              {/* Фильтры */}
+              <div className="tag-alarm-journal-filters">
+                <div className="tag-alarm-filter-group">
+                  <label htmlFor="filter-tag">Тег</label>
+                  <input
+                    id="filter-tag"
+                    type="text"
+                    placeholder="Поиск по наименованию..."
+                    value={filterTagInput}
+                    onChange={(e) => setFilterTagInput(e.target.value)}
+                    className="tag-alarm-filter-input"
+                  />
+                </div>
+                <div className="tag-alarm-filter-group">
+                  <label htmlFor="filter-type">Тип</label>
+                  <select
+                    id="filter-type"
+                    value={filterType}
+                    onChange={(e) => {
+                      setFilterType(e.target.value as "" | "min" | "max");
+                      setPage(1);
+                    }}
+                    className="tag-alarm-filter-select"
+                  >
+                    <option value="">Все</option>
+                    <option value="min">Ниже min</option>
+                    <option value="max">Выше max</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="tag-alarm-journal-table-scroll">
                 <table className="tag-alarm-journal-table">
                   <thead>
@@ -95,7 +164,6 @@ export default function TagAlarmJournalPage() {
                         </td>
                         <td className="tag-alarm-cell-tag">
                           <span className="tag-alarm-tag-name">{row.tag_name}</span>
-                          <span className="tag-alarm-tag-id">{row.tag_id}</span>
                         </td>
                         <td>
                           <AlarmBadge type={row.alarm_type} />
@@ -113,6 +181,31 @@ export default function TagAlarmJournalPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Пагинация */}
+              {totalPages > 1 && (
+                <div className="tag-alarm-journal-pagination">
+                  <button
+                    type="button"
+                    className="tag-alarm-pagination-btn"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                  >
+                    <i className="pi pi-chevron-left" />
+                  </button>
+                  <span className="tag-alarm-pagination-info">
+                    {page} из {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="tag-alarm-pagination-btn"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    <i className="pi pi-chevron-right" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

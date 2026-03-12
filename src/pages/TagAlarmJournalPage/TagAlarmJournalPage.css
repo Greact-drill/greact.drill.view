@@ -83,11 +83,40 @@
 
 /* Панель управления */
 .tag-alarm-journal-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 40px;
   opacity: 0;
   transform: translateY(-10px);
   animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   animation-delay: 0.2s;
+}
+
+.tag-alarm-journal-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--surface-card) 60%, transparent);
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-alarm-journal-refresh-btn:hover:not(:disabled) {
+  color: var(--color-accent-primary);
+  border-color: rgba(212, 165, 116, 0.4);
+  background: color-mix(in srgb, var(--surface-card) 90%, transparent);
+}
+
+.tag-alarm-journal-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Тело страницы */
@@ -155,6 +184,92 @@
   font-size: 0.8125rem;
   color: var(--color-accent-secondary);
   font-weight: 500;
+}
+
+/* Фильтры */
+.tag-alarm-journal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 28px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.08);
+  background: color-mix(in srgb, var(--surface-card) 20%, transparent);
+}
+
+.tag-alarm-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tag-alarm-filter-group label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tag-alarm-filter-input,
+.tag-alarm-filter-select {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  border-radius: var(--radius-sm);
+  min-width: 180px;
+}
+
+.tag-alarm-filter-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.tag-alarm-filter-input:focus,
+.tag-alarm-filter-select:focus {
+  outline: none;
+  border-color: var(--color-accent-secondary);
+}
+
+/* Пагинация */
+.tag-alarm-journal-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 28px;
+  border-top: 1px solid rgba(212, 165, 116, 0.08);
+  background: color-mix(in srgb, var(--surface-card) 20%, transparent);
+}
+
+.tag-alarm-pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--surface-card) 60%, transparent);
+  border: 1px solid rgba(212, 165, 116, 0.2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-alarm-pagination-btn:hover:not(:disabled) {
+  color: var(--color-accent-primary);
+  border-color: var(--color-accent-secondary);
+}
+
+.tag-alarm-pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tag-alarm-pagination-info {
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
 }
 
 .tag-alarm-journal-table-scroll {

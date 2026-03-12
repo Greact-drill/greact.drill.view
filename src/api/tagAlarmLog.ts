@@ -19,14 +19,21 @@ export interface TagAlarmLogResponse {
   total: number;
 }
 
+export interface TagAlarmLogParams {
+  limit?: number;
+  offset?: number;
+  tag_name?: string;
+  alarm_type?: string;
+}
+
 export async function getTagAlarmLogByEdge(
   edgeId: string,
-  limit = 100,
-  offset = 0
+  params: TagAlarmLogParams = {}
 ): Promise<TagAlarmLogResponse> {
+  const { limit = 50, offset = 0, tag_name, alarm_type } = params;
   const response = await apiClient.get<TagAlarmLogResponse>(
     `/tag-alarm-log/by-edge/${encodeURIComponent(edgeId)}`,
-    { params: { limit, offset } }
+    { params: { limit, offset, tag_name, alarm_type } }
   );
   return response.data;
 }

@@ -31,6 +31,7 @@ export const queryKeys = {
     byPage: (page: string) => ["tableConfig", "byPage", page] as const,
   },
   tagAlarmLog: {
-    byEdge: (edgeId: string) => ["tagAlarmLog", "byEdge", edgeId] as const,
+    byEdge: (edgeId: string, page?: number, limit?: number, filters?: { tag_name?: string; alarm_type?: string }) =>
+      ["tagAlarmLog", "byEdge", edgeId, page, limit, filters] as const,
   },
 };
