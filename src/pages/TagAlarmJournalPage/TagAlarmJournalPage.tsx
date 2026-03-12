@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import BackButton from "../../components/BackButton/BackButton";
 import Loader from "../../components/Loader/Loader";
@@ -38,24 +38,22 @@ export default function TagAlarmJournalPage() {
   const { rigId } = useParams<{ rigId: string }>();
   const [page, setPage] = useState(1);
   const [filterTagInput, setFilterTagInput] = useState("");
-  const [filterTag, setFilterTag] = useState("");
-  const [filterType, setFilterType] = useState<"" | "min" | "max">("");
-
-  // Debounce фильтра по тегу (300ms)
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setFilterTag(filterTagInput);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [filterTagInput]);
+  const [filterTypeInput, setFilterTypeInput] = useState<"" | "min" | "max">("");
+  const [appliedTag, setAppliedTag] = useState("");
+  const [appliedType, setAppliedType] = useState<"" | "min" | "max">("");
 
   const { data, loading, error, refetch } = useTagAlarmLog(rigId, {
     page,
     limit: PAGE_SIZE,
-    tag_name: filterTag || undefined,
-    alarm_type: filterType || undefined,
+    tag_name: appliedTag || undefined,
+    alarm_type: appliedType || undefined,
   });
+
+  const handleApplyFilters = useCallback(() => {
+    setAppliedTag(filterTagInput.trim());
+    setAppliedType(filterTypeInput);
+    setPage(1);
+  }, [filterTagInput, filterTypeInput]);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -73,7 +71,7 @@ export default function TagAlarmJournalPage() {
         </div>
 
         <div className="tag-alarm-journal-controls">
-          <BackButton to={rigId ? `/rigs/${rigId}` : "/"} />
+          <BackButton to={rigId ? `/rigs/${rigId}/archive` : "/"} />
           <button
             type="button"
             className="tag-alarm-journal-refresh-btn"
@@ -95,26 +93,9 @@ export default function TagAlarmJournalPage() {
             <Loader variant="inline" message="Загрузка журнала..." />
           )}
 
-          {!loading && !error && items.length === 0 && (
-            <div className="tag-alarm-journal-empty">
-              <div className="tag-alarm-journal-empty-icon">
-                <i className="pi pi-check-circle" />
-              </div>
-              <h3 className="tag-alarm-journal-empty-title">Нет записей об авариях</h3>
-              <p className="tag-alarm-journal-empty-desc">
-                Все теги в пределах допустимых значений
-              </p>
-            </div>
-          )}
-
-          {!loading && !error && items.length > 0 && (
-            <div className="tag-alarm-journal-table-wrapper">
-              <div className="tag-alarm-journal-table-header">
-                <h3 className="tag-alarm-journal-table-title">Записи журнала</h3>
-                <span className="tag-alarm-journal-table-count">{total} записей</span>
-              </div>
-
-              {/* Фильтры */}
+          {/* Фильтры — всегда видны */}
+          {rigId && (
+            <div className="tag-alarm-journal-filters-section">
               <div className="tag-alarm-journal-filters">
                 <div className="tag-alarm-filter-group">
                   <label htmlFor="filter-tag">Тег</label>
@@ -124,6 +105,7 @@ export default function TagAlarmJournalPage() {
                     placeholder="Поиск по наименованию..."
                     value={filterTagInput}
                     onChange={(e) => setFilterTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
                     className="tag-alarm-filter-input"
                   />
                 </div>
@@ -131,11 +113,8 @@ export default function TagAlarmJournalPage() {
                   <label htmlFor="filter-type">Тип</label>
                   <select
                     id="filter-type"
-                    value={filterType}
-                    onChange={(e) => {
-                      setFilterType(e.target.value as "" | "min" | "max");
-                      setPage(1);
-                    }}
+                    value={filterTypeInput}
+                    onChange={(e) => setFilterTypeInput(e.target.value as "" | "min" | "max")}
                     className="tag-alarm-filter-select"
                   >
                     <option value="">Все</option>
@@ -143,6 +122,40 @@ export default function TagAlarmJournalPage() {
                     <option value="max">Выше max</option>
                   </select>
                 </div>
+                <div className="tag-alarm-filter-group tag-alarm-filter-apply">
+                  <label>&nbsp;</label>
+                  <button
+                    type="button"
+                    className="tag-alarm-apply-btn"
+                    onClick={handleApplyFilters}
+                    disabled={loading}
+                  >
+                    Применить
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && items.length === 0 && (
+            <div className="tag-alarm-journal-empty">
+              <div className="tag-alarm-journal-empty-icon">
+                <i className="pi pi-check-circle" />
+              </div>
+              <h3 className="tag-alarm-journal-empty-title">Нет записей об авариях</h3>
+              <p className="tag-alarm-journal-empty-desc">
+                {appliedTag || appliedType
+                  ? "Нет данных по заданным фильтрам. Измените фильтры и нажмите «Применить»."
+                  : "Все теги в пределах допустимых значений"}
+              </p>
+            </div>
+          )}
+
+          {!loading && !error && items.length > 0 && (
+            <div className="tag-alarm-journal-table-wrapper">
+              <div className="tag-alarm-journal-table-header">
+                <h3 className="tag-alarm-journal-table-title">Записи журнала</h3>
+                <span className="tag-alarm-journal-table-count">{total} записей</span>
               </div>
 
               <div className="tag-alarm-journal-table-scroll">

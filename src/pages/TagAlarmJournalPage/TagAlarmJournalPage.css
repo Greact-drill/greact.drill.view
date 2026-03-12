@@ -186,14 +186,22 @@
   font-weight: 500;
 }
 
+/* Секция фильтров — всегда видна */
+.tag-alarm-journal-filters-section {
+  margin-bottom: 24px;
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  background: color-mix(in srgb, var(--surface-card) 40%, transparent);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
 /* Фильтры */
 .tag-alarm-journal-filters {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-end;
   gap: 16px;
-  padding: 16px 28px;
-  border-bottom: 1px solid rgba(212, 165, 116, 0.08);
-  background: color-mix(in srgb, var(--surface-card) 20%, transparent);
+  padding: 20px 28px;
 }
 
 .tag-alarm-filter-group {
@@ -229,6 +237,32 @@
 .tag-alarm-filter-select:focus {
   outline: none;
   border-color: var(--color-accent-secondary);
+}
+
+.tag-alarm-filter-apply {
+  align-self: flex-end;
+}
+
+.tag-alarm-apply-btn {
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-alarm-apply-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  border-color: var(--color-accent-secondary);
+}
+
+.tag-alarm-apply-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Пагинация */
@@ -389,6 +423,11 @@ body[data-theme="light"] .tag-alarm-journal-page {
 :root[data-theme="light"] .tag-alarm-journal-empty,
 body[data-theme="light"] .tag-alarm-journal-empty {
   background: color-mix(in srgb, var(--surface-card) 70%, white);
+}
+
+:root[data-theme="light"] .tag-alarm-journal-filters-section,
+body[data-theme="light"] .tag-alarm-journal-filters-section {
+  background: color-mix(in srgb, var(--surface-card) 60%, white);
 }
 
 :root[data-theme="light"] .tag-alarm-journal-table-wrapper,
