@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Button } from 'primereact/button';
+import { useParams, useLocation } from 'react-router-dom';
+import BackButton from '../../components/BackButton/BackButton';
 import { useWidgetConfigsByPage } from '../../hooks/useWidgetConfigs.ts';
 import { useTableConfigByPage } from '../../hooks/useTableConfig.ts';
 import { formatNumber, formatNumberWithUnit } from '../../utils/formatters';
@@ -15,6 +15,7 @@ import './DynamicWidgetPage.css';
 import Loader from '../../components/Loader/Loader';
 import NoDataWidget from '../../components/NoDataWidget/NoDataWidget';
 import WidgetSkeleton from '../../components/WidgetSkeleton/WidgetSkeleton';
+import WidgetEmptyState from '../../components/WidgetEmptyState/WidgetEmptyState';
 const VerticalBar = lazy(() => import('../../components/VerticalBar/VerticalBar'));
 const GaugeWidget = lazy(() => import('../../components/Gauge/GaugeWidget'));
 const NumberDisplay = lazy(() => import('../../components/NumberDisplay/NumberDisplay'));
@@ -41,7 +42,6 @@ interface DynamicWidgetConfig {
 }
 
 export default function DynamicWidgetPage() {
-  const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
   const pageType = params.pageType || '';
@@ -303,15 +303,7 @@ export default function DynamicWidgetPage() {
     <div className={`dynamic-widget-page-container ${isMainPage ? 'main-page' : 'widget-page'}`}>
       <div className="dynamic-widget-page-inner">
         <div className="dynamic-controls-header">
-          <Button 
-            icon="pi pi-arrow-left"
-            label="Назад"
-            severity="secondary"
-            onClick={() => {
-              navigate(-1); 
-            }} 
-            className="mb-4 back-button-custom"
-          />
+          <BackButton className="mb-4" />
         </div>
         <div className="dynamic-content-block">
           <h1 className="dynamic-blocks-title">
@@ -326,11 +318,7 @@ export default function DynamicWidgetPage() {
             <div className="compact-tags-grid">
               {dynamicWidgetConfigs.map(renderWidget)}
               {dynamicWidgetConfigs.length === 0 && (
-                <div className="empty-grid-message">
-                  <i className="pi pi-inbox" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
-                  <p>Нет настроенных виджетов для главной страницы</p>
-                  <p className="text-sm">Настройте виджеты в админ-панели</p>
-                </div>
+                <WidgetEmptyState variant="main" />
               )}
             </div>
           ) : (
@@ -346,11 +334,7 @@ export default function DynamicWidgetPage() {
               <div className="dynamic-blocks-grid positioned-grid">
                 {dynamicWidgetConfigs.map(renderWidget)}
                 {dynamicWidgetConfigs.length === 0 && !tableConfigData && (
-                  <div className="empty-grid-message">
-                    <i className="pi pi-inbox" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
-                    <p>Нет настроенных виджетов для этой страницы</p>
-                    <p className="text-sm">Настройте виджеты в админ-панели</p>
-                  </div>
+                  <WidgetEmptyState variant="page" />
                 )}
               </div>
             </>

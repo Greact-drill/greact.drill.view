@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import BackButton from "../../components/BackButton/BackButton";
 import { useState, useEffect } from "react";
 import './PowerConsumptionPage.css';
 
@@ -129,10 +130,7 @@ export default function PowerConsumptionPage() {
 
       {/* Навигация */}
       <div className="power-page-nav">
-        <Link to={`/rigs/${rigId}`} className="power-nav-link">
-          <i className="pi pi-arrow-left" />
-          <span>Назад</span>
-        </Link>
+        <BackButton to={`/rigs/${rigId}`} />
       </div>
 
       {/* Основной контент - Схема КРУ 1 */}

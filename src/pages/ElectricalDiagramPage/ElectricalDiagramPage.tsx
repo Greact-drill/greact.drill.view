@@ -1,21 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from 'primereact/button';
+import BackButton from '../../components/BackButton/BackButton';
 import './ElectricalDiagramPage.css';
 
 export default function ElectricalDiagramPage() {
-  const navigate = useNavigate();
-
   return (
     <div className="electrical-diagram-page">
       <div className="electrical-diagram-container">
         <div className="diagram-header">
-          <Button 
-            icon="pi pi-arrow-left"
-            label="Назад"
-            severity="secondary"
-            onClick={() => navigate(-1)} 
-            className="diagram-back-button"
-          />
+          <BackButton className="diagram-back-button" />
           <h1 className="diagram-title">Схема электроснабжения</h1>
         </div>
 

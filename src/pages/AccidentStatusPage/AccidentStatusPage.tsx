@@ -6,7 +6,6 @@ export default function AccidentStatusPage() {
     <StatusWidgetPage
       page="ACCIDENT"
       title="Состояние аварийных флагов"
-      emptyMessage="Нет настроенных виджетов для аварийных флагов"
       containerClassName="accident-page-container"
       innerClassName="accident-page-inner"
       controlsClassName="accident-controls-header"

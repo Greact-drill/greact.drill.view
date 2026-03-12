@@ -10,6 +10,7 @@ const RigsListPage = lazy(() => import("./pages/RigsListPage/RigsListPage.tsx"))
 const DynamicWidgetPage = lazy(() => import("./pages/DynamicWidgetPage/DynamicWidgetPage.tsx"));
 const MaintenancePage = lazy(() => import("./components/MaintenancePage/MaintenancePage.tsx"));
 const ArchivePage = lazy(() => import("./pages/ArchivePage/ArchivePage.tsx"));
+const TagAlarmJournalPage = lazy(() => import("./pages/TagAlarmJournalPage/TagAlarmJournalPage.tsx"));
 const ElectricalDiagramPage = lazy(
   () => import("./pages/ElectricalDiagramPage/ElectricalDiagramPage.tsx")
 );
@@ -45,6 +46,7 @@ export default function AppRouter() {
               <Route element={<AppLayout />}>
                 <Route path="/rigs/:rigId" element={<MainPage />} />
                 <Route path="/rigs/:rigId/archive" element={<ArchivePage />} />
+                <Route path="/rigs/:rigId/tag-alarm-journal" element={<TagAlarmJournalPage />} />
                 <Route path="/rigs/:rigId/electrical-diagram" element={<ElectricalDiagramPage />} />
                 <Route path="/rigs/:rigId/winch-block" element={<WinchBlockPage />} />
                 <Route path="/rigs/:rigId/pump-block" element={<PumpBlockPage />} />

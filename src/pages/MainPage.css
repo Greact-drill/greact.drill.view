@@ -188,6 +188,18 @@
     animation-delay: 0.5s;
 }
 
+/* MainPage: кнопка "Назад" обособлена справа, не смешивается с меню подсистем */
+.main-page-subsystems .subsystems-menu-content {
+    min-width: 0; /* для корректного flex-shrink */
+}
+
+.main-page-back-nav {
+    margin-left: 24px;
+    padding-left: 24px;
+    border-left: 1px solid rgba(212, 165, 116, 0.2);
+    align-self: center;
+}
+
 .nav-menu-link {
     display: flex;
     align-items: center;

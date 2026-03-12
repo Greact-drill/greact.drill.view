@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import BackButton from "../../components/BackButton/BackButton";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Hls from "hls.js";
 import { getMediaConfig } from "../../api/media";
@@ -223,10 +224,7 @@ export default function VideoPage() {
 
       {/* Навигация */}
       <div className="video-page-nav">
-        <Link to={`/rigs/${rigId}`} className="video-nav-link">
-          <i className="pi pi-arrow-left" />
-          <span>Назад</span>
-        </Link>
+        <BackButton to={`/rigs/${rigId}`} />
       </div>
 
       {/* Основной контент */}

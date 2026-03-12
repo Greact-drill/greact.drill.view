@@ -23,6 +23,16 @@ interface RigCompatible extends EdgeWithAttributes {
 
 const PANEL_CLOSE_ANIMATION_MS = 900;
 
+const sidePanelEnabled = import.meta.env.VITE_RIGS_SIDE_PANEL_ENABLED === "true";
+
+const MAINTENANCE_LINKS: { key: MaintenanceType; title: string }[] = [
+  { key: "daily_maintenance", title: "Ежедневное" },
+  { key: "weekly_maintenance", title: "Еженедельное" },
+  { key: "monthly_maintenance", title: "Ежемесячное" },
+  { key: "semiannual_maintenance", title: "Полугодовое" },
+  { key: "annual_maintenance", title: "Годовое" },
+];
+
 // Компонент для кнопок статусов
 const RigStatusButtons = ({
   attributes,
@@ -412,7 +422,7 @@ export default function RigsListPage() {
           </div>
         </div>
 
-        <div className="rigs-list">
+        <div className={`rigs-list ${!sidePanelEnabled ? 'rigs-list-no-panel' : ''}`}>
           <div className="rigs-grid">
             {rootEdgesLoading ? (
               <div className="loading-state">
@@ -449,10 +459,13 @@ export default function RigsListPage() {
                     : 'pi-minus-circle';
                 
                 return (
-                  <button
+                  <div
                     key={rig.id}
-                    className={`rig-card ${statusClass} ${rig.id === selectedRigId ? 'active' : ''}`}
-                    onClick={() => setSelectedRigId(rig.id === selectedRigId ? null : rig.id)}
+                    role={sidePanelEnabled ? "button" : undefined}
+                    tabIndex={sidePanelEnabled ? 0 : undefined}
+                    className={`rig-card ${statusClass} ${sidePanelEnabled && rig.id === selectedRigId ? 'active' : ''} ${!sidePanelEnabled ? 'rig-card-no-panel' : ''}`}
+                    onClick={sidePanelEnabled ? () => setSelectedRigId(rig.id === selectedRigId ? null : rig.id) : undefined}
+                    onKeyDown={sidePanelEnabled ? (e) => e.key === "Enter" && setSelectedRigId(rig.id === selectedRigId ? null : rig.id) : undefined}
                   >
                     <div className="rig-card-header">
                       <div className="rig-status-badge">
@@ -484,29 +497,56 @@ export default function RigsListPage() {
                       {(() => {
                         const rigSections = rigSectionStatusMap[rig.id] ?? { BYPASS: 'empty', ACCIDENT: 'empty' };
                         const rigOutOfRange = rigSectionOutOfRangeMap[rig.id] ?? { BYPASS: [], ACCIDENT: [] };
-                        const bypassLabel = rigSections.BYPASS === 'ok'
-                          ? 'Норма'
-                          : rigSections.BYPASS === 'bad'
-                            ? 'Требует внимания'
-                            : 'Нет данных';
-                        const accidentLabel = rigSections.ACCIDENT === 'ok'
-                          ? 'Норма'
-                          : rigSections.ACCIDENT === 'bad'
-                            ? 'Требует внимания'
-                            : 'Нет данных';
+                        const bypassStatusClass = rigSections.BYPASS === 'ok' ? 'ok' : rigSections.BYPASS === 'bad' ? 'bad' : 'neutral';
+                        const accidentStatusClass = rigSections.ACCIDENT === 'ok' ? 'ok' : rigSections.ACCIDENT === 'bad' ? 'bad' : 'neutral';
                         const bypassCount = rigOutOfRange.BYPASS.length;
                         const accidentCount = rigOutOfRange.ACCIDENT.length;
+                        const maintOutOfRange = maintenanceOutOfRangeMap[rig.id] ?? {};
                         return (
                           <>
-                        <div className={`status-detail-item ${rigSections.BYPASS === 'ok' ? 'ok' : rigSections.BYPASS === 'bad' ? 'bad' : 'neutral'}`}>
-                          <i className="pi pi-lock" />
-                          <span>Байпас: {bypassLabel}</span>
-                          {bypassCount > 0 && <span className="status-detail-badge">+{bypassCount}</span>}
+                        <div className="rig-status-buttons-row">
+                          <Link
+                            to={`/rigs/${rig.id}/widgets/BYPASS`}
+                            state={{ pageTitle: 'Состояние байпасов' }}
+                            className={`rig-status-btn ${bypassStatusClass}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <i className="pi pi-lock" />
+                            <span>Состояние байпасов</span>
+                            {bypassCount > 0 && <span className="status-detail-badge">+{bypassCount}</span>}
+                          </Link>
+                          <Link
+                            to={`/rigs/${rig.id}/widgets/ACCIDENT`}
+                            state={{ pageTitle: 'Аварии приводов' }}
+                            className={`rig-status-btn ${accidentStatusClass}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <i className="pi pi-exclamation-triangle" />
+                            <span>Аварии приводов</span>
+                            {accidentCount > 0 && <span className="status-detail-badge">+{accidentCount}</span>}
+                          </Link>
                         </div>
-                        <div className={`status-detail-item ${rigSections.ACCIDENT === 'ok' ? 'ok' : rigSections.ACCIDENT === 'bad' ? 'bad' : 'neutral'}`}>
-                          <i className="pi pi-cog" />
-                          <span>Привод: {accidentLabel}</span>
-                          {accidentCount > 0 && <span className="status-detail-badge">+{accidentCount}</span>}
+                        <div className="rig-maintenance-grid">
+                          <div className="rig-maintenance-grid-title">Техническое обслуживание</div>
+                          <div className="rig-maintenance-grid-cells">
+                            {MAINTENANCE_LINKS.map(({ key, title }) => {
+                              const status = maintenanceStatusForCard?.[key] ?? 'empty';
+                              const statusClass = status === 'ok' ? 'ok' : status === 'bad' ? 'bad' : 'neutral';
+                              const outOfRangeCount = maintOutOfRange[key]?.length ?? 0;
+                              return (
+                                <Link
+                                  key={key}
+                                  to={`/rigs/${rig.id}/maintenance-status/${key}`}
+                                  className={`maintenance-grid-cell ${statusClass}`}
+                                  title={`${title} ТО`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <span className="maintenance-grid-cell-label">{title}</span>
+                                  {outOfRangeCount > 0 && <span className="maintenance-grid-cell-badge">{outOfRangeCount}</span>}
+                                </Link>
+                              );
+                            })}
+                          </div>
                         </div>
                           </>
                         );
@@ -524,11 +564,12 @@ export default function RigsListPage() {
                         <i className="pi pi-arrow-right" />
                       </Link>
                     </div>
-                  </button>
+                  </div>
                 );
               })
             )}
           </div>
+          {sidePanelEnabled && (
           <aside className={`rig-status-panel ${isRigStatusPanelOpen ? 'open' : ''}`} aria-live="polite">
               
               {rootEdgesLoading ? (
@@ -611,6 +652,7 @@ export default function RigsListPage() {
                   </>
               ) : null}
           </aside>
+          )}
         </div>
       </div>
     </div>

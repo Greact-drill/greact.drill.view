@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import * as echarts from 'echarts';
 import { useTagHistory } from '../../hooks/useTagHistory';
 import type { TagHistoryList, TagHistoryData } from '../../types/tag'; 
 
+import BackButton from '../../components/BackButton/BackButton';
 import ActionLogTable from '../../components/ActionLogTable/ActionLogTable'; 
 import { MOCK_ACTION_LOG } from '../../types/tag';
 import { useEdgeWithAttributes } from '../../hooks/useEdges';
 import ErrorView from '../../components/ErrorView/ErrorView';
-import LoadingState from '../../components/LoadingState/LoadingState';
+import Loader from '../../components/Loader/Loader';
 import './ArchivePage.css';
 
 // Цвета промышленной палитры
@@ -451,7 +452,6 @@ const generateMockTagHistory = (): TagHistoryList => {
 export default function ArchivePage() {
     const { rigId } = useParams<{ rigId: string }>();
     const edgeKey = `${rigId}`;
-    const navigate = useNavigate();
 
     const { edgeData: selectedEdgeData } = useEdgeWithAttributes(edgeKey);
 
@@ -490,13 +490,7 @@ export default function ArchivePage() {
                 {/* Панель управления */}
                 <div className="archive-controls">
                     <div className="archive-controls-left">
-                        <button 
-                            className="archive-back-button"
-                            onClick={() => navigate(`/rigs/${rigId}`)}
-                        >
-                            <i className="pi pi-arrow-left" />
-                            <span>Назад</span>
-                        </button>
+                        <BackButton to={`/rigs/${rigId}`} />
                         <button
                             className={`archive-control-button ${isRealTime ? 'active' : 'paused'}`}
                             onClick={toggleRealTime}
@@ -504,6 +498,13 @@ export default function ArchivePage() {
                             <i className={buttonIcon} />
                             <span>{buttonLabel}</span>
                         </button>
+                        <Link
+                            to={`/rigs/${rigId}/tag-alarm-journal`}
+                            className="archive-control-button archive-control-button--journal"
+                        >
+                            <i className="pi pi-exclamation-triangle" />
+                            <span>Журнал аварий тегов</span>
+                        </Link>
                     </div>
                 </div>
 
@@ -514,7 +515,7 @@ export default function ArchivePage() {
                     )}
                     
                     {loading && !tagHistoryData && (
-                        <LoadingState message="Загрузка данных..." />
+                        <Loader variant="inline" message="" />
                     )}
                     
                     {/* График */}

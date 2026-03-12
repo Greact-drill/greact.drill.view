@@ -1,4 +1,4 @@
-import { Button } from "primereact/button";
+import BackButton from "../BackButton/BackButton";
 
 interface PageHeaderProps {
   title: string;
@@ -18,13 +18,7 @@ export default function PageHeader({
   return (
     <div className={className}>
       {showBackButton && onBack && (
-        <Button
-          icon="pi pi-arrow-left"
-          label="Назад"
-          severity="secondary"
-          onClick={onBack}
-          className="mb-4 back-button-custom"
-        />
+        <BackButton onClick={onBack} className="mb-4" />
       )}
       <h1 className={titleClassName}>{title}</h1>
     </div>

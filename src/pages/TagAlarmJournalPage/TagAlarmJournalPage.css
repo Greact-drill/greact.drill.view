@@ -1,0 +1,328 @@
+/* Журнал аварий тегов — премиальный стиль в цветовой гамме приложения */
+
+.tag-alarm-journal-page {
+  background: var(--surface-page);
+  background-image:
+    radial-gradient(circle at 0% 0%, var(--page-radial-1) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, var(--page-radial-2) 0%, transparent 50%);
+  min-height: 100vh;
+  padding: 80px var(--spacing-xl) var(--spacing-2xl);
+  color: var(--color-text-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.tag-alarm-journal-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 15% 20%, var(--page-overlay-1) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, var(--page-overlay-2) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tag-alarm-journal-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tag-alarm-journal-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Заголовок */
+.tag-alarm-journal-header {
+  margin-bottom: 48px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-15px);
+  animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.tag-alarm-journal-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 300;
+  margin: 0 0 16px 0;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.tag-alarm-journal-title::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent-secondary), transparent);
+  animation: elegantLineExpand 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 0.3s;
+}
+
+.tag-alarm-journal-subtitle {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--color-accent-secondary);
+  letter-spacing: 0.05em;
+  margin-top: 32px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 0.4s;
+}
+
+/* Панель управления */
+.tag-alarm-journal-controls {
+  margin-bottom: 40px;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeInFromTop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation-delay: 0.2s;
+}
+
+/* Тело страницы */
+.tag-alarm-journal-body {
+  min-height: 200px;
+}
+
+/* Пустое состояние */
+.tag-alarm-journal-empty {
+  text-align: center;
+  padding: 80px 24px;
+  background: color-mix(in srgb, var(--surface-card) 50%, transparent);
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  border-radius: var(--radius-lg);
+}
+
+.tag-alarm-journal-empty-icon {
+  font-size: 3rem;
+  color: var(--color-success);
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+.tag-alarm-journal-empty-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.tag-alarm-journal-empty-desc {
+  font-size: 0.9375rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* Таблица */
+.tag-alarm-journal-table-wrapper {
+  border: 1px solid rgba(212, 165, 116, 0.15);
+  background: color-mix(in srgb, var(--surface-card) 40%, transparent);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.tag-alarm-journal-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+  background: color-mix(in srgb, var(--surface-elevated) 30%, transparent);
+}
+
+.tag-alarm-journal-table-title {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.tag-alarm-journal-table-count {
+  font-size: 0.8125rem;
+  color: var(--color-accent-secondary);
+  font-weight: 500;
+}
+
+.tag-alarm-journal-table-scroll {
+  overflow-x: auto;
+}
+
+.tag-alarm-journal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tag-alarm-journal-table thead tr {
+  background: color-mix(in srgb, var(--surface-card) 60%, transparent);
+  border-bottom: 1px solid rgba(212, 165, 116, 0.15);
+}
+
+.tag-alarm-journal-table th {
+  padding: 18px 24px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tag-alarm-journal-table tbody tr {
+  border-bottom: 1px solid rgba(212, 165, 116, 0.06);
+  transition: background var(--transition-fast);
+}
+
+.tag-alarm-journal-table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-accent-primary) 6%, transparent);
+}
+
+.tag-alarm-journal-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.tag-alarm-journal-table td {
+  padding: 18px 24px;
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.tag-alarm-cell-time {
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.tag-alarm-cell-tag {
+  min-width: 180px;
+}
+
+.tag-alarm-tag-name {
+  display: block;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.tag-alarm-tag-id {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.tag-alarm-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.tag-alarm-badge--min {
+  background: var(--state-danger-bg);
+  color: var(--color-error-light);
+  border: 1px solid var(--state-danger-border);
+}
+
+.tag-alarm-badge--max {
+  background: var(--state-warning-bg);
+  color: var(--color-warning-light);
+  border: 1px solid var(--state-warning-border);
+}
+
+.tag-alarm-cell-value {
+  font-weight: 600;
+}
+
+.tag-alarm-value--min {
+  color: var(--color-error-light);
+}
+
+.tag-alarm-value--max {
+  color: var(--color-warning-light);
+}
+
+.tag-alarm-cell-range {
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+}
+
+/* Light theme overrides */
+:root[data-theme="light"] .tag-alarm-journal-page,
+body[data-theme="light"] .tag-alarm-journal-page {
+  --page-radial-1: var(--page-radial-1);
+  --page-radial-2: var(--page-radial-2);
+  --page-overlay-1: var(--page-overlay-1);
+  --page-overlay-2: var(--page-overlay-2);
+}
+
+:root[data-theme="light"] .tag-alarm-journal-empty,
+body[data-theme="light"] .tag-alarm-journal-empty {
+  background: color-mix(in srgb, var(--surface-card) 70%, white);
+}
+
+:root[data-theme="light"] .tag-alarm-journal-table-wrapper,
+body[data-theme="light"] .tag-alarm-journal-table-wrapper {
+  background: color-mix(in srgb, var(--surface-card) 50%, white);
+  box-shadow: var(--shadow-md);
+}
+
+:root[data-theme="light"] .tag-alarm-badge--min,
+body[data-theme="light"] .tag-alarm-badge--min {
+  color: var(--color-error-dark);
+}
+
+:root[data-theme="light"] .tag-alarm-badge--max,
+body[data-theme="light"] .tag-alarm-badge--max {
+  color: var(--color-warning);
+}
+
+:root[data-theme="light"] .tag-alarm-value--min,
+body[data-theme="light"] .tag-alarm-value--min {
+  color: var(--color-error-dark);
+}
+
+:root[data-theme="light"] .tag-alarm-value--max,
+body[data-theme="light"] .tag-alarm-value--max {
+  color: var(--color-warning);
+}
+
+@keyframes fadeInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes elegantLineExpand {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 200px;
+    opacity: 0.6;
+  }
+}

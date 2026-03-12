@@ -6,7 +6,6 @@ export default function KtuPage() {
     <StatusWidgetPage
       page="KTU"
       title="Параметры КТУ"
-      emptyMessage="Нет настроенных виджетов для КТУ"
       containerClassName="ktu-page-container"
       innerClassName="ktu-page-inner"
       controlsClassName="bypass-controls-header"

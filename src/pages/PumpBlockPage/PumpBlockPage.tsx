@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import BackButton from "../../components/BackButton/BackButton";
 import pumpBlockImage from "../../assets/pumpblock.png";
 import CompactTagDisplay from "../../components/CompactTagDisplay/CompactTagDisplay";
 import { useScopedMediaImage } from "../../hooks/useScopedMediaImage";
@@ -64,10 +65,7 @@ export default function PumpBlockPage() {
       {/* Навигационное меню */}
       <div className="subsystems-menu-top">
         <div className="subsystems-menu-nav">
-          <Link to={`/rigs/${rigId}`} className="nav-menu-link">
-            <i className="pi pi-arrow-left" />
-            <span>Назад</span>
-          </Link>
+          <BackButton to={`/rigs/${rigId}`} />
         </div>
       </div>
 

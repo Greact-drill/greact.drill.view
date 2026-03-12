@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import BackButton from "../../components/BackButton/BackButton";
 import { getMediaDownloadUrl } from "../../api/media";
 import ErrorView from "../../components/ErrorView/ErrorView";
 import EmptyState from "../../components/EmptyState/EmptyState";
-import LoadingState from "../../components/LoadingState/LoadingState";
+import Loader from "../../components/Loader/Loader";
 import DocumentsFileList from "./DocumentsFileList";
 import DocumentsFolderTree from "./DocumentsFolderTree";
 import DocumentsModals from "./DocumentsModals";
@@ -327,10 +328,7 @@ export default function DocumentsPage() {
       </div>
 
       <div className="documents-page-nav">
-        <Link to={`/rigs/${rigId}`} className="documents-nav-link">
-          <i className="pi pi-arrow-left" />
-          <span>Назад к буровой</span>
-        </Link>
+        <BackButton to={`/rigs/${rigId}`} label="Назад к буровой" />
       </div>
 
       <div className="documents-layout">
@@ -383,7 +381,7 @@ export default function DocumentsPage() {
             </div>
           </div>
 
-          {loading && <LoadingState message="Загрузка документов..." />}
+          {loading && <Loader variant="inline" message="" />}
           {!loading && errorMessage && <ErrorView message={errorMessage} onRetry={() => window.location.reload()} />}
           {!loading && actionError && <ErrorView message={actionError} onRetry={() => setActionError(null)} />}
           {!loading && successMessage && <div className="documents-success">{successMessage}</div>}

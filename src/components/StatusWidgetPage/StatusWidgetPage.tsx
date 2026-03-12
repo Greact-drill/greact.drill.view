@@ -10,7 +10,7 @@ import { formatNumberWithUnit } from "../../utils/formatters";
 import { isWidgetValueOK, parseNumericValue } from "../../utils/widgetValue";
 import PageHeader from "../PageHeader/PageHeader";
 import ErrorView from "../ErrorView/ErrorView";
-import EmptyState from "../EmptyState/EmptyState";
+import WidgetEmptyState from "../WidgetEmptyState/WidgetEmptyState";
 
 type SupportedStatusPage = "KTU" | "BYPASS" | "ACCIDENT";
 type BaseWidgetType = "gauge" | "bar" | "number" | "status";
@@ -36,7 +36,6 @@ interface StatusWidgetConfig {
 interface StatusWidgetPageProps {
   page: SupportedStatusPage;
   title: string;
-  emptyMessage: string;
   containerClassName: string;
   innerClassName: string;
   controlsClassName: string;
@@ -95,7 +94,6 @@ const transformTagToWidgetConfig = (
 export default function StatusWidgetPage({
   page,
   title,
-  emptyMessage,
   containerClassName,
   innerClassName,
   controlsClassName,
@@ -209,9 +207,7 @@ export default function StatusWidgetPage({
           <div className={`${gridClassName} positioned-grid`}>
             {widgetConfigs.map(renderWidget)}
             {widgetConfigs.length === 0 && (
-              <div className="empty-grid-message">
-                <EmptyState message={`${emptyMessage} Настройте виджеты в админ-панели.`} />
-              </div>
+              <WidgetEmptyState variant="page" />
             )}
           </div>
         </div>

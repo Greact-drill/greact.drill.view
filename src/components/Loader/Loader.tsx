@@ -15,11 +15,11 @@ export const Loader: React.FC<LoaderProps> = ({
   const content = (
     <div className="loader-content">
       <div className="loader-drill">
-        <span className="loader-letter" style={{ animationDelay: "0ms" }}>D</span>
-        <span className="loader-letter" style={{ animationDelay: "100ms" }}>R</span>
-        <span className="loader-letter" style={{ animationDelay: "200ms" }}>I</span>
-        <span className="loader-letter" style={{ animationDelay: "300ms" }}>L</span>
-        <span className="loader-letter" style={{ animationDelay: "400ms" }}>L</span>
+        <span className="loader-letter">D</span>
+        <span className="loader-letter">R</span>
+        <span className="loader-letter">I</span>
+        <span className="loader-letter">L</span>
+        <span className="loader-letter">L</span>
       </div>
       {message ? <span className="loader-message">{message}</span> : null}
     </div>

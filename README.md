@@ -35,6 +35,7 @@ flowchart LR
 - `VITE_API_URL` — базовый URL `cloud` API
 - `VITE_MEDIA_API_URL` — базовый URL `media` API (fallback на `VITE_API_URL`)
 - `VITE_INFRA_SECRET_KEY` — ключ для защищенных инфраструктурных эндпоинтов
+- `VITE_RIGS_SIDE_PANEL_ENABLED` — боковая панель на странице списка буровых (`true` = включена, по умолчанию выключена)
 
 ## Запуск
 ```bash

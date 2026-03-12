@@ -175,6 +175,16 @@
     background: rgba(239, 68, 68, 0.1);
 }
 
+.archive-control-button--journal {
+    border-color: rgba(245, 158, 11, 0.25);
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.archive-control-button--journal:hover {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.12);
+}
+
 .archive-control-button.active {
     border-color: rgba(34, 197, 94, 0.3);
     background: rgba(34, 197, 94, 0.05);

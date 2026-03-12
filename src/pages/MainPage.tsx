@@ -18,6 +18,7 @@ const NumberDisplay = lazy(() => import("../components/NumberDisplay/NumberDispl
 const CompactTagDisplay = lazy(() => import("../components/CompactTagDisplay/CompactTagDisplay"));
 const StatusTagWidget = lazy(() => import("../components/StatusTagWidget/StatusTagWidget"));
 
+import BackButton from "../components/BackButton/BackButton";
 import ErrorView from "../components/ErrorView/ErrorView";
 import EmptyState from "../components/EmptyState/EmptyState";
 import { useMainPageViewModel, type DynamicWidgetConfig } from "./useMainPageViewModel";
@@ -180,7 +181,7 @@ export default function MainPage() {
       </div>
 
       {/* Меню подсистем над картой */}
-      <div className="subsystems-menu-top">
+      <div className="subsystems-menu-top main-page-subsystems">
         <div className="subsystems-menu-content">
           {childrenLoading ? (
             <Loader variant="inline" message="Загрузка подсистем..." compact />
@@ -239,14 +240,12 @@ export default function MainPage() {
                   <span className="subsystem-menu-name">{child.name || `Подсистема ${child.id}`}</span>
                 </button>
               ))}
-              
-              {/* Кнопка "Назад" */}
-              <button onClick={() => navigate('/')} className="subsystem-menu-item">
-                <i className="pi pi-arrow-left" />
-                <span className="subsystem-menu-name">Назад</span>
-              </button>
             </>
           )}
+        </div>
+        {/* Кнопка "Назад" — отдельно справа, не смешивается с меню подсистем */}
+        <div className="subsystems-menu-nav main-page-back-nav">
+          <BackButton to="/" label="Назад к списку" />
         </div>
       </div>
 

@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from 'primereact/button';
+import { useParams } from 'react-router-dom';
+import BackButton from '../BackButton/BackButton';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tag } from 'primereact/tag';
 import { getCurrentByTags, getEdgeCustomizations } from '../../api/edges';
 import { usePollingQuery } from '../../hooks/usePollingQuery';
 import { queryKeys } from '../../api/queryKeys';
 import ErrorView from '../ErrorView/ErrorView';
 import EmptyState from '../EmptyState/EmptyState';
+import Loader from '../Loader/Loader';
 import './MaintenancePage.css';
 
 const maintenanceTypeMap: { [key: string]: string } = {
@@ -77,7 +77,6 @@ const valueBodyTemplate = (rowData: MaintenanceRow) => {
 };
 
 export default function MaintenancePage() {
-    const navigate = useNavigate();
     const { maintenanceType, rigId } = useParams<{ maintenanceType: string; rigId: string }>(); 
     
     const title = maintenanceType ? maintenanceTypeMap[maintenanceType] : 'Обслуживание';
@@ -168,8 +167,7 @@ export default function MaintenancePage() {
     if (loading) {
         return (
             <div className="loading-container">
-                <ProgressSpinner />
-                <p>Загрузка данных по {title}...</p>
+                <Loader variant="inline" message="" />
             </div>
         );
     }
@@ -179,13 +177,7 @@ export default function MaintenancePage() {
             <div className="bypass-status-page-inner">
                     
                     <div className="bypass-controls-header">
-                        <Button 
-                            icon="pi pi-arrow-left"
-                            label="Назад"
-                            severity="secondary"
-                            onClick={() => { navigate(-1); }} 
-                            className="mb-4 back-button-custom"
-                        />
+                        <BackButton className="mb-4" />
                     </div>
 
                     <div className="bypass-content-block">

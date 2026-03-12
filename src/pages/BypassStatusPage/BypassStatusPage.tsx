@@ -5,7 +5,6 @@ export default function BypassStatusPage() {
         <StatusWidgetPage
             page="BYPASS"
             title="Состояние оборудования"
-            emptyMessage="Нет настроенных виджетов для состояния оборудования"
             containerClassName="bypass-page-container"
             innerClassName="bypass-page-inner"
             controlsClassName="bypass-controls-header"

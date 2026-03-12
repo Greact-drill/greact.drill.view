@@ -565,6 +565,10 @@
     align-items: start;
 }
 
+.rigs-list-no-panel {
+    grid-template-columns: 1fr !important;
+}
+
 .rigs-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)) !important;
@@ -592,6 +596,10 @@
     min-height: 520px !important;
     position: relative;
     overflow: visible;
+}
+
+.rig-card-no-panel {
+    cursor: default;
 }
 
 .rig-card::before {
@@ -875,6 +883,151 @@
 
 .rig-card:hover .status-detail-item i {
     opacity: 1;
+}
+
+/* Кнопки статусов (Байпас, Аварии) */
+.rig-status-buttons-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.rig-status-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    flex: 1;
+    min-width: 0;
+}
+
+.rig-status-btn i {
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.rig-status-btn.ok {
+    color: var(--color-success);
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.rig-status-btn.bad {
+    color: var(--color-error);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.rig-status-btn.neutral {
+    color: rgba(148, 163, 184, 0.9);
+    border-color: rgba(148, 163, 184, 0.2);
+    background: rgba(148, 163, 184, 0.04);
+}
+
+.rig-status-btn:hover {
+    border-color: var(--color-accent-secondary);
+    color: var(--color-accent-secondary);
+    background: rgba(212, 165, 116, 0.08);
+}
+
+.rig-status-btn .status-detail-badge {
+    margin-left: auto;
+}
+
+/* Сетка ТО — квадраты */
+.rig-maintenance-grid {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.rig-maintenance-grid-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(148, 163, 184, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+}
+
+.rig-maintenance-grid-cells {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.maintenance-grid-cell {
+    flex: 0 0 calc(33.333% - 6px);
+}
+
+.maintenance-grid-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    min-height: 52px;
+    padding: 8px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.maintenance-grid-cell-label {
+    color: inherit;
+    line-height: 1.2;
+}
+
+.maintenance-grid-cell.ok {
+    color: var(--color-success);
+    border-color: rgba(34, 197, 94, 0.25);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.maintenance-grid-cell.bad {
+    color: var(--color-error);
+    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.maintenance-grid-cell.neutral {
+    color: rgba(148, 163, 184, 0.75);
+    border-color: rgba(148, 163, 184, 0.15);
+    background: rgba(148, 163, 184, 0.03);
+}
+
+.maintenance-grid-cell:hover {
+    border-color: var(--color-accent-secondary);
+    color: var(--color-accent-secondary);
+    background: rgba(212, 165, 116, 0.08);
+}
+
+.maintenance-grid-cell-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    border-radius: 4px;
 }
 
 /* Футер карточки */
