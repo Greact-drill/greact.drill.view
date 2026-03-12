@@ -3,7 +3,6 @@ import BackButton from "../../components/BackButton/BackButton";
 import Loader from "../../components/Loader/Loader";
 import ErrorView from "../../components/ErrorView/ErrorView";
 import { useTagAlarmLog } from "../../hooks/useTagAlarmLog";
-import { useEdgeWithAttributes } from "../../hooks/useEdges";
 import type { TagAlarmLogItem } from "../../api/tagAlarmLog";
 import "./TagAlarmJournalPage.css";
 
@@ -35,7 +34,6 @@ function AlarmBadge({ type }: { type: "min" | "max" }) {
 export default function TagAlarmJournalPage() {
   const { rigId } = useParams<{ rigId: string }>();
   const { data, loading, error, refetch } = useTagAlarmLog(rigId);
-  const { edgeData: selectedEdgeData } = useEdgeWithAttributes(rigId ?? "");
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
